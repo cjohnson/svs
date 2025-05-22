@@ -2,4 +2,4 @@
 
 make
 
-./build/svsc ./top_module.sv
+./build/svsc ./assignment_operators.sv

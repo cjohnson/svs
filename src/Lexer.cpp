@@ -28,9 +28,9 @@ const bool svs::LexicalToken::is_ignored() const
     case WhiteSpace:
     case Comment:
         return true;
+    default:
+        return false;
     }
-
-    return false;
 }
 
 const svs::LexicalToken::Type& svs::LexicalToken::type() const
@@ -68,12 +68,23 @@ svs::CommentLexicalToken::CommentLexicalToken(
       _comment_type(__comment_type)
 {}
 
+svs::AssignmentOperatorLexicalToken::AssignmentOperatorLexicalToken(
+    const svs::FilePosition& __file_position,
+    const std::string& __raw_token,
+    const svs::AssignmentOperatorLexicalToken::Type& __assignment_operator_type)
+    : svs::LexicalToken(
+        svs::LexicalToken::Type::AssignmentOperator,
+        __file_position,
+        __raw_token),
+      _assignment_operator_type(__assignment_operator_type)
+{}
+
 const std::string svs::WhiteSpaceLexicalToken::to_string() const
 {
     std::stringstream ss;
     ss << "WhiteSpaceLexicalToken{\n";
     ss << "  FilePosition=" << file_position().to_string() << ",\n";
-    ss << "  RawContents=\"" << raw_token() << "\"\n";
+    ss << "  Syntax=\"" << raw_token() << "\"\n";
     ss << "}";
 
     return ss.str();
@@ -84,7 +95,7 @@ const std::string svs::CommentLexicalToken::to_string() const
     std::stringstream ss;
     ss << "CommentLexicalToken{\n";
     ss << "  FilePosition=" << file_position().to_string() << ",\n";
-    ss << "  RawContents=\"" << raw_token() << "\",\n";
+    ss << "  Syntax=\"" << raw_token() << "\",\n";
 
     switch (_comment_type)
     {
@@ -101,6 +112,50 @@ const std::string svs::CommentLexicalToken::to_string() const
     return ss.str();
 }
 
+struct AssignmentOperatorTypeTableRow
+{
+    std::string syntax;
+    svs::AssignmentOperatorLexicalToken::Type type;
+    std::string help_text;
+};
+
+static const std::vector<AssignmentOperatorTypeTableRow> assignment_operator_type_table
+{
+    { "=",    svs::AssignmentOperatorLexicalToken::Simple,                     "Simple"  },
+    { "+=",   svs::AssignmentOperatorLexicalToken::PlusEquals,                 "PlusEquals"  },
+    { "-=",   svs::AssignmentOperatorLexicalToken::MinusEquals,                "MinusEquals"  },
+    { "*=",   svs::AssignmentOperatorLexicalToken::TimesEquals,                "TimesEquals"  },
+    { "/=",   svs::AssignmentOperatorLexicalToken::DivideEquals,               "DivideEquals"  },
+    { "%=",   svs::AssignmentOperatorLexicalToken::ModuloEquals,               "ModuloEquals"  },
+    { "&=",   svs::AssignmentOperatorLexicalToken::BitwiseAndEquals,           "BitwiseAndEquals"  },
+    { "|=",   svs::AssignmentOperatorLexicalToken::BitwiseOrEquals,            "BitwiseOrEquals"  },
+    { "^=",   svs::AssignmentOperatorLexicalToken::BitwiseExclusiveOrEquals,   "BitwiseExclusiveOrEquals"  },
+    { "<<=",  svs::AssignmentOperatorLexicalToken::LogicalLeftShiftEquals,     "LogicalLeftShiftEquals"  },
+    { ">>=",  svs::AssignmentOperatorLexicalToken::LogicalRightShiftEquals,    "LogicalRightShiftEquals"  },
+    { "<<<=", svs::AssignmentOperatorLexicalToken::ArithmeticLeftShiftEquals,  "ArithmeticLeftShiftEquals"  },
+    { ">>>=", svs::AssignmentOperatorLexicalToken::ArithmeticRightShiftEquals, "ArithmeticRightShiftEquals"  },
+};
+
+const std::string svs::AssignmentOperatorLexicalToken::to_string() const
+{
+    std::stringstream ss;
+    ss << "AssignmentOperatorLexicalToken{\n";
+    ss << "  FilePosition=" << file_position().to_string() << ",\n";
+    ss << "  Syntax=\"" << raw_token() << "\"\n";
+
+    ss << "  Type=\"";
+    for (const AssignmentOperatorTypeTableRow& row : assignment_operator_type_table) {
+        if (row.type == _assignment_operator_type) {
+            ss << row.help_text << "\"";
+            break;
+        }
+    }
+
+    ss << "}";
+
+    return ss.str();
+}
+
 bool svs::Lexer::lex_file(
     const std::string& file_contents,
     std::vector<svs::LexicalToken *>& tokens)
@@ -108,6 +163,7 @@ bool svs::Lexer::lex_file(
     std::regex whitespace_regex("\\s+");
     std::regex one_line_comment_regex("\\/\\/.*$", std::regex_constants::multiline);
     std::regex block_comment_regex("\\/\\*(.|\n)*\\*\\/");
+    std::regex assignment_operator_regex("(=)|(\\+=)|(-=)|(\\*=)|(/=)|(%=)|(&=)|(\\|=)|(\\^=)|(<<=)|(>>=)|(<<<=)|(>>>=)");
 
     std::string::const_iterator search_start(file_contents.begin());
     std::string::const_iterator search_end(file_contents.end());
@@ -165,6 +221,32 @@ bool svs::Lexer::lex_file(
                 file_position,
                 match.str(),
                 svs::CommentLexicalToken::Type::Block);
+            tokens.push_back(token);
+
+            search_start = match.suffix().first;
+
+            goto update_file_position;
+        }
+
+        if (std::regex_search(
+                search_start,
+                search_end,
+                match,
+                assignment_operator_regex,
+                std::regex_constants::match_continuous))
+        {
+            svs::AssignmentOperatorLexicalToken::Type type;
+            for (const AssignmentOperatorTypeTableRow& row : assignment_operator_type_table) {
+                if (row.syntax == match.str())
+                {
+                    type = row.type;
+                }
+            }
+
+            auto token = new svs::AssignmentOperatorLexicalToken(
+                file_position,
+                match.str(),
+                type);
             tokens.push_back(token);
 
             search_start = match.suffix().first;
