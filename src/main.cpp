@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     std::cout << "Number of lexical tokens found: " << tokens.size() << "\n";
     for (svs::LexicalToken *token : tokens)
     {
-        if (token->type() != svs::LexicalTokenType::WhiteSpace)
+        if (!token->is_ignored())
         {
             std::cout << token->to_string() << "\n";
         }

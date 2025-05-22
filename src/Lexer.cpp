@@ -14,7 +14,7 @@ const std::string svs::FilePosition::to_string() const
 }
 
 svs::LexicalToken::LexicalToken(
-    const LexicalTokenType& __type,
+    const svs::LexicalToken::Type& __type,
     const svs::FilePosition& __file_position,
     const std::string& __raw_token)
     : _type(__type),
@@ -22,7 +22,18 @@ svs::LexicalToken::LexicalToken(
       _raw_token(__raw_token)
 {}
 
-const svs::LexicalTokenType& svs::LexicalToken::type() const
+const bool svs::LexicalToken::is_ignored() const
+{
+    switch (_type) {
+    case WhiteSpace:
+    case Comment:
+        return true;
+    }
+
+    return false;
+}
+
+const svs::LexicalToken::Type& svs::LexicalToken::type() const
 {
     return _type;
 }
@@ -41,7 +52,7 @@ svs::WhiteSpaceLexicalToken::WhiteSpaceLexicalToken(
     const svs::FilePosition& __file_position,
     const std::string& __raw_token)
     : svs::LexicalToken(
-        svs::LexicalTokenType::WhiteSpace,
+        svs::LexicalToken::Type::WhiteSpace,
         __file_position,
         __raw_token)
 {}
@@ -49,9 +60,9 @@ svs::WhiteSpaceLexicalToken::WhiteSpaceLexicalToken(
 svs::CommentLexicalToken::CommentLexicalToken(
     const svs::FilePosition& __file_position,
     const std::string& __raw_token,
-    const svs::CommentLexicalTokenType& __comment_type)
+    const svs::CommentLexicalToken::Type& __comment_type)
     : svs::LexicalToken(
-        svs::LexicalTokenType::Comment,
+        svs::LexicalToken::Type::Comment,
         __file_position,
         __raw_token),
       _comment_type(__comment_type)
@@ -135,7 +146,7 @@ bool svs::Lexer::lex_file(
             auto token = new svs::CommentLexicalToken(
                 file_position,
                 match.str(),
-                svs::CommentLexicalTokenType::OneLine);
+                svs::CommentLexicalToken::Type::OneLine);
             tokens.push_back(token);
 
             search_start = match.suffix().first;
@@ -153,7 +164,7 @@ bool svs::Lexer::lex_file(
             auto token = new svs::CommentLexicalToken(
                 file_position,
                 match.str(),
-                svs::CommentLexicalTokenType::Block);
+                svs::CommentLexicalToken::Type::Block);
             tokens.push_back(token);
 
             search_start = match.suffix().first;

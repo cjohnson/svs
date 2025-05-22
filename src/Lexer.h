@@ -15,22 +15,27 @@ struct FilePosition
     const std::string to_string() const;
 };
 
-enum LexicalTokenType
-{
-    WhiteSpace,
-    Comment,
-};
-
 class LexicalToken
 {
+public:
+    enum Type
+    {
+        WhiteSpace,
+        Comment,
+    };
+
 protected:
     LexicalToken(
-        const LexicalTokenType& __type,
+        const Type& __type,
         const FilePosition& __file_position,
         const std::string& __raw_token);
 
 public:
-    const LexicalTokenType& type() const;
+    virtual ~LexicalToken() = default;
+
+    const bool is_ignored() const;
+
+    const Type& type() const;
 
     const FilePosition& file_position() const;
 
@@ -38,10 +43,8 @@ public:
 
     const virtual std::string to_string() const = 0;
 
-    virtual ~LexicalToken() = default;
-
 private:
-    LexicalTokenType _type;
+    Type _type;
     FilePosition _file_position;
     std::string _raw_token;
 };
@@ -56,26 +59,26 @@ public:
     const std::string to_string() const override;
 };
 
-enum CommentLexicalTokenType
-{
-    OneLine,
-    Block,
-};
-
 class CommentLexicalToken : public LexicalToken
 {
 public:
+    enum Type
+    {
+        OneLine,
+        Block,
+    };
+
     CommentLexicalToken(
         const FilePosition& __file_position,
         const std::string& __raw_token,
-        const CommentLexicalTokenType& __comment_type);
+        const Type& __comment_type);
 
-    const CommentLexicalTokenType& comment_type();
+    const Type& comment_type();
 
     const std::string to_string() const override;
 
 private:
-    CommentLexicalTokenType _comment_type;
+    Type _comment_type;
 };
 
 class Lexer
