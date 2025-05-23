@@ -1,5 +1,5 @@
-#ifndef SVS_FILE_POSITON_H_
-#define SVS_FILE_POSITON_H_
+#ifndef SVS_FILE_POSITION_H_
+#define SVS_FILE_POSITION_H_
 
 #include <string>
 
@@ -31,4 +31,4 @@ struct FilePosition
 
 }
 
-#endif // SVS_FILE_POSITON_H_
+#endif // SVS_FILE_POSITION_H_
