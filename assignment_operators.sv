@@ -17,6 +17,10 @@ module top_module(
         next_state >>= 2;
         next_state <<<= 2;
         next_state >>>= 2;
+        ++next_state;
+        next_state++;
+        --next_state;
+        next_state--;
     end
 
     always @(posedge clock) begin

@@ -26,6 +26,10 @@ static const std::vector<OperatorLookupTableRow> operator_lookup_table
     { ">>=", ">>=", svs::OperatorLexicalToken::Type::LogicalRightShiftEqualsAssignment, "LogicalRightShiftEqualsAssignment" },
     { "<<<=", "<<<=", svs::OperatorLexicalToken::Type::ArithmeticLeftShiftEqualsAssignment, "ArithmeticLeftShiftEqualsAssignment" },
     { ">>>=", ">>>=", svs::OperatorLexicalToken::Type::ArithmeticRightShiftEqualsAssignment, "ArithmeticRightShiftEqualsAssignment" },
+
+    // Increment and Decrement Operators
+    { "++", "\\+\\+", svs::OperatorLexicalToken::Type::Increment, "Increment" },
+    { "--", "--", svs::OperatorLexicalToken::Type::Decrement, "Decrement" },
 };
 
 svs::OperatorLexicalToken::OperatorLexicalToken(

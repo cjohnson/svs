@@ -27,6 +27,10 @@ public:
         LogicalRightShiftEqualsAssignment,
         ArithmeticLeftShiftEqualsAssignment,
         ArithmeticRightShiftEqualsAssignment,
+
+        // Increment and Decrement Operators
+        Increment,
+        Decrement,
     };
 
     OperatorLexicalToken(
