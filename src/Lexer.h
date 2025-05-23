@@ -4,51 +4,12 @@
 #include <string>
 #include <vector>
 
+#include "lexical_token/LexicalToken.h"
+
+#include "FilePosition.h"
+
 namespace svs
 {
-
-struct FilePosition
-{
-    unsigned int line;
-    unsigned int col;
-
-    const std::string to_string() const;
-};
-
-class LexicalToken
-{
-public:
-    enum Type
-    {
-        WhiteSpace,
-        Comment,
-        AssignmentOperator,
-    };
-
-protected:
-    LexicalToken(
-        const Type& __type,
-        const FilePosition& __file_position,
-        const std::string& __raw_token);
-
-public:
-    virtual ~LexicalToken() = default;
-
-    const bool is_ignored() const;
-
-    const Type& type() const;
-
-    const FilePosition& file_position() const;
-
-    const std::string& raw_token() const;
-
-    const virtual std::string to_string() const = 0;
-
-private:
-    Type _type;
-    FilePosition _file_position;
-    std::string _raw_token;
-};
 
 class WhiteSpaceLexicalToken : public LexicalToken
 {
