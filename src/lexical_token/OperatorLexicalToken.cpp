@@ -13,19 +13,19 @@ struct OperatorLookupTableRow
 static const std::vector<OperatorLookupTableRow> operator_lookup_table
 {
     // Assignment Operators
-    { "=", "=", svs::OperatorLexicalToken::Type::EqualsAssignment, "EqualsAssignment" },
-    { "+=", "\\+=", svs::OperatorLexicalToken::Type::PlusEqualsAssignment, "PlusEqualsAssignment" },
-    { "-=", "-=", svs::OperatorLexicalToken::Type::MinusEqualsAssignment, "MinusEqualsAssignment" },
-    { "*=", "\\*=", svs::OperatorLexicalToken::Type::TimesEqualsAssignment, "TimesEqualsAssignment" },
-    { "/=", "/=", svs::OperatorLexicalToken::Type::DivideEqualsAssignment, "DivideEqualsAssignment" },
-    { "%=", "%=", svs::OperatorLexicalToken::Type::ModuloEqualsAssignment, "ModuloEqualsAssignment" },
-    { "&=", "&=", svs::OperatorLexicalToken::Type::BitwiseAndEqualsAssignment, "BitwiseAndEqualsAssignment" },
-    { "|=", "\\|=", svs::OperatorLexicalToken::Type::BitwiseOrEqualsAssignment, "BitwiseOrEqualsAssignment" },
-    { "^=", "\\^=", svs::OperatorLexicalToken::Type::BitwiseExclusiveOrEqualsAssignment, "BitwiseExclusiveOrEqualsAssignment" },
-    { "<<=", "<<=", svs::OperatorLexicalToken::Type::LogicalLeftShiftEqualsAssignment, "LogicalLeftShiftEqualsAssignment" },
-    { ">>=", ">>=", svs::OperatorLexicalToken::Type::LogicalRightShiftEqualsAssignment, "LogicalRightShiftEqualsAssignment" },
-    { "<<<=", "<<<=", svs::OperatorLexicalToken::Type::ArithmeticLeftShiftEqualsAssignment, "ArithmeticLeftShiftEqualsAssignment" },
-    { ">>>=", ">>>=", svs::OperatorLexicalToken::Type::ArithmeticRightShiftEqualsAssignment, "ArithmeticRightShiftEqualsAssignment" },
+    { "=", "=", svs::OperatorLexicalToken::Type::Equals, "Equals" },
+    { "+=", "\\+=", svs::OperatorLexicalToken::Type::PlusEquals, "PlusEquals" },
+    { "-=", "-=", svs::OperatorLexicalToken::Type::MinusEquals, "MinusEquals" },
+    { "*=", "\\*=", svs::OperatorLexicalToken::Type::TimesEquals, "TimesEquals" },
+    { "/=", "/=", svs::OperatorLexicalToken::Type::DivideEquals, "DivideEquals" },
+    { "%=", "%=", svs::OperatorLexicalToken::Type::ModuloEquals, "ModuloEquals" },
+    { "&=", "&=", svs::OperatorLexicalToken::Type::BitwiseAndEquals, "BitwiseAndEquals" },
+    { "|=", "\\|=", svs::OperatorLexicalToken::Type::BitwiseOrEquals, "BitwiseOrEquals" },
+    { "^=", "\\^=", svs::OperatorLexicalToken::Type::BitwiseExclusiveOrEquals, "BitwiseExclusiveOrEquals" },
+    { "<<=", "<<=", svs::OperatorLexicalToken::Type::LogicalLeftShiftEquals, "LogicalLeftShiftEquals" },
+    { ">>=", ">>=", svs::OperatorLexicalToken::Type::LogicalRightShiftEquals, "LogicalRightShiftEquals" },
+    { "<<<=", "<<<=", svs::OperatorLexicalToken::Type::ArithmeticLeftShiftEquals, "ArithmeticLeftShiftEquals" },
+    { ">>>=", ">>>=", svs::OperatorLexicalToken::Type::ArithmeticRightShiftEquals, "ArithmeticRightShiftEquals" },
 
     // Increment and Decrement Operators
     { "++", "\\+\\+", svs::OperatorLexicalToken::Type::Increment, "Increment" },

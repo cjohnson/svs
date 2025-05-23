@@ -14,19 +14,19 @@ public:
     enum Type
     {
         // Assignment Operators
-        EqualsAssignment,
-        PlusEqualsAssignment,
-        MinusEqualsAssignment,
-        TimesEqualsAssignment,
-        DivideEqualsAssignment,
-        ModuloEqualsAssignment,
-        BitwiseAndEqualsAssignment,
-        BitwiseOrEqualsAssignment,
-        BitwiseExclusiveOrEqualsAssignment,
-        LogicalLeftShiftEqualsAssignment,
-        LogicalRightShiftEqualsAssignment,
-        ArithmeticLeftShiftEqualsAssignment,
-        ArithmeticRightShiftEqualsAssignment,
+        Equals,
+        PlusEquals,
+        MinusEquals,
+        TimesEquals,
+        DivideEquals,
+        ModuloEquals,
+        BitwiseAndEquals,
+        BitwiseOrEquals,
+        BitwiseExclusiveOrEquals,
+        LogicalLeftShiftEquals,
+        LogicalRightShiftEquals,
+        ArithmeticLeftShiftEquals,
+        ArithmeticRightShiftEquals,
 
         // Increment and Decrement Operators
         Increment,
