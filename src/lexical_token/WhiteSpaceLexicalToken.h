@@ -1,6 +1,8 @@
 #ifndef SVS_WHITE_SPACE_LEXICAL_TOKEN_H_
 #define SVS_WHITE_SPACE_LEXICAL_TOKEN_H_
 
+#include <regex>
+
 #include "LexicalToken.h"
 
 namespace svs
@@ -14,6 +16,8 @@ public:
         const std::string& __raw_token);
 
     const std::string to_string() const override;
+
+    static const std::regex regex;
 };
 
 }

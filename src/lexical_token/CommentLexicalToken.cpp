@@ -35,3 +35,9 @@ const std::string svs::CommentLexicalToken::to_string() const
     return ss.str();
 }
 
+const std::regex svs::CommentLexicalToken::one_line_regex
+    = std::regex("\\/\\/.*$", std::regex_constants::multiline);
+
+const std::regex svs::CommentLexicalToken::block_regex
+    = std::regex("\\/\\*(.|\n)*\\*\\/");
+

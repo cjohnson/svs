@@ -1,6 +1,8 @@
 #ifndef SVS_COMMENT_LEXICAL_TOKEN_H_
 #define SVS_COMMENT_LEXICAL_TOKEN_H_
 
+#include <regex>
+
 #include "LexicalToken.h"
 
 namespace svs
@@ -23,6 +25,9 @@ public:
     const Type& comment_type();
 
     const std::string to_string() const override;
+
+    static const std::regex one_line_regex;
+    static const std::regex block_regex;
 
 private:
     Type _comment_type;

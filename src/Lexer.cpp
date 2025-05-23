@@ -10,11 +10,6 @@ bool svs::Lexer::lex_file(
     const std::string& file_contents,
     std::vector<svs::LexicalToken *>& tokens)
 {
-    std::regex whitespace_regex("\\s+");
-    std::regex one_line_comment_regex("\\/\\/.*$", std::regex_constants::multiline);
-    std::regex block_comment_regex("\\/\\*(.|\n)*\\*\\/");
-    std::regex assignment_operator_regex("(=)|(\\+=)|(-=)|(\\*=)|(/=)|(%=)|(&=)|(\\|=)|(\\^=)|(<<=)|(>>=)|(<<<=)|(>>>=)");
-
     std::string::const_iterator search_start(file_contents.begin());
     std::string::const_iterator search_end(file_contents.end());
 
@@ -29,7 +24,7 @@ bool svs::Lexer::lex_file(
                 search_start,
                 search_end,
                 match,
-                whitespace_regex,
+                svs::WhiteSpaceLexicalToken::regex,
                 std::regex_constants::match_continuous))
         {
             auto token = new svs::WhiteSpaceLexicalToken(
@@ -46,7 +41,7 @@ bool svs::Lexer::lex_file(
                 search_start,
                 search_end,
                 match,
-                one_line_comment_regex,
+                svs::CommentLexicalToken::one_line_regex,
                 std::regex_constants::match_continuous))
         {
             auto token = new svs::CommentLexicalToken(
@@ -64,7 +59,7 @@ bool svs::Lexer::lex_file(
                 search_start,
                 search_end,
                 match,
-                block_comment_regex,
+                svs::CommentLexicalToken::block_regex,
                 std::regex_constants::match_continuous))
         {
             auto token = new svs::CommentLexicalToken(
@@ -82,7 +77,7 @@ bool svs::Lexer::lex_file(
                 search_start,
                 search_end,
                 match,
-                assignment_operator_regex,
+                svs::AssignmentOperatorLexicalToken::regex,
                 std::regex_constants::match_continuous))
         {
             auto token = new svs::AssignmentOperatorLexicalToken(

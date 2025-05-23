@@ -22,3 +22,6 @@ const std::string svs::WhiteSpaceLexicalToken::to_string() const
     return ss.str();
 }
 
+const std::regex svs::WhiteSpaceLexicalToken::regex
+    = std::regex("\\s+");
+

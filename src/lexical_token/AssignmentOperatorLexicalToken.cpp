@@ -62,3 +62,7 @@ const std::string svs::AssignmentOperatorLexicalToken::to_string() const
 
     return ss.str();
 }
+
+const std::regex svs::AssignmentOperatorLexicalToken::regex
+    = std::regex("(=)|(\\+=)|(-=)|(\\*=)|(/=)|(%=)|(&=)|(\\|=)|(\\^=)|(<<=)|(>>=)|(<<<=)|(>>>=)");
+
