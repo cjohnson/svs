@@ -14,7 +14,7 @@ public:
     {
         WhiteSpace,
         Comment,
-        AssignmentOperator,
+        Operator,
     };
 
 public:

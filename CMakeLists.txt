@@ -10,4 +10,4 @@ add_executable(svsc
     ./src/lexical_token/LexicalToken.cpp
     ./src/lexical_token/WhiteSpaceLexicalToken.cpp
     ./src/lexical_token/CommentLexicalToken.cpp
-    ./src/lexical_token/AssignmentOperatorLexicalToken.cpp)
+    ./src/lexical_token/OperatorLexicalToken.cpp)

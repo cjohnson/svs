@@ -4,7 +4,7 @@
 
 #include "lexical_token/WhiteSpaceLexicalToken.h"
 #include "lexical_token/CommentLexicalToken.h"
-#include "lexical_token/AssignmentOperatorLexicalToken.h"
+#include "lexical_token/OperatorLexicalToken.h"
 
 bool svs::Lexer::lex_file(
     const std::string& file_contents,
@@ -77,10 +77,10 @@ bool svs::Lexer::lex_file(
                 search_start,
                 search_end,
                 match,
-                svs::AssignmentOperatorLexicalToken::regex,
+                svs::OperatorLexicalToken::regex(),
                 std::regex_constants::match_continuous))
         {
-            auto token = new svs::AssignmentOperatorLexicalToken(
+            auto token = new svs::OperatorLexicalToken(
                 file_position,
                 match.str());
             tokens.push_back(token);
