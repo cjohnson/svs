@@ -1,15 +1,17 @@
+#include <memory>
 #include <regex>
 
 #include "Lexer.h"
 
-#include "lexical_token/WhiteSpaceLexicalToken.h"
 #include "lexical_token/CommentLexicalToken.h"
+#include "lexical_token/LexicalToken.h"
 #include "lexical_token/OperatorLexicalToken.h"
 
-bool svs::Lexer::lex_file(
-    const std::string& file_contents,
-    std::vector<svs::LexicalToken *>& tokens)
+std::vector<std::unique_ptr<svs::LexicalToken>> svs::Lexer::lex_file(
+    const std::string& file_contents)
 {
+    std::vector<std::unique_ptr<svs::LexicalToken>> tokens;
+
     std::string::const_iterator search_start(file_contents.begin());
     std::string::const_iterator search_end(file_contents.end());
 
@@ -18,75 +20,33 @@ bool svs::Lexer::lex_file(
 
     while (search_start != search_end)
     {
+        std::unique_ptr<svs::LexicalToken> lexical_token;
+
         std::smatch match;
 
-        if (std::regex_search(
-                search_start,
-                search_end,
-                match,
-                svs::WhiteSpaceLexicalToken::regex,
-                std::regex_constants::match_continuous))
+        if (std::isspace(*search_start))
         {
-            auto token = new svs::WhiteSpaceLexicalToken(
-                file_position,
-                match.str());
-            tokens.push_back(token);
-
-            search_start = match.suffix().first;
-
+            ++search_start;
             goto update_file_position;
         }
 
-        if (std::regex_search(
-                search_start,
-                search_end,
-                match,
-                svs::CommentLexicalToken::one_line_regex,
-                std::regex_constants::match_continuous))
+        lexical_token = svs::CommentLexicalToken::parse(
+            file_position,
+            search_start,
+            search_end);
+        if (lexical_token)
         {
-            auto token = new svs::CommentLexicalToken(
-                file_position,
-                match.str(),
-                svs::CommentLexicalToken::Type::OneLine);
-            tokens.push_back(token);
-
-            search_start = match.suffix().first;
-
+            tokens.push_back(std::move(lexical_token));
             goto update_file_position;
         }
 
-        if (std::regex_search(
-                search_start,
-                search_end,
-                match,
-                svs::CommentLexicalToken::block_regex,
-                std::regex_constants::match_continuous))
+        lexical_token = svs::OperatorLexicalToken::parse(
+            file_position,
+            search_start,
+            search_end);
+        if (lexical_token)
         {
-            auto token = new svs::CommentLexicalToken(
-                file_position,
-                match.str(),
-                svs::CommentLexicalToken::Type::Block);
-            tokens.push_back(token);
-
-            search_start = match.suffix().first;
-
-            goto update_file_position;
-        }
-
-        if (std::regex_search(
-                search_start,
-                search_end,
-                match,
-                svs::OperatorLexicalToken::regex(),
-                std::regex_constants::match_continuous))
-        {
-            auto token = new svs::OperatorLexicalToken(
-                file_position,
-                match.str());
-            tokens.push_back(token);
-
-            search_start = match.suffix().first;
-
+            tokens.push_back(std::move(lexical_token));
             goto update_file_position;
         }
 
@@ -109,6 +69,6 @@ update_file_position:
         }
     }
 
-    return true;
+    return tokens;
 }
 

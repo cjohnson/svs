@@ -1,9 +1,11 @@
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <sstream>
 #include <vector>
 
 #include "Lexer.h"
+#include "lexical_token/LexicalToken.h"
 
 int main(int argc, char **argv)
 {
@@ -20,17 +22,12 @@ int main(int argc, char **argv)
     std::string file_buffer{file_string_stream.str()};
 
     svs::Lexer lexer;
-    std::vector<svs::LexicalToken *> tokens;
-    lexer.lex_file(file_buffer, tokens);
+    std::vector<std::unique_ptr<svs::LexicalToken>> tokens = lexer.lex_file(file_buffer);
 
     std::cout << "Number of lexical tokens found: " << tokens.size() << "\n";
-    for (svs::LexicalToken *token : tokens)
+    for (const std::unique_ptr<svs::LexicalToken>& token : tokens)
     {
-        if (!token->is_ignored())
-        {
-            std::cout << token->to_string() << "\n";
-        }
-        delete token;
+        std::cout << token->to_string() << "\n";
     }
 
     return 0;

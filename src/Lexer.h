@@ -1,6 +1,7 @@
 #ifndef SVS_LEXER_H_
 #define SVS_LEXER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,9 +13,8 @@ namespace svs
 class Lexer
 {
 public:
-    bool lex_file(
-        const std::string& file_contents,
-        std::vector<LexicalToken *>& tokens);
+    std::vector<std::unique_ptr<LexicalToken>> lex_file(
+        const std::string& file_contents);
 };
 
 }

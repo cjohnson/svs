@@ -1,6 +1,7 @@
 #ifndef SVS_OPERATOR_LEXICAL_TOKEN_H_
 #define SVS_OPERATOR_LEXICAL_TOKEN_H_
 
+#include <memory>
 #include <regex>
 #include <sys/types.h>
 
@@ -128,15 +129,43 @@ public:
          * Syntax: '--'
          */
         Decrement,
+
+        // Arithmetic Operators
+
+        /**
+         * The addition operator.
+         *
+         * Syntax: '+'
+         */
+        Addition,
+
+        /**
+         * The subtraction operator.
+         *
+         * Syntax: '-'
+         */
+        Subtraction,
+
+        /**
+         * The multiplication operator.
+         *
+         * Syntax: '*'
+         */
+        Multiplication,
     };
 
     OperatorLexicalToken(
         const svs::FilePosition& __file_position,
-        const std::string& __raw_token);
+        const svs::OperatorLexicalToken::Type& __type);
+
+    const OperatorLexicalToken::Type operator_type() const;
 
     const std::string to_string() const override;
 
-    static const std::regex regex();
+    static std::unique_ptr<OperatorLexicalToken> parse(
+        svs::FilePosition& file_position,
+        std::string::const_iterator& begin,
+        const std::string::const_iterator end);
 
 private:
     OperatorLexicalToken::Type _operator_type;

@@ -8,5 +8,5 @@ cmake . -B build
 cmake --build build
 
 if [ $? -eq 0 ]; then
-    ./build/svsc ./assignment_operators.sv
+    ./build/cpp_test
 fi
