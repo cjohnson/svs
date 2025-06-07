@@ -35,6 +35,16 @@ TEST(LexerTests, SubtractionAssignmentOnlyTest)
     operator_only_test("-=", svs::OperatorLexicalToken::Type::SubtractionAssignment);
 }
 
+TEST(LexerTests, MultiplicationAssignmentOnlyTest)
+{
+    operator_only_test("*=", svs::OperatorLexicalToken::Type::MultiplicationAssignment);
+}
+
+TEST(LexerTests, DivisionAssignmentOnlyTest)
+{
+    operator_only_test("/=", svs::OperatorLexicalToken::Type::DivisionAssignment);
+}
+
 TEST(LexerTests, AdditionOnlyTest)
 {
     operator_only_test("+", svs::OperatorLexicalToken::Type::Addition);
@@ -44,3 +54,14 @@ TEST(LexerTests, SubtractionOnlyTest)
 {
     operator_only_test("-", svs::OperatorLexicalToken::Type::Subtraction);
 }
+
+TEST(LexerTests, MultiplicationOnlyTest)
+{
+    operator_only_test("*", svs::OperatorLexicalToken::Type::Multiplication);
+}
+
+TEST(LexerTests, DivisionOnlyTest)
+{
+    operator_only_test("/", svs::OperatorLexicalToken::Type::Division);
+}
+

@@ -152,6 +152,13 @@ public:
          * Syntax: '*'
          */
         Multiplication,
+
+        /**
+         * The division operator.
+         *
+         * Syntax: '/'
+         */
+        Division,
     };
 
     OperatorLexicalToken(

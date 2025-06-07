@@ -43,6 +43,7 @@ static const inline std::string to_operator_type_name(
     case svs::OperatorLexicalToken::Type::Addition: return "Addition";
     case svs::OperatorLexicalToken::Type::Subtraction: return "Subtraction";
     case svs::OperatorLexicalToken::Type::Multiplication: return "Multiplication";
+    case svs::OperatorLexicalToken::Type::Division: return "Division";
     }
     throw std::exception();
 }
@@ -70,6 +71,7 @@ static const inline std::string to_operator_type_syntax(
     case svs::OperatorLexicalToken::Type::Addition: return "+";
     case svs::OperatorLexicalToken::Type::Subtraction: return "-";
     case svs::OperatorLexicalToken::Type::Multiplication: return "*";
+    case svs::OperatorLexicalToken::Type::Division: return "/";
     }
     throw std::exception();
 }
@@ -90,7 +92,10 @@ std::unique_ptr<svs::OperatorLexicalToken> svs::OperatorLexicalToken::parse(
     std::string::const_iterator& begin,
     const std::string::const_iterator end)
 {
-    assert(begin != end);
+    if (begin == end)
+    {
+        return nullptr;
+    }
 
     auto it = begin;
     switch(*it)
@@ -161,6 +166,64 @@ std::unique_ptr<svs::OperatorLexicalToken> svs::OperatorLexicalToken::parse(
                     svs::OperatorLexicalToken::Type::Subtraction));
         }
 
+    case '*':
+        ++it;
+        if (it == end)
+        {
+            begin = it;
+            return std::unique_ptr<svs::OperatorLexicalToken>(
+                new svs::OperatorLexicalToken(
+                    file_position,
+                    svs::OperatorLexicalToken::Type::Multiplication));
+        }
+
+        switch (*it)
+        {
+        case '=':
+            ++it;
+            begin = it;
+            return std::unique_ptr<svs::OperatorLexicalToken>(
+                new svs::OperatorLexicalToken(
+                    file_position,
+                    svs::OperatorLexicalToken::Type::MultiplicationAssignment));
+        default:
+            ++it;
+            begin = it;
+            return std::unique_ptr<svs::OperatorLexicalToken>(
+                new svs::OperatorLexicalToken(
+                    file_position,
+                    svs::OperatorLexicalToken::Type::Multiplication));
+        }
+
+    case '/':
+        ++it;
+        if (it == end)
+        {
+            begin = it;
+            return std::unique_ptr<svs::OperatorLexicalToken>(
+                new svs::OperatorLexicalToken(
+                    file_position,
+                    svs::OperatorLexicalToken::Type::Division));
+        }
+
+        switch (*it)
+        {
+        case '=':
+            ++it;
+            begin = it;
+            return std::unique_ptr<svs::OperatorLexicalToken>(
+                new svs::OperatorLexicalToken(
+                    file_position,
+                    svs::OperatorLexicalToken::Type::DivisionAssignment));
+        default:
+            ++it;
+            begin = it;
+            return std::unique_ptr<svs::OperatorLexicalToken>(
+                new svs::OperatorLexicalToken(
+                    file_position,
+                    svs::OperatorLexicalToken::Type::Division));
+        }
+
     default:
         return nullptr;
     }
@@ -169,8 +232,6 @@ std::unique_ptr<svs::OperatorLexicalToken> svs::OperatorLexicalToken::parse(
 static const std::unordered_map<std::string, svs::OperatorLexicalToken::Type> operator_lookup_table
 {
     // Assignment Operators
-    { "*=", svs::OperatorLexicalToken::Type::MultiplicationAssignment },
-    { "/=", svs::OperatorLexicalToken::Type::DivisionAssignment },
     { "%=", svs::OperatorLexicalToken::Type::ModuloAssignment },
     { "&=", svs::OperatorLexicalToken::Type::BitwiseAndAssignment, },
     { "|=", svs::OperatorLexicalToken::Type::BitwiseOrAssignment },
@@ -183,7 +244,4 @@ static const std::unordered_map<std::string, svs::OperatorLexicalToken::Type> op
     // Increment and Decrement Operators
     { "++", svs::OperatorLexicalToken::Type::Increment, },
     { "--", svs::OperatorLexicalToken::Type::Decrement, },
-
-    // Arithmetic Operators
-    { "*", svs::OperatorLexicalToken::Type::Multiplication },
 };
