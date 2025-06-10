@@ -190,103 +190,194 @@ svs::ParseResult<std::string> svs::CommentParser::parse_block_comment(
 }
 
 /**
- * Mappings from string syntaxes to the corresponding OperatorType value.
+ * Mappings from string syntaxes to the corresponding BinaryOperator.
  */
-static const std::vector<std::pair<std::string, svs::OperatorType>> operator_type_map
+static const std::vector<std::pair<std::string, svs::BinaryOperator>> binary_operator_type_map
 {
-    // Assignment operators
-    { "=", svs::OperatorType::SimpleAssignment, },
-    { "+=", svs::OperatorType::AdditionAssignment, },
-    { "-=", svs::OperatorType::SubtractionAssignment, },
-    { "*=", svs::OperatorType::MultiplicationAssignment, },
-    { "/=", svs::OperatorType::DivisionAssignment, },
-    { "%=", svs::OperatorType::ModuloAssignment, },
-    { "&=", svs::OperatorType::BitwiseAndAssignment, },
-    { "|=", svs::OperatorType::BitwiseOrAssignment, },
-    { "^=", svs::OperatorType::BitwiseXorAssignment, },
-    { "<<=", svs::OperatorType::LogicalLeftShiftAssignment, },
-    { ">>=", svs::OperatorType::LogicalRightShiftAssignment, },
-    { "<<<=", svs::OperatorType::ArithmeticLeftShiftAssignment, },
-    { ">>>=", svs::OperatorType::ArithmeticRightShiftAssignment, },
-
-    // Increment and decrement operators
-    { "++", svs::OperatorType::Increment, },
-    { "--", svs::OperatorType::Decrement, },
-
     // Arithmetic operators
-    { "+", svs::OperatorType::Addition, },
-    { "-", svs::OperatorType::Subtraction, },
-    { "*", svs::OperatorType::Multiplication, },
-    { "/", svs::OperatorType::Division, },
-    { "%", svs::OperatorType::Modulo, },
-    { "**", svs::OperatorType::Exponentiation, },
+    { "+", svs::BinaryOperator::AdditionBinaryOperator, },
+    { "-", svs::BinaryOperator::SubtractionBinaryOperator, },
+    { "*", svs::BinaryOperator::MultiplicationBinaryOperator, },
+    { "/", svs::BinaryOperator::DivisionBinaryOperator, },
+    { "%", svs::BinaryOperator::ModuloBinaryOperator, },
+    { "**", svs::BinaryOperator::ExponentiationBinaryOperator, },
 
     // Relational operators
-    { "<", svs::OperatorType::LessThan, },
-    { ">", svs::OperatorType::GreaterThan, },
-    { "<=", svs::OperatorType::LessThanOrEqualTo, },
-    { ">=", svs::OperatorType::GreaterThanOrEqualTo, },
+    { "<", svs::BinaryOperator::LessThanBinaryOperator, },
+    { ">", svs::BinaryOperator::GreaterThanBinaryOperator, },
+    { "<=", svs::BinaryOperator::LessThanOrEqualToBinaryOperator, },
+    { ">=", svs::BinaryOperator::GreaterThanOrEqualToBinaryOperator, },
 
     // Equality operators
-    { "===", svs::OperatorType::CaseEquality, },
-    { "!==", svs::OperatorType::CaseInequality, },
-    { "==", svs::OperatorType::LogicalEquality, },
-    { "!=", svs::OperatorType::LogicalInequality, },
+    { "===", svs::BinaryOperator::CaseEqualityBinaryOperator, },
+    { "!==", svs::BinaryOperator::CaseInequalityBinaryOperator, },
+    { "==", svs::BinaryOperator::LogicalEqualityBinaryOperator, },
+    { "!=", svs::BinaryOperator::LogicalInequalityBinaryOperator, },
 
     // Wildcard equality operators
-    { "==?", svs::OperatorType::WildcardEquality, },
-    { "!=?", svs::OperatorType::WildcardInequality, },
+    { "==?", svs::BinaryOperator::WildcardEqualityBinaryOperator, },
+    { "!=?", svs::BinaryOperator::WildcardInequalityBinaryOperator, },
 
     // Logical operators
-    { "&&", svs::OperatorType::LogicalAnd, },
-    { "||", svs::OperatorType::LogicalOr, },
-    { "->", svs::OperatorType::LogicalImplication, },
-    { "<->", svs::OperatorType::LogicalEquivalence, },
-    { "!", svs::OperatorType::LogicalNegation, },
+    { "&&", svs::BinaryOperator::LogicalAndBinaryOperator, },
+    { "||", svs::BinaryOperator::LogicalOrBinaryOperator, },
+    { "->", svs::BinaryOperator::LogicalImplicationBinaryOperator, },
+    { "<->", svs::BinaryOperator::LogicalEquivalenceBinaryOperator, },
+    { "!", svs::BinaryOperator::LogicalNegationBinaryOperator, },
 
     // Bitwise operators
-    { "&", svs::OperatorType::BitwiseAnd, },
-    { "|", svs::OperatorType::BitwiseOr, },
-    { "^", svs::OperatorType::BitwiseXor, },
-    { "^~", svs::OperatorType::BitwiseXnor, },
-    { "~^", svs::OperatorType::BitwiseXnor, },
-    { "~", svs::OperatorType::BitwiseNegation, },
+    { "&", svs::BinaryOperator::BitwiseAndBinaryOperator, },
+    { "|", svs::BinaryOperator::BitwiseOrBinaryOperator, },
+    { "^", svs::BinaryOperator::BitwiseXorBinaryOperator, },
+    { "^~", svs::BinaryOperator::BitwiseXnorBinaryOperator, },
+    { "~^", svs::BinaryOperator::BitwiseXnorBinaryOperator, },
+    { "~", svs::BinaryOperator::BitwiseNegationBinaryOperator, },
 
     // Shift operators
-    { "<<", svs::OperatorType::LogicalLeftShift, },
-    { ">>", svs::OperatorType::LogicalRightShift, },
-    { "<<<", svs::OperatorType::ArithmeticLeftShift, },
-    { ">>>", svs::OperatorType::ArithmeticRightShift, },
-
-    // Conditional operator
-    { "?", svs::OperatorType::ConditionalPredicateOperator, },
-    { ":", svs::OperatorType::ConditionalExpressionDelimiter, },
-
-    // Set membership operator
-    { "inside", svs::OperatorType::SetMembershipOperator, },
+    { "<<", svs::BinaryOperator::LogicalLeftShiftBinaryOperator, },
+    { ">>", svs::BinaryOperator::LogicalRightShiftBinaryOperator, },
+    { "<<<", svs::BinaryOperator::ArithmeticLeftShiftBinaryOperator, },
+    { ">>>", svs::BinaryOperator::ArithmeticRightShiftBinaryOperator, },
 };
 
-svs::ParseResult<svs::OperatorType> svs::OperatorParser::parse(
+svs::ParseResult<svs::BinaryOperator> svs::BinaryOperatorParser::parse(
     const std::string::const_iterator _begin,
     const std::string::const_iterator _end)
 {
     int chosen_length = 0;
-    auto chosen_result = svs::ParseResult<svs::OperatorType>::fail();
+    auto chosen_result = svs::ParseResult<svs::BinaryOperator>::fail();
 
-    for (const auto& operator_type_mapping : operator_type_map)
+    for (const auto& binary_operator_type_mapping : binary_operator_type_map)
     {
         svs::ParseResult<std::string> result = parse_string(
             _begin,
             _end,
-            operator_type_mapping.first);
+            binary_operator_type_mapping.first);
         if (result.succeeded() && result.value().length() > chosen_length)
         {
             chosen_length = result.value().length();
-            chosen_result = svs::ParseResult<svs::OperatorType>::succeed(
-                operator_type_mapping.second,
+            chosen_result = svs::ParseResult<svs::BinaryOperator>::succeed(
+                binary_operator_type_mapping.second,
                 result.next());
         }
     }
 
     return chosen_result;
+}
+
+/**
+ * Mappings from string syntaxes to the corresponding AssignmentOperator value.
+ */
+static const std::vector<std::pair<std::string, svs::AssignmentOperator>> assignment_operator_syntax_map
+{
+    { "=", svs::AssignmentOperator::SimpleAssignment, },
+    { "+=", svs::AssignmentOperator::AdditionAssignment, },
+    { "-=", svs::AssignmentOperator::SubtractionAssignment, },
+    { "*=", svs::AssignmentOperator::MultiplicationAssignment, },
+    { "/=", svs::AssignmentOperator::DivisionAssignment, },
+    { "%=", svs::AssignmentOperator::ModuloAssignment, },
+    { "&=", svs::AssignmentOperator::BitwiseAndAssignment, },
+    { "|=", svs::AssignmentOperator::BitwiseOrAssignment, },
+    { "^=", svs::AssignmentOperator::BitwiseXorAssignment, },
+    { "<<=", svs::AssignmentOperator::LogicalLeftShiftAssignment, },
+    { ">>=", svs::AssignmentOperator::LogicalRightShiftAssignment, },
+    { "<<<=", svs::AssignmentOperator::ArithmeticLeftShiftAssignment, },
+    { ">>>=", svs::AssignmentOperator::ArithmeticRightShiftAssignment, },
+};
+
+svs::ParseResult<svs::AssignmentOperator> svs::AssignmentOperatorParser::parse(
+    const std::string::const_iterator _begin,
+    const std::string::const_iterator _end)
+{
+    int chosen_length = 0;
+    auto chosen_result = svs::ParseResult<svs::AssignmentOperator>::fail();
+
+    for (const auto& assignment_operator_syntax_mapping : assignment_operator_syntax_map)
+    {
+        svs::ParseResult<std::string> result = parse_string(
+            _begin,
+            _end,
+            assignment_operator_syntax_mapping.first);
+        if (result.succeeded() && result.value().length() > chosen_length)
+        {
+            chosen_length = result.value().length();
+            chosen_result = svs::ParseResult<svs::AssignmentOperator>::succeed(
+                assignment_operator_syntax_mapping.second,
+                result.next());
+        }
+    }
+
+    return chosen_result;
+}
+
+/**
+ * Mappings from string syntaxes to the corresponding UnaryOperator value.
+ */
+static const std::vector<std::pair<std::string, svs::UnaryOperator>> unary_operator_syntax_map
+{
+    { "+", svs::UnaryOperator::PositiveSignUnaryOperator, },
+    { "-", svs::UnaryOperator::NegativeSignUnaryOperator, },
+    { "!", svs::UnaryOperator::LogicalNegationUnaryOperator, },
+    { "~", svs::UnaryOperator::BitwiseNegationUnaryOperator, },
+    { "&", svs::UnaryOperator::BitwiseAndUnaryOperator, },
+    { "~&", svs::UnaryOperator::BitwiseNandUnaryOperator, },
+    { "|", svs::UnaryOperator::BitwiseOrUnaryOperator, },
+    { "~|", svs::UnaryOperator::BitwiseNorUnaryOperator, },
+    { "^", svs::UnaryOperator::BitwiseXorUnaryOperator, },
+    { "~^", svs::UnaryOperator::BitwiseXnorUnaryOperator, },
+    { "^~", svs::UnaryOperator::BitwiseXnorUnaryOperator, },
+};
+
+svs::ParseResult<svs::UnaryOperator> svs::UnaryOperatorParser::parse(
+    const std::string::const_iterator _begin,
+    const std::string::const_iterator _end)
+{
+    int chosen_length = 0;
+    auto chosen_result = svs::ParseResult<svs::UnaryOperator>::fail();
+
+    for (const auto& unary_operator_syntax_mapping : unary_operator_syntax_map)
+    {
+        svs::ParseResult<std::string> result = parse_string(
+            _begin,
+            _end,
+            unary_operator_syntax_mapping.first);
+        if (result.succeeded() && result.value().length() > chosen_length)
+        {
+            chosen_length = result.value().length();
+            chosen_result = svs::ParseResult<svs::UnaryOperator>::succeed(
+                unary_operator_syntax_mapping.second,
+                result.next());
+        }
+    }
+
+    return chosen_result;
+}
+
+svs::ParseResult<svs::IncrementOrDecrementOperator> svs::IncrementOrDecrementOperatorParser::parse(
+    const std::string::const_iterator _begin,
+    const std::string::const_iterator _end)
+{
+    svs::ParseResult<std::string> increment_result = parse_string(
+        _begin,
+        _end,
+        "++");
+    if (increment_result.succeeded())
+    {
+        return svs::ParseResult<svs::IncrementOrDecrementOperator>::succeed(
+            svs::IncrementOrDecrementOperator::IncrementOperator,
+            increment_result.next());
+    }
+
+    svs::ParseResult<std::string> decrement_result = parse_string(
+        _begin,
+        _end,
+        "--");
+    if (decrement_result.succeeded())
+    {
+        return svs::ParseResult<svs::IncrementOrDecrementOperator>::succeed(
+            svs::IncrementOrDecrementOperator::DecrementOperator,
+            decrement_result.next());
+    }
+
+    return svs::ParseResult<svs::IncrementOrDecrementOperator>::fail();
 }

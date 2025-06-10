@@ -8,12 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED 17)
 add_library(svs
     STATIC
         src/FilePosition.cpp
-        src/Lexer.cpp
-
-        src/lexical_token/LexicalToken.cpp
-        src/lexical_token/CommentLexicalToken.cpp
-        src/lexical_token/OperatorLexicalToken.cpp
-
         src/Parser.cpp
     )
 
@@ -45,10 +39,12 @@ if (ENABLE_UNIT_TESTS)
     enable_testing()
 
     add_executable(cpp_test
-        test/lexer_tests.cpp
         test/parser_tests.cpp
         test/comment_parser_tests.cpp
-        test/operator_parser_tests.cpp
+        test/assignment_operator_parser_tests.cpp
+        test/unary_operator_parser_tests.cpp
+        test/binary_operator_parser_tests.cpp
+        test/inc_or_dec_operator_parser_tests.cpp
         )
     target_link_libraries(cpp_test svs GTest::gtest_main)
 

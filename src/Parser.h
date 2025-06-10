@@ -182,12 +182,10 @@ private:
 };
 
 /**
- * The type of operator.
+ * An assignment operator.
  */
-enum OperatorType
+enum AssignmentOperator
 {
-    // Assignment operators
-
     /**
      * The simple assignment operator.
      *
@@ -278,66 +276,158 @@ enum OperatorType
      * Syntax: '>>>='
      */
     ArithmeticRightShiftAssignment,
+};
 
-    // Increment and decrement operators
+/**
+ * An assignment operator parser.
+ */
+class AssignmentOperatorParser : public Parser
+{
+public:
+    /**
+     * Attempt to parse an assignment operator.
+     */
+    svs::ParseResult<svs::AssignmentOperator> parse(
+        const std::string::const_iterator _begin,
+        const std::string::const_iterator _end);
+};
+
+/**
+ * A unary operator.
+ */
+enum UnaryOperator
+{
+    /**
+     * The positive sign unary operator.
+     *
+     * Syntax: '+'
+     */
+    PositiveSignUnaryOperator,
 
     /**
-     * The increment operator.
+     * The negative sign unary operator.
      *
-     * Syntax: '++'
+     * Syntax: '-'
      */
-    Increment,
+    NegativeSignUnaryOperator,
 
     /**
-     * The decrement operator.
+     * The logical negation unary operator.
      *
-     * Syntax: '--'
+     * Syntax: '!'
      */
-    Decrement,
+    LogicalNegationUnaryOperator,
 
-    // Arithmetic operators
+    /**
+     * The bitwise negation unary operator.
+     *
+     * Syntax: '~'
+     */
+    BitwiseNegationUnaryOperator,
 
+    /**
+     * The bitwise and unary operator.
+     *
+     * Syntax: '&'
+     */
+    BitwiseAndUnaryOperator,
+
+    /**
+     * The bitwise nand unary operator.
+     *
+     * Syntax: '~&'
+     */
+    BitwiseNandUnaryOperator,
+
+    /**
+     * The bitwise or unary operator.
+     *
+     * Syntax: '|'
+     */
+    BitwiseOrUnaryOperator,
+
+    /**
+     * The bitwise nor unary operator.
+     *
+     * Syntax: '~|'
+     */
+    BitwiseNorUnaryOperator,
+
+    /**
+     * The bitwise xor unary operator.
+     *
+     * Syntax: '^'
+     */
+    BitwiseXorUnaryOperator,
+
+    /**
+     * The bitwise xnor unary operator.
+     *
+     * Syntax: '~^' OR '^~'
+     */
+    BitwiseXnorUnaryOperator,
+};
+
+/**
+ * A unary operator parser.
+ */
+class UnaryOperatorParser : public Parser
+{
+public:
+    /**
+     * Attempt to parse a unary operator.
+     */
+    svs::ParseResult<svs::UnaryOperator> parse(
+        const std::string::const_iterator _begin,
+        const std::string::const_iterator _end);
+};
+
+/**
+ * A binary operator.
+ */
+enum BinaryOperator
+{
     /**
      * The addition operator.
      *
      * Syntax: '+'
      */
-    Addition,
+    AdditionBinaryOperator,
 
     /**
      * The subtraction operator.
      *
      * Syntax: '-'
      */
-    Subtraction,
+    SubtractionBinaryOperator,
 
     /**
      * The multiplication operator.
      *
      * Syntax: '*'
      */
-    Multiplication,
+    MultiplicationBinaryOperator,
 
     /**
      * The division operator.
      *
      * Syntax: '/'
      */
-    Division,
+    DivisionBinaryOperator,
 
     /**
      * The modulo operator.
      *
      * Syntax: '%'
      */
-    Modulo,
+    ModuloBinaryOperator,
 
     /**
      * The exponentiation operator.
      *
      * Syntax: '**'
      */
-    Exponentiation,
+    ExponentiationBinaryOperator,
 
     // Relational operators
 
@@ -346,28 +436,28 @@ enum OperatorType
      *
      * Syntax: '<'
      */
-    LessThan,
+    LessThanBinaryOperator,
 
     /**
      * The greater than operator.
      *
      * Syntax: '>'
      */
-    GreaterThan,
+    GreaterThanBinaryOperator,
 
     /**
      * The less than or equal to operator.
      *
      * Syntax: '<='
      */
-    LessThanOrEqualTo,
+    LessThanOrEqualToBinaryOperator,
 
     /**
      * The greater than or equal to operator.
      *
      * Syntax: '>='
      */
-    GreaterThanOrEqualTo,
+    GreaterThanOrEqualToBinaryOperator,
 
     // Equality operators
 
@@ -376,28 +466,28 @@ enum OperatorType
      *
      * Syntax: '==='
      */
-    CaseEquality,
+    CaseEqualityBinaryOperator,
 
     /**
      * The case inequality operator.
      *
      * Syntax: '!=='
      */
-    CaseInequality,
+    CaseInequalityBinaryOperator,
 
     /**
      * The logical equality operator.
      *
      * Syntax: '=='
      */
-    LogicalEquality,
+    LogicalEqualityBinaryOperator,
 
     /**
      * The logical inequality operator.
      *
      * Syntax: '!='
      */
-    LogicalInequality,
+    LogicalInequalityBinaryOperator,
 
     // Wildcard equality operators
 
@@ -406,14 +496,14 @@ enum OperatorType
      *
      * Syntax: '==?'
      */
-    WildcardEquality,
+    WildcardEqualityBinaryOperator,
 
     /**
      * The wildcard inequality operator.
      *
      * Syntax: '!=?'
      */
-    WildcardInequality,
+    WildcardInequalityBinaryOperator,
 
     // Logical operators
 
@@ -422,35 +512,35 @@ enum OperatorType
      *
      * Syntax: '&&'
      */
-    LogicalAnd,
+    LogicalAndBinaryOperator,
 
     /**
      * The logical or operator.
      *
      * Syntax: '||'
      */
-    LogicalOr,
+    LogicalOrBinaryOperator,
 
     /**
      * The logical implication operator.
      *
      * Syntax: '->'
      */
-    LogicalImplication,
+    LogicalImplicationBinaryOperator,
 
     /**
      * The logical equivalence operator.
      *
      * Syntax: '<->'
      */
-    LogicalEquivalence,
+    LogicalEquivalenceBinaryOperator,
 
     /**
      * The logical negation operator.
      *
      * Syntax: '!'
      */
-    LogicalNegation,
+    LogicalNegationBinaryOperator,
 
     // Bitwise operators
 
@@ -459,35 +549,35 @@ enum OperatorType
      *
      * Syntax: '&'
      */
-    BitwiseAnd,
+    BitwiseAndBinaryOperator,
 
     /**
      * The bitwise or operator.
      *
      * Syntax: '|'
      */
-    BitwiseOr,
+    BitwiseOrBinaryOperator,
 
     /**
      * The bitwise xor operator.
      *
      * Syntax: '^'
      */
-    BitwiseXor,
+    BitwiseXorBinaryOperator,
 
     /**
      * The bitwise xnor operator.
      *
      * Syntax: '^~' OR '~^'
      */
-    BitwiseXnor,
+    BitwiseXnorBinaryOperator,
 
     /**
      * The bitwise negation operator.
      *
      * Syntax: '~'
      */
-    BitwiseNegation,
+    BitwiseNegationBinaryOperator,
 
     // Shift operators
 
@@ -496,70 +586,71 @@ enum OperatorType
      *
      * Syntax: '<<'
      */
-    LogicalLeftShift,
+    LogicalLeftShiftBinaryOperator,
 
     /**
      * The logical right shift operator.
      *
      * Syntax: '>>'
      */
-    LogicalRightShift,
+    LogicalRightShiftBinaryOperator,
 
     /**
      * The arithmetic left shift operator.
      *
      * Syntax: '<<<'
      */
-    ArithmeticLeftShift,
+    ArithmeticLeftShiftBinaryOperator,
 
     /**
      * The arithmetic right shift operator.
      *
      * Syntax: '>>>'
      */
-    ArithmeticRightShift,
-
-    // Conditional operator
-
-    /**
-     * The conditional predicate operator.
-     *
-     * Syntax: '?'
-     */
-    ConditionalPredicateOperator,
-
-    /**
-     * The conditional expression delimiter operator.
-     *
-     * Syntax: ':'
-     */
-    ConditionalExpressionDelimiter,
-
-    // TODO concatenation operator?
-
-    // TODO replication operator?
-
-    // TODO String concatenation?
-
-    // Set membership operator
-
-    /**
-     * The set membership operator.
-     *
-     * Syntax: 'inside'
-     */
-    SetMembershipOperator,
-
-    // TODO Streaming operators?
+    ArithmeticRightShiftBinaryOperator,
 };
 
-class OperatorParser : public Parser
+class BinaryOperatorParser : public Parser
 {
 public:
     /**
      * Attempt to parse an operator.
      */
-    svs::ParseResult<OperatorType> parse(
+    svs::ParseResult<svs::BinaryOperator> parse(
+        const std::string::const_iterator _begin,
+        const std::string::const_iterator _end);
+};
+
+/**
+ * An increment or decrement operator.
+ */
+enum IncrementOrDecrementOperator
+{
+    /**
+     * The increment operator.
+     *
+     * Syntax: '++'
+     */
+    IncrementOperator,
+
+    /**
+     * The decrement operator.
+     *
+     * Syntax: '--'
+     */
+    DecrementOperator,
+};
+
+/**
+ * An increment or decrement operator parser.
+ */
+class IncrementOrDecrementOperatorParser : public Parser
+{
+public:
+    /**
+     * Attempt to parse an operator.
+     */
+    svs::ParseResult<svs::IncrementOrDecrementOperator> parse(
         const std::string::const_iterator _begin,
         const std::string::const_iterator _end);
 };
