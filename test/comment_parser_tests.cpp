@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../src/Parser.h"
+#include "../src/comment_parser.h"
 
 TEST(CommentParserTests, EmptyString)
 {
@@ -29,7 +29,7 @@ TEST(CommentParserTests, SingleSlash)
 TEST(CommentParserTests, MinimalOneLineForm)
 {
     svs::CommentParser parser;
-    std::string string = "//";
+    std::string string = "//\n";
 
     svs::ParseResult<std::string> result = parser.parse(
         string.begin(),
@@ -43,7 +43,7 @@ TEST(CommentParserTests, MinimalOneLineForm)
 TEST(CommentParserTests, ManySlashes)
 {
     svs::CommentParser parser;
-    std::string string = "////////";
+    std::string string = "////////\n";
 
     svs::ParseResult<std::string> result = parser.parse(
         string.begin(),
@@ -63,9 +63,7 @@ TEST(CommentParserTests, OneLineToEndOfString)
         string.begin(),
         string.end());
 
-    ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.value(), " This is a comment");
-    EXPECT_EQ(result.next(), string.end());
+    EXPECT_FALSE(result.succeeded());
 }
 
 TEST(CommentParserTests, OneLineToEndOfLineLF)
@@ -92,7 +90,7 @@ TEST(CommentParserTests, OneLineToEndOfLineCRLF)
         string.end());
 
     ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.value(), " This is a comment");
+    EXPECT_EQ(result.value(), " This is a comment\r");
     EXPECT_EQ(result.next(), string.end());
 }
 

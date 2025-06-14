@@ -7,8 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED 17)
 
 add_library(svs
     STATIC
-        src/FilePosition.cpp
-        src/Parser.cpp
+        src/parser.cpp
+        src/comment_parser.cpp
+        src/operator_parser.cpp
     )
 
 add_executable(svsc ./src/main.cpp)

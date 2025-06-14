@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../src/Parser.h"
+#include "../src/operator_parser.h"
 
 TEST(UnaryOperatorParserTests, EmptyString)
 {

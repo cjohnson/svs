@@ -1,185 +1,11 @@
-#include <cassert>
-#include <sstream>
-#include <string>
-#include <unordered_set>
+#ifndef SVS_OPERATOR_PARSER_H_
+#define SVS_OPERATOR_PARSER_H_
+
+#include "parse_result.h"
+#include "parser.h"
 
 namespace svs
 {
-
-/**
- * The result of a parsing attempt.
- */
-template<typename T>
-class ParseResult
-{
-public:
-    /**
-     * Creates a successful parsing attempt result.
-     *
-     * Keyword arguments:
-     * __value: The value created from the successful parsing attempt.
-     * __next: The iterator pointing to the next part of the string that is now unconsumed.
-     */
-    static ParseResult<T> succeed(
-        const T& __value,
-        const std::string::const_iterator& __next)
-    {
-        svs::ParseResult<T> result;
-        result._success = true;
-        result._value = __value;
-        result._next = __next;
-
-        return result;
-    }
-
-    /**
-     * Creates a failed parsing attempt result.
-     */
-    static ParseResult<T> fail()
-    {
-        svs::ParseResult<T> result;
-        result._success = false;
-
-        return result;
-    }
-
-    /**
-     * Returns whether or not the parsing attempt succeeded:
-     * the status of the parsing attempt result.
-     */
-    bool succeeded()
-    {
-        return _success;
-    }
-
-    /**
-     * Returns the value created from the successful parsing attempt.
-     */
-    T& value()
-    {
-        assert(_success);
-        return _value;
-    }
-
-    /**
-     * Returns the iterator pointing to the next part of the string that is now unconsumed on
-     * a successful parsing attempt.
-     */
-    std::string::const_iterator next()
-    {
-        assert(_success);
-        return _next;
-    }
-
-private:
-    /**
-     * Constructs the result of a parsing attempt.
-     */
-    ParseResult<T>()
-    {}
-
-    bool _success;
-
-    T _value;
-    std::string::const_iterator _next;
-};
-
-/**
- * A parser.
- */
-class Parser
-{
-public:
-    /**
-     * Parse a single character matching the provided match character.
-     *
-     * Keyword arguments:
-     * _begin: The begin iterator to the string to attempt to parse from.
-     * _end: The end iterator to the string to attempt to parse from.
-     * _match_character: The character to match to.
-     */
-    svs::ParseResult<char> parse_character(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end,
-        const char _match_character);
-
-    /**
-     * Parse a single character from a set of available match character.
-     *
-     * Keyword arguments:
-     * _begin: The begin iterator to the string to attempt to parse from.
-     * _end: The end iterator to the string to attempt to parse from.
-     * _match_character_set: The set of characters to match to.
-     */
-    svs::ParseResult<char> parse_character(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end,
-        const std::unordered_set<char>& _match_character_set);
-
-    /**
-     * Parse a string matching the provided match string.
-     *
-     * Keyword arguments:
-     * _begin: The begin iterator to the string to attempt to parse from.
-     * _end: The end iterator to the string to attempt to parse from.
-     * _match_string: The string to match to.
-     */
-    svs::ParseResult<std::string> parse_string(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end,
-        const std::string& _match_string);
-
-    /**
-     * Parse a contiguous list of whitespace characters.
-     *
-     * Keyword arguments:
-     * _begin: The begin iterator to the string to attempt to parse from.
-     * _end: The end iterator to the string to attempt to parse from.
-     */
-    svs::ParseResult<std::string> parse_whitespace(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end);
-
-    /**
-     * Parse to the end of the line.
-     *
-     * Keyword arguments:
-     * _begin: The begin iterator to the string to attempt to parse from.
-     * _end: The end iterator to the string to attempt to parse from.
-     */
-    svs::ParseResult<std::string> parse_line(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end);
-};
-
-/**
- * A comment parser.
- */
-class CommentParser : public Parser
-{
-public:
-    /**
-     * Attempt to parse a comment.
-     */
-    svs::ParseResult<std::string> parse(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end);
-
-private:
-    /**
-     * Attempt to parse a one-line comment.
-     */
-    svs::ParseResult<std::string> parse_one_line_comment(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end);
-
-    /**
-     * Attempt to parse a block comment.
-     */
-    svs::ParseResult<std::string> parse_block_comment(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end);
-};
 
 /**
  * An assignment operator.
@@ -281,15 +107,15 @@ enum AssignmentOperator
 /**
  * An assignment operator parser.
  */
-class AssignmentOperatorParser : public Parser
+class AssignmentOperatorParser : public Parser<svs::AssignmentOperator>
 {
 public:
     /**
      * Attempt to parse an assignment operator.
      */
     svs::ParseResult<svs::AssignmentOperator> parse(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end);
+        const std::string::const_iterator& begin,
+        const std::string::const_iterator& end) const override;
 };
 
 /**
@@ -371,15 +197,15 @@ enum UnaryOperator
 /**
  * A unary operator parser.
  */
-class UnaryOperatorParser : public Parser
+class UnaryOperatorParser : public Parser<svs::UnaryOperator>
 {
 public:
     /**
      * Attempt to parse a unary operator.
      */
     svs::ParseResult<svs::UnaryOperator> parse(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end);
+        const std::string::const_iterator& begin,
+        const std::string::const_iterator& end) const override;
 };
 
 /**
@@ -610,15 +436,15 @@ enum BinaryOperator
     ArithmeticRightShiftBinaryOperator,
 };
 
-class BinaryOperatorParser : public Parser
+class BinaryOperatorParser : public Parser<svs::BinaryOperator>
 {
 public:
     /**
      * Attempt to parse an operator.
      */
     svs::ParseResult<svs::BinaryOperator> parse(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end);
+        const std::string::const_iterator& begin,
+        const std::string::const_iterator& end) const override;
 };
 
 /**
@@ -644,16 +470,17 @@ enum IncrementOrDecrementOperator
 /**
  * An increment or decrement operator parser.
  */
-class IncrementOrDecrementOperatorParser : public Parser
+class IncrementOrDecrementOperatorParser : public Parser<svs::IncrementOrDecrementOperator>
 {
 public:
     /**
      * Attempt to parse an operator.
      */
     svs::ParseResult<svs::IncrementOrDecrementOperator> parse(
-        const std::string::const_iterator _begin,
-        const std::string::const_iterator _end);
+        const std::string::const_iterator& begin,
+        const std::string::const_iterator& end) const override;
 };
 
 }
 
+#endif // SVS_OPERATOR_PARSER_H_

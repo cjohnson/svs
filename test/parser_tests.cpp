@@ -1,29 +1,27 @@
 #include <gtest/gtest.h>
 
-#include "../src/Parser.h"
+#include "../src/parser.h"
 
 TEST(ParseCharacterSingleMatchTests, EmptyString)
 {
-    svs::Parser parser;
+    svs::CharacterParser parser('a');
     std::string empty_string = "";
 
-    svs::ParseResult<char> result = parser.parse_character(
+    svs::ParseResult<char> result = parser.parse(
         empty_string.begin(),
-        empty_string.end(),
-        'a');
+        empty_string.end());
 
     EXPECT_FALSE(result.succeeded());
 }
 
 TEST(ParseCharacterSingleMatchTests, BasicSuccess)
 {
-    svs::Parser parser;
+    svs::CharacterParser parser('a');
     std::string string = "a";
 
-    svs::ParseResult<char> result = parser.parse_character(
+    svs::ParseResult<char> result = parser.parse(
         string.begin(),
-        string.end(),
-        'a');
+        string.end());
 
     ASSERT_TRUE(result.succeeded());
     EXPECT_EQ(result.value(), 'a');
@@ -32,26 +30,24 @@ TEST(ParseCharacterSingleMatchTests, BasicSuccess)
 
 TEST(ParseCharacterSingleMatchTests, BasicFailure)
 {
-    svs::Parser parser;
+    svs::CharacterParser parser('a');
     std::string string = "b";
 
-    svs::ParseResult<char> result = parser.parse_character(
+    svs::ParseResult<char> result = parser.parse(
         string.begin(),
-        string.end(),
-        'a');
+        string.end());
 
     EXPECT_FALSE(result.succeeded());
 }
 
 TEST(ParseCharacterSingleMatchTests, ReadsOnlyOne)
 {
-    svs::Parser parser;
+    svs::CharacterParser parser('a');
     std::string string = "aaa";
 
-    svs::ParseResult<char> result = parser.parse_character(
+    svs::ParseResult<char> result = parser.parse(
         string.begin(),
-        string.end(),
-        'a');
+        string.end());
 
     ASSERT_TRUE(result.succeeded());
     EXPECT_EQ(result.value(), 'a');
@@ -60,39 +56,36 @@ TEST(ParseCharacterSingleMatchTests, ReadsOnlyOne)
 
 TEST(ParseCharacterSingleMatchTests, ReadsNoneFromManyInCaseOfFailure)
 {
-    svs::Parser parser;
+    svs::CharacterParser parser('a');
     std::string string = "bbb";
 
-    svs::ParseResult<char> result = parser.parse_character(
+    svs::ParseResult<char> result = parser.parse(
         string.begin(),
-        string.end(),
-        'a');
+        string.end());
 
     EXPECT_FALSE(result.succeeded());
 }
 
 TEST(ParseCharacterSetMatchTests, EmptyString)
 {
-    svs::Parser parser;
+    svs::CharacterParser parser({'a', 'b', 'c'});
     std::string empty_string = "";
 
-    svs::ParseResult<char> result = parser.parse_character(
+    svs::ParseResult<char> result = parser.parse(
         empty_string.begin(),
-        empty_string.end(),
-        std::unordered_set<char> {'a', 'b', 'c'});
+        empty_string.end());
 
     EXPECT_FALSE(result.succeeded());
 }
 
 TEST(ParseCharacterSetMatchTests, BasicSuccess)
 {
-    svs::Parser parser;
+    svs::CharacterParser parser({'a', 'b', 'c'});
     std::string string = "a";
 
-    svs::ParseResult<char> result = parser.parse_character(
+    svs::ParseResult<char> result = parser.parse(
         string.begin(),
-        string.end(),
-        std::unordered_set<char> {'a', 'b', 'c'});
+        string.end());
 
     ASSERT_TRUE(result.succeeded());
     EXPECT_EQ(result.value(), 'a');
@@ -101,26 +94,24 @@ TEST(ParseCharacterSetMatchTests, BasicSuccess)
 
 TEST(ParseCharacterSetMatchTests, BasicFailure)
 {
-    svs::Parser parser;
+    svs::CharacterParser parser({'a', 'b', 'c'});
     std::string string = "d";
 
-    svs::ParseResult<char> result = parser.parse_character(
+    svs::ParseResult<char> result = parser.parse(
         string.begin(),
-        string.end(),
-        std::unordered_set<char> {'a', 'b', 'c'});
+        string.end());
 
     EXPECT_FALSE(result.succeeded());
 }
 
 TEST(ParseCharacterSetMatchTests, ReadsOnlyOne)
 {
-    svs::Parser parser;
+    svs::CharacterParser parser({'a', 'b', 'c'});
     std::string string = "aaa";
 
-    svs::ParseResult<char> result = parser.parse_character(
+    svs::ParseResult<char> result = parser.parse(
         string.begin(),
-        string.end(),
-        std::unordered_set<char> {'a', 'b', 'c'});
+        string.end());
 
     ASSERT_TRUE(result.succeeded());
     EXPECT_EQ(result.value(), 'a');
@@ -129,70 +120,36 @@ TEST(ParseCharacterSetMatchTests, ReadsOnlyOne)
 
 TEST(ParseCharacterSetMatchTests, ReadsNoneFromManyInCaseOfFailure)
 {
-    svs::Parser parser;
+    svs::CharacterParser parser({'a', 'b', 'c'});
     std::string string = "ddd";
 
-    svs::ParseResult<char> result = parser.parse_character(
+    svs::ParseResult<char> result = parser.parse(
         string.begin(),
-        string.end(),
-        std::unordered_set<char> {'a', 'b', 'c'});
+        string.end());
 
     EXPECT_FALSE(result.succeeded());
 }
 
 TEST(ParseCharacterSetMatchTests, ReadsOnlyInSet)
 {
-    svs::Parser parser;
+    svs::CharacterParser parser({'a', 'b', 'c'});
     std::string string = "abcd";
 
-    std::unordered_set<char> set{'a', 'b', 'c'};
+    svs::ParseResult<std::string> result = parser.parse_some(
+        string.begin(),
+        string.end());
 
-    std::string::const_iterator begin = string.begin();
-    const std::string::const_iterator end = string.end();
-
-    svs::ParseResult<char> result = parser.parse_character(
-        begin,
-        end,
-        set);
     ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.value(), 'a');
-    EXPECT_EQ(result.next(), begin + 1);
-
-    begin = result.next();
-
-    result = parser.parse_character(
-        begin,
-        end,
-        set);
-    ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.value(), 'b');
-    EXPECT_EQ(result.next(), begin + 1);
-
-    begin = result.next();
-
-    result = parser.parse_character(
-        begin,
-        end,
-        set);
-    ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.value(), 'c');
-    EXPECT_EQ(result.next(), begin + 1);
-
-    begin = result.next();
-
-    result = parser.parse_character(
-        begin,
-        end,
-        set);
-    EXPECT_FALSE(result.succeeded());
+    EXPECT_EQ(result.value(), "abc");
+    EXPECT_EQ(result.next(), string.begin() + 3);
 }
 
 TEST(ParseWhitespaceTests, EmptyString)
 {
-    svs::Parser parser;
+    svs::WhitespaceParser parser;
     std::string empty_string = "";
 
-    svs::ParseResult<std::string> result = parser.parse_whitespace(
+    svs::ParseResult<std::string> result = parser.parse_some(
         empty_string.begin(),
         empty_string.end());
 
@@ -201,15 +158,16 @@ TEST(ParseWhitespaceTests, EmptyString)
 
 TEST(ParseWhitespaceTests, ParsesAllWhitespaceCharacters)
 {
-    svs::Parser parser;
+    svs::WhitespaceParser parser;
     std::string string = " \f\n\r\t\vnot_whitespace";
 
-    svs::ParseResult<std::string> result = parser.parse_whitespace(
+    svs::ParseResult<std::string> result = parser.parse_some(
         string.begin(),
         string.end());
 
     ASSERT_TRUE(result.succeeded());
     EXPECT_EQ(result.next(), string.begin() + 6);
+
     EXPECT_EQ(result.value(), std::string(string.begin(), string.begin() + 6));
 }
 
