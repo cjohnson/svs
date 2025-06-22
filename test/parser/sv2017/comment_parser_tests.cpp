@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../src/comment_parser.h"
+#include "../../../src/parser/sv2017/comment_parser.h"
 
 TEST(CommentParserTests, EmptyString)
 {

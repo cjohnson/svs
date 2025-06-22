@@ -76,7 +76,7 @@ private:
     /**
      * Constructs the result of a parsing attempt.
      */
-    ParseResult<T>()
+    ParseResult()
     {}
 
     /**

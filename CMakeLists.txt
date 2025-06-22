@@ -5,12 +5,19 @@ project(svs LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED 17)
 
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 add_library(svs
     STATIC
-        src/parser.cpp
-        src/comment_parser.cpp
-        src/operator_parser.cpp
-    )
+        ./src/parser/parser.cpp
+
+        # SystemVerilog 2017
+        ./src/parser/sv2017/comment_parser.cpp
+        ./src/parser/sv2017/identifier_parser.cpp
+        ./src/parser/sv2017/white_space_parser.cpp
+)
 
 add_executable(svsc ./src/main.cpp)
 target_link_libraries(svsc svs)
@@ -40,13 +47,13 @@ if (ENABLE_UNIT_TESTS)
     enable_testing()
 
     add_executable(cpp_test
-        test/parser_tests.cpp
-        test/comment_parser_tests.cpp
-        test/assignment_operator_parser_tests.cpp
-        test/unary_operator_parser_tests.cpp
-        test/binary_operator_parser_tests.cpp
-        test/inc_or_dec_operator_parser_tests.cpp
-        )
+        ./test/parser/parser_tests.cpp
+
+        # SystemVerilog 2017
+        ./test/parser/sv2017/comment_parser_tests.cpp
+        ./test/parser/sv2017/identifier_parser_tests.cpp
+        ./test/parser/sv2017/white_space_parser_tests.cpp
+    )
     target_link_libraries(cpp_test svs GTest::gtest_main)
 
     include(GoogleTest)

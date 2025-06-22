@@ -51,14 +51,24 @@ svs::ParseResult<std::string> svs::StringParser::parse(
     return svs::ParseResult<std::string>::fail();
 }
 
-svs::ParseResult<char> svs::WhitespaceParser::parse(
+svs::ParseResult<char> svs::AlphabeticCharacterParser::parse(
     const std::string::const_iterator& begin,
     const std::string::const_iterator& end) const
 {
-    if (begin == end || !std::isspace(*begin))
+    if (begin == end || !std::isalpha(*begin))
     {
         return svs::ParseResult<char>::fail();
     }
     return svs::ParseResult<char>::succeed(*begin, begin + 1);
 }
 
+svs::ParseResult<char> svs::AlphanumericCharacterParser::parse(
+    const std::string::const_iterator& begin,
+    const std::string::const_iterator& end) const
+{
+    if (begin == end || !std::isalnum(*begin))
+    {
+        return svs::ParseResult<char>::fail();
+    }
+    return svs::ParseResult<char>::succeed(*begin, begin + 1);
+}
