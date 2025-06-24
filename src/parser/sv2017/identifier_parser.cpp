@@ -15,6 +15,7 @@ svs::ParseResult<std::string> svs::EscapedIdentifierParser::parse(
     return svs::UntilSuccessParser<char>
     {
         svs::WhiteSpaceParser(),
+        true,
     }.parse(leading_backslash_result.next(), end);
 }
 

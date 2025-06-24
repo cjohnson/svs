@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <sstream>
 
 #include "../../../src/parser/sv2017/identifier_parser.h"
 
@@ -51,9 +52,92 @@ TEST(EscapedIdentifierParserTests, BasicTest)
         string.end());
 
     ASSERT_TRUE(result.succeeded());
-    ASSERT_NE(result.next(), string.end());
-    EXPECT_EQ(*result.next(), '\n');
+    EXPECT_EQ(result.next(), string.end());
     EXPECT_EQ(result.value(), ";;;;");
+}
+
+TEST(EscapedIdentifierParserTests, SpecTest1)
+{
+    svs::EscapedIdentifierParser parser;
+    std::string string = "\\busa+index\n";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "busa+index");
+}
+
+TEST(EscapedIdentifierParserTests, SpecTest2)
+{
+    svs::EscapedIdentifierParser parser;
+    std::string string = "\\-clock\n";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "-clock");
+}
+
+TEST(EscapedIdentifierParserTests, SpecTest3)
+{
+    svs::EscapedIdentifierParser parser;
+    std::string string = "\\***error-condition***\n";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "***error-condition***");
+}
+
+TEST(EscapedIdentifierParserTests, SpecTest4)
+{
+    svs::EscapedIdentifierParser parser;
+    std::string string = "\\net1/\\net2\n";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "net1/\\net2");
+}
+
+TEST(EscapedIdentifierParserTests, SpecTest5)
+{
+    svs::EscapedIdentifierParser parser;
+    std::string string = "\\{a,b}\n";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "{a,b}");
+}
+
+TEST(EscapedIdentifierParserTests, SpecTest6)
+{
+    svs::EscapedIdentifierParser parser;
+    std::string string = "\\a*(b+c)\n";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "a*(b+c)");
 }
 
 TEST(IdentifierParseTests, BasicSimpleIdentifierTest)
@@ -170,6 +254,109 @@ TEST(SimpleIdentifierParserTests, AllowedTwoCharacterIdentifiersTest)
             EXPECT_EQ(result.value(), string);
         }
     }
+}
+
+TEST(SimpleIdentifierParserTests, SpecTest1)
+{
+    svs::SimpleIdentifierParser parser;
+    std::string string = "shiftreg_a";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "shiftreg_a");
+}
+
+TEST(SimpleIdentifierParserTests, SpecTest2)
+{
+    svs::SimpleIdentifierParser parser;
+    std::string string = "busa_index";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "busa_index");
+}
+
+TEST(SimpleIdentifierParserTests, SpecTest3)
+{
+    svs::SimpleIdentifierParser parser;
+    std::string string = "error_condition";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "error_condition");
+}
+
+TEST(SimpleIdentifierParserTests, SpecTest4)
+{
+    svs::SimpleIdentifierParser parser;
+    std::string string = "merge_ab";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "merge_ab");
+}
+
+TEST(SimpleIdentifierParserTests, SpecTest5)
+{
+    svs::SimpleIdentifierParser parser;
+    std::string string = "_bus3";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "_bus3");
+}
+
+TEST(SimpleIdentifierParserTests, SpecTest6)
+{
+    svs::SimpleIdentifierParser parser;
+    std::string string = "n$657";
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
+    EXPECT_EQ(result.value(), "n$657");
+}
+
+TEST(SimpleIdentifierParserTests, ShallBeAtLeast1024Characters)
+{
+    svs::SimpleIdentifierParser parser;
+
+    std::stringstream ss;
+    for (int i = 0; i < 1024; ++i)
+    {
+        ss << 'a';
+    }
+    std::string string = ss.str();
+
+    svs::ParseResult<std::string> result = parser.parse(
+        string.begin(),
+        string.end());
+
+    ASSERT_TRUE(result.succeeded());
+    ASSERT_EQ(result.next(), string.end());
 }
 
 TEST(SystemTaskOrFunctionIdentifierParserTests, EmptyStringTest)

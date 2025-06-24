@@ -14,6 +14,7 @@ add_library(svs
         ./src/parser/parser.cpp
 
         # SystemVerilog 2017
+        ./src/parser/sv2017/string_literal_parser.cpp
         ./src/parser/sv2017/comment_parser.cpp
         ./src/parser/sv2017/identifier_parser.cpp
         ./src/parser/sv2017/white_space_parser.cpp
@@ -50,6 +51,7 @@ if (ENABLE_UNIT_TESTS)
         ./test/parser/parser_tests.cpp
 
         # SystemVerilog 2017
+        ./test/parser/sv2017/string_literal_parser_tests.cpp
         ./test/parser/sv2017/comment_parser_tests.cpp
         ./test/parser/sv2017/identifier_parser_tests.cpp
         ./test/parser/sv2017/white_space_parser_tests.cpp
