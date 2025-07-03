@@ -1,6 +1,4 @@
 #include <iostream>
-#include <fstream>
-#include <sstream>
 
 int main(int argc, char **argv)
 {
@@ -11,10 +9,10 @@ int main(int argc, char **argv)
     }
     std::string file_name{argv[1]};
 
-    std::ifstream file_stream{file_name};
-    std::stringstream file_string_stream;
-    file_string_stream << file_stream.rdbuf();
-    std::string file_buffer{file_string_stream.str()};
+    //std::ifstream file_stream{file_name};
+    //std::stringstream file_string_stream;
+    //file_string_stream << file_stream.rdbuf();
+    //std::string file_buffer{file_string_stream.str()};
 
     return 0;
 }

@@ -2,12 +2,30 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(svs LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED 17)
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+include(FetchContent)
+
+FetchContent_Declare(
+    lexy
+    URL https://github.com/foonathan/lexy/releases/download/v2025.05.0/lexy-src.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP true
+)
+FetchContent_MakeAvailable(lexy)
+
+add_library(svsc STATIC)
+target_sources(svsc
+    PRIVATE
+        ./src/compiler/grammar/sv2017.hpp
+)
+target_link_libraries(svsc PRIVATE foonathan::lexy)
 
 add_library(svs
     STATIC
@@ -19,15 +37,15 @@ add_library(svs
         ./src/parser/sv2017/identifier_parser.cpp
         ./src/parser/sv2017/white_space_parser.cpp
 )
+target_link_libraries(svs PRIVATE foonathan::lexy)
 
-add_executable(svsc ./src/main.cpp)
-target_link_libraries(svsc svs)
+#add_executable(svsc ./src/main.cpp)
+#target_link_libraries(svsc svs)
 
 option(ENABLE_UNIT_TESTS "Enable Unit Tests" ON)
 message(STATUS "Enable testing: ${ENABLE_UNIT_TESTS}")
 
 if (ENABLE_UNIT_TESTS)
-    include(FetchContent)
 
     FetchContent_Declare(
         googletest
@@ -47,16 +65,17 @@ if (ENABLE_UNIT_TESTS)
 
     enable_testing()
 
-    add_executable(cpp_test
-        ./test/parser/parser_tests.cpp
-
-        # SystemVerilog 2017
-        ./test/parser/sv2017/string_literal_parser_tests.cpp
-        ./test/parser/sv2017/comment_parser_tests.cpp
-        ./test/parser/sv2017/identifier_parser_tests.cpp
-        ./test/parser/sv2017/white_space_parser_tests.cpp
+    add_executable(cpp_test)
+    target_sources(cpp_test
+        PRIVATE
+            ./test/compiler/grammar/sv2017_identifier_tests.cpp
     )
-    target_link_libraries(cpp_test svs GTest::gtest_main)
+    target_link_libraries(cpp_test
+        PRIVATE
+            svsc
+            foonathan::lexy
+            GTest::gtest_main
+    )
 
     include(GoogleTest)
     gtest_discover_tests(cpp_test)

@@ -1,95 +1,83 @@
 #include <gtest/gtest.h>
+#include <iostream>
 
 #include "../../src/parser/parser.h"
 
 TEST(ParseCharacterSingleMatchTests, EmptyString)
 {
-    svs::CharacterParser parser('a');
-    std::string empty_string = "";
+    std::string string = "";
+    auto parser = svs::parser::char_<'a'>;
 
-    svs::ParseResult<char> result = parser.parse(
-        empty_string.begin(),
-        empty_string.end());
+    auto result = parser.parse(string.begin(), string.end());
 
-    EXPECT_FALSE(result.succeeded());
+    EXPECT_FALSE(result);
 }
 
 TEST(ParseCharacterSingleMatchTests, BasicSuccess)
 {
-    svs::CharacterParser parser('a');
     std::string string = "a";
+    auto parser = svs::parser::char_<'a'>;
 
-    svs::ParseResult<char> result = parser.parse(
-        string.begin(),
-        string.end());
+    auto result = parser.parse(string.begin(), string.end());
 
-    ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.value(), 'a');
-    EXPECT_EQ(result.next(), string.end());
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result->value, 'a');
+    EXPECT_EQ(result->next, string.end());
 }
 
 TEST(ParseCharacterSingleMatchTests, BasicFailure)
 {
-    svs::CharacterParser parser('a');
     std::string string = "b";
+    auto parser = svs::parser::char_<'a'>;
 
-    svs::ParseResult<char> result = parser.parse(
-        string.begin(),
-        string.end());
+    auto result = parser.parse(string.begin(), string.end());
 
-    EXPECT_FALSE(result.succeeded());
+    EXPECT_FALSE(result);
 }
 
 TEST(ParseCharacterSingleMatchTests, ReadsOnlyOne)
 {
-    svs::CharacterParser parser('a');
     std::string string = "aaa";
+    auto parser = svs::parser::char_<'a'>;
 
-    svs::ParseResult<char> result = parser.parse(
-        string.begin(),
-        string.end());
+    auto result = parser.parse(string.begin(), string.end());
 
-    ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.value(), 'a');
-    EXPECT_EQ(result.next(), string.begin() + 1);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result->value, 'a');
+    EXPECT_EQ(result->next, string.begin() + 1);
 }
 
 TEST(ParseCharacterSingleMatchTests, ReadsNoneFromManyInCaseOfFailure)
 {
-    svs::CharacterParser parser('a');
     std::string string = "bbb";
+    auto parser = svs::parser::char_<'a'>;
 
-    svs::ParseResult<char> result = parser.parse(
-        string.begin(),
-        string.end());
+    auto result = parser.parse(string.begin(), string.end());
 
-    EXPECT_FALSE(result.succeeded());
+    EXPECT_FALSE(result);
 }
 
 TEST(ParseCharacterSetMatchTests, EmptyString)
 {
-    svs::CharacterParser parser({'a', 'b', 'c'});
-    std::string empty_string = "";
+    std::string string = "";
+    auto parser = svs::parser::char_<'a'> | svs::parser::char_<'b'> | svs::parser::char_<'c'>;
+    std::cout << parser->to_string() << '\n';
 
-    svs::ParseResult<char> result = parser.parse(
-        empty_string.begin(),
-        empty_string.end());
+    auto result = parser->parse(string.begin(), string.end());
 
-    EXPECT_FALSE(result.succeeded());
+    EXPECT_FALSE(result);
 }
 
 TEST(ParseCharacterSetMatchTests, BasicSuccess)
 {
-    svs::CharacterParser parser({'a', 'b', 'c'});
     std::string string = "a";
+    auto parser = svs::parser::char_<'a'> | svs::parser::char_<'b'> | svs::parser::char_<'c'>;
 
-    svs::ParseResult<char> result = parser.parse(
-        string.begin(),
-        string.end());
+    auto result = parser->parse(string.begin(), string.end());
 
-    ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.value(), 'a');
-    EXPECT_EQ(result.next(), string.end());
+    ASSERT_TRUE(result);
+    EXPECT_EQ(result->value, 'a');
+    EXPECT_EQ(result->next, string.end());
 }
 
 TEST(ParseCharacterSetMatchTests, BasicFailure)

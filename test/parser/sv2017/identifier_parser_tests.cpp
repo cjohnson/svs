@@ -1,7 +1,13 @@
+#include <lexy/action/match.hpp>
+#include <lexy/action/parse.hpp>
+#include <lexy/input/string_input.hpp>
+#include <lexy_ext/report_error.hpp>
+
 #include <gtest/gtest.h>
 #include <sstream>
 
 #include "../../../src/parser/sv2017/identifier_parser.h"
+#include "../../../src/parser/sv2017_grammar.h"
 
 const std::string digits = "0123456789";
 const std::string lowercase_alphabet = "abcdefghijklmnopqrstuvwxyz";
@@ -15,6 +21,68 @@ const std::string allowed_post_first_characters = lowercase_alphabet
     + digits
     + '_'
     + '$';
+
+/**
+ * Expect the identifier parser to succeed against the provided string.
+ *
+ * Keyword Arguments:
+ * input_string: The input to the parser.
+ * expected_value: The expected value returned from the parser.
+ */
+template<typename IdentifierProduction>
+static inline void EXPECT_IDENTIFIER_PARSER_SUCCESS(
+    const std::string& input_string,
+    const std::string& expected_value)
+{
+    auto string = lexy::string_input(input_string);
+    auto result = lexy::parse<IdentifierProduction>(
+        string,
+        lexy_ext::report_error);
+
+    EXPECT_TRUE(result.is_success());
+
+    if (!result.has_value())
+    {
+        FAIL() << "Parsing result did not have a value!";
+        return;
+    }
+    EXPECT_EQ(result.value(), expected_value);
+}
+
+/**
+ * Expect the identifier parser to succeed against the provided string.
+ *
+ * Keyword Arguments:
+ * input_string: The input to the parser and the string expected
+ *               to be returned from the parser.
+ */
+template<typename IdentifierProduction>
+static inline void EXPECT_IDENTIFIER_PARSER_SUCCESS(
+    const std::string& input_string)
+{
+    return EXPECT_IDENTIFIER_PARSER_SUCCESS<IdentifierProduction>(
+        input_string,
+        input_string);
+}
+
+/**
+ * Expect the identifier parser to fail against the provided string.
+ *
+ * Keyword Arguments:
+ * input_string: The input to the parser.
+ */
+template<typename IdentifierProduction>
+static inline void EXPECT_IDENTIFIER_PARSER_FAILURE(
+    const std::string& input_string)
+{
+    auto string = lexy::string_input(input_string);
+    auto result = lexy::parse<IdentifierProduction>(
+        string,
+        lexy_ext::report_error);
+
+    EXPECT_FALSE(result.is_success());
+    EXPECT_FALSE(result.has_value());
+}
 
 TEST(EscapedIdentifierParserTests, EmptyStringTest)
 {
@@ -168,245 +236,92 @@ TEST(IdentifierParseTests, BasicEscapedIdentifierTest)
     EXPECT_EQ(result.value(), "we'ra;ravj.....");
 }
 
+
 TEST(SimpleIdentifierParserTests, EmptyStringTest)
 {
-    svs::SimpleIdentifierParser parser;
-    std::string string = "";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    EXPECT_FALSE(result.succeeded());
+    EXPECT_IDENTIFIER_PARSER_FAILURE<sv2017::simple_identifier>("");
 }
 
 TEST(SimpleIdentifierParserTests, CannotStartWithDollarSign)
 {
-    svs::SimpleIdentifierParser parser;
-    std::string string = "$";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    EXPECT_FALSE(result.succeeded());
+    EXPECT_IDENTIFIER_PARSER_FAILURE<sv2017::simple_identifier>("$");
 }
 
 TEST(SimpleIdentifierParserTests, DoesNotRecognizeSystemTaskOrFunction)
 {
-    svs::SimpleIdentifierParser parser;
-    std::string string = "$display()";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    EXPECT_FALSE(result.succeeded());
+    EXPECT_IDENTIFIER_PARSER_FAILURE<sv2017::simple_identifier>("$display()");
 }
 
 TEST(SimpleIdentifierParserTests, CannotStartWithDigit)
 {
-    svs::SimpleIdentifierParser parser;
-
     for (const char& character : digits)
     {
-        std::string string{character};
-        svs::ParseResult<std::string> result = parser.parse(
-            string.begin(),
-            string.end());
-
-        EXPECT_FALSE(result.succeeded());
+        auto string = std::string{character};
+        EXPECT_IDENTIFIER_PARSER_FAILURE<sv2017::simple_identifier>(string);
     }
 }
 
 TEST(SimpleIdentifierParserTests, AllowedOneCharacterIdentifiersTest)
 {
-    svs::SimpleIdentifierParser parser;
-
     for (const char& first_character : allowed_first_characters)
     {
-        std::string string{first_character};
-        svs::ParseResult<std::string> result = parser.parse(
-            string.begin(),
-            string.end());
-
-        ASSERT_TRUE(result.succeeded());
-        EXPECT_EQ(result.next(), string.end());
-        EXPECT_EQ(result.value(), string);
+        auto string = std::string{first_character};
+        EXPECT_IDENTIFIER_PARSER_SUCCESS<sv2017::simple_identifier>(string);
     }
 }
 
 TEST(SimpleIdentifierParserTests, AllowedTwoCharacterIdentifiersTest)
 {
-    svs::SimpleIdentifierParser parser;
-
     for (const char& first_character : allowed_first_characters)
     {
         for (const char& second_character : allowed_post_first_characters)
         {
-            std::string string{first_character, second_character};
-            svs::ParseResult<std::string> result = parser.parse(
-                string.begin(),
-                string.end());
-
-            ASSERT_TRUE(result.succeeded());
-            EXPECT_EQ(result.next(), string.end());
-            EXPECT_EQ(result.value(), string);
+            auto string = std::string{first_character, second_character};
+            EXPECT_IDENTIFIER_PARSER_SUCCESS<sv2017::simple_identifier>(string);
         }
     }
 }
 
-TEST(SimpleIdentifierParserTests, SpecTest1)
+TEST(SimpleIdentifierParserTests, SpecTests)
 {
-    svs::SimpleIdentifierParser parser;
-    std::string string = "shiftreg_a";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    ASSERT_EQ(result.next(), string.end());
-    EXPECT_EQ(result.value(), "shiftreg_a");
-}
-
-TEST(SimpleIdentifierParserTests, SpecTest2)
-{
-    svs::SimpleIdentifierParser parser;
-    std::string string = "busa_index";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    ASSERT_EQ(result.next(), string.end());
-    EXPECT_EQ(result.value(), "busa_index");
-}
-
-TEST(SimpleIdentifierParserTests, SpecTest3)
-{
-    svs::SimpleIdentifierParser parser;
-    std::string string = "error_condition";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    ASSERT_EQ(result.next(), string.end());
-    EXPECT_EQ(result.value(), "error_condition");
-}
-
-TEST(SimpleIdentifierParserTests, SpecTest4)
-{
-    svs::SimpleIdentifierParser parser;
-    std::string string = "merge_ab";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    ASSERT_EQ(result.next(), string.end());
-    EXPECT_EQ(result.value(), "merge_ab");
-}
-
-TEST(SimpleIdentifierParserTests, SpecTest5)
-{
-    svs::SimpleIdentifierParser parser;
-    std::string string = "_bus3";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    ASSERT_EQ(result.next(), string.end());
-    EXPECT_EQ(result.value(), "_bus3");
-}
-
-TEST(SimpleIdentifierParserTests, SpecTest6)
-{
-    svs::SimpleIdentifierParser parser;
-    std::string string = "n$657";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    ASSERT_EQ(result.next(), string.end());
-    EXPECT_EQ(result.value(), "n$657");
+    EXPECT_IDENTIFIER_PARSER_SUCCESS<sv2017::simple_identifier>("shiftreg_a");
+    EXPECT_IDENTIFIER_PARSER_SUCCESS<sv2017::simple_identifier>("busa_index");
+    EXPECT_IDENTIFIER_PARSER_SUCCESS<sv2017::simple_identifier>("error_condition");
+    EXPECT_IDENTIFIER_PARSER_SUCCESS<sv2017::simple_identifier>("merge_ab");
+    EXPECT_IDENTIFIER_PARSER_SUCCESS<sv2017::simple_identifier>("_bus3");
+    EXPECT_IDENTIFIER_PARSER_SUCCESS<sv2017::simple_identifier>("n$657");
 }
 
 TEST(SimpleIdentifierParserTests, ShallBeAtLeast1024Characters)
 {
-    svs::SimpleIdentifierParser parser;
-
     std::stringstream ss;
     for (int i = 0; i < 1024; ++i)
     {
         ss << 'a';
     }
-    std::string string = ss.str();
 
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    ASSERT_EQ(result.next(), string.end());
+    EXPECT_IDENTIFIER_PARSER_SUCCESS<sv2017::simple_identifier>(ss.str());
 }
 
 TEST(SystemTaskOrFunctionIdentifierParserTests, EmptyStringTest)
 {
-    svs::SystemTaskOrFunctionIdentifierParser parser;
-    std::string string = "";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    EXPECT_FALSE(result.succeeded());
+    EXPECT_IDENTIFIER_PARSER_FAILURE<sv2017::system_tf_identifier>("");
 }
 
 TEST(SystemTaskOrFunctionIdentifierParserTests, DollarSignOnlyTest)
 {
-    svs::SystemTaskOrFunctionIdentifierParser parser;
-    std::string string = "$";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    EXPECT_FALSE(result.succeeded());
+    EXPECT_IDENTIFIER_PARSER_FAILURE<sv2017::system_tf_identifier>("$");
 }
 
 TEST(SystemTaskOrFunctionIdentifierParserTests, DollarSignCannotBeFollowedByWhiteSpace)
 {
-    svs::SystemTaskOrFunctionIdentifierParser parser;
-    std::string string = "$\n";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    EXPECT_FALSE(result.succeeded());
+    EXPECT_IDENTIFIER_PARSER_FAILURE<sv2017::system_tf_identifier>("$\n");
 }
 
 TEST(SystemTaskOrFunctionIdentifierParserTests, DisplayTest)
 {
-    svs::SystemTaskOrFunctionIdentifierParser parser;
-    std::string string = "$display()";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    ASSERT_NE(result.next(), string.end());
-    EXPECT_EQ(*result.next(), '(');
-    EXPECT_EQ(result.value(), "display");
+    EXPECT_IDENTIFIER_PARSER_SUCCESS<sv2017::system_tf_identifier>(
+        "$display()",
+        "display");
 }
 

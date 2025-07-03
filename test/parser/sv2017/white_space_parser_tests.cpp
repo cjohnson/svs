@@ -1,75 +1,37 @@
+#include <lexy/action/match.hpp>
+#include <lexy/input/string_input.hpp>
+
 #include <gtest/gtest.h>
 
-#include "../../../src/parser/sv2017/white_space_parser.h"
+#include "../../../src/parser/sv2017_grammar.h"
 
 TEST(WhiteSpaceParserTests, EmptyStringTest)
 {
-    svs::WhiteSpaceParser parser;
-    std::string empty_string = "";
-
-    svs::ParseResult<char> result = parser.parse(
-        empty_string.begin(),
-        empty_string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.next(), empty_string.end());
-    EXPECT_EQ(result.value(), (char)0);
+    auto string = lexy::zstring_input("");
+    EXPECT_TRUE(lexy::match<sv2017::white_space>(string));
 }
 
 TEST(WhiteSpaceParserTests, SpaceTest)
 {
-    svs::WhiteSpaceParser parser;
-    std::string string = " ";
-
-    svs::ParseResult<char> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.next(), string.end());
-    EXPECT_EQ(result.value(), ' ');
+    auto string = lexy::zstring_input(" ");
+    EXPECT_TRUE(lexy::match<sv2017::white_space>(string));
 }
 
 TEST(WhiteSpaceParserTests, TabTest)
 {
-    svs::WhiteSpaceParser parser;
-    std::string string = "\t";
-
-    svs::ParseResult<char> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.next(), string.end());
-    EXPECT_EQ(result.value(), '\t');
+    auto string = lexy::zstring_input("\t");
+    EXPECT_TRUE(lexy::match<sv2017::white_space>(string));
 }
 
 TEST(WhiteSpaceParserTests, NewLineTest)
 {
-    svs::WhiteSpaceParser parser;
-    std::string string = "\n";
-
-    svs::ParseResult<char> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.next(), string.end());
-    EXPECT_EQ(result.value(), '\n');
+    auto string = lexy::zstring_input("\n");
+    EXPECT_TRUE(lexy::match<sv2017::white_space>(string));
 }
 
-TEST(WhiteSpaceParserTests, WhiteSpaceParserSomeWhiteSpaceCharactersParsingTest)
+TEST(WhiteSpaceParserTests, NotWhiteSpace)
 {
-    svs::SomeParser<char> parser(std::make_shared<svs::WhiteSpaceParser>());
-    std::string string = " \f\n\r\t\vnot_whitespace";
-
-    svs::ParseResult<std::string> result = parser.parse(
-        string.begin(),
-        string.end());
-
-    ASSERT_TRUE(result.succeeded());
-    EXPECT_EQ(result.next(), string.begin() + 6);
-
-    EXPECT_EQ(result.value(), std::string(string.begin(), string.begin() + 6));
+    auto string = lexy::zstring_input("not_whitespace");
+    EXPECT_FALSE(lexy::match<sv2017::white_space>(string));
 }
 
