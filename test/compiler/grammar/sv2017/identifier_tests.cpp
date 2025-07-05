@@ -1,10 +1,8 @@
-#include "../../../src/compiler/grammar/sv2017.hpp"
-
-#include <sstream>
+#include "../../../../src/compiler/grammar/sv2017.hpp"
 
 #include <gtest/gtest.h>
 
-#include "grammar_test_utils.hpp"
+#include "../grammar_test_utils.hpp"
 
 TEST(SV2017SystemTFIdentifierTests, FailsToParseEmptyString)
 {
@@ -43,6 +41,11 @@ TEST(SV2017SimpleIdentifierTests, FailsToParseEmptyString)
     EXPECT_PARSE_FAILURE<sv2017::simple_identifier>("");
 }
 
+TEST(SV2017SimpleIdentifierTests, FailsToParseDollarSign)
+{
+    EXPECT_PARSE_FAILURE<sv2017::simple_identifier>("$");
+}
+
 TEST(SV2017SimpleIdentifierTests, FailsToParseStartingWithDigit)
 {
     EXPECT_PARSE_FAILURE<sv2017::simple_identifier>("7notident");
@@ -65,13 +68,8 @@ TEST(SV2017SimpleIdentifierTests, ParsesTestsFromSpec)
 
 TEST(SV2017SimpleIdentifierTests, ParsesAtLeast1024Characters)
 {
-    std::stringstream ss;
-    for (int i = 0; i < 1024; ++i)
-    {
-        ss << 'a';
-    }
-
-    EXPECT_PARSE_RESULT<sv2017::simple_identifier>(ss.str(), ss.str());
+    std::string string(1024, 'a');
+    EXPECT_PARSE_RESULT<sv2017::simple_identifier>(string);
 }
 
 TEST(SV2017EscapedIdentifierTests, FailsToParseEmptyString)
@@ -81,7 +79,7 @@ TEST(SV2017EscapedIdentifierTests, FailsToParseEmptyString)
 
 TEST(SV2017EscapedIdentifierTests, ParsesBasicEscapedIdentifier)
 {
-    EXPECT_PARSE_RESULT<sv2017::escaped_identifier>("\\;;;; ", ";;;;");
+    EXPECT_PARSE_RESULT<sv2017::escaped_identifier>("\\;;;;\n", ";;;;");
 }
 
 TEST(SV2017EscapedIdentifierTests, ParsesEscapedIdentifiersFromSpec)

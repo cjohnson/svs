@@ -1,15 +1,18 @@
 #ifndef SVSC_GRAMMAR_SV2017_HPP_
 #define SVSC_GRAMMAR_SV2017_HPP_
 
-#include <lexy/grammar.hpp>
 #include <string>
 
 #include <lexy/callback.hpp>
 #include <lexy/dsl.hpp>
 #include <lexy/dsl/ascii.hpp>
+#include <lexy/dsl/delimited.hpp>
+#include <lexy/dsl/digit.hpp>
+#include <lexy/dsl/integer.hpp>
 #include <lexy/dsl/identifier.hpp>
 #include <lexy/dsl/literal.hpp>
 #include <lexy/dsl/punctuator.hpp>
+#include <lexy/grammar.hpp>
 
 namespace
 {
@@ -79,6 +82,41 @@ struct identifier
     static constexpr auto rule = dsl::p<simple_identifier> | dsl::p<escaped_identifier>;
 
     static constexpr auto value = lexy::forward<std::string>;
+};
+
+//
+// String Literal
+//
+// string_literal ::= " { Any_ASCII_Characters } "
+//
+struct string_literal
+{
+    static constexpr auto escaped_symbols = lexy::symbol_table<char>
+        .map<'n'>('\n')
+        .map<'t'>('\t')
+        .map<'\\'>('\\')
+        .map<'"'>('"')
+        .map<'v'>('\v')
+        .map<'f'>('\f')
+        .map<'a'>('\a');
+
+    static constexpr auto rule = []
+    {
+        auto character_rule = dsl::ascii::character - dsl::ascii::control;
+
+        auto escape_rule = dsl::backslash_escape
+            .rule(dsl::ascii::control)
+            .symbol<escaped_symbols>()
+            .rule(dsl::integer<int, dsl::octal>(dsl::n_digits<3, dsl::octal>))
+            .rule(dsl::integer<int, dsl::octal>(dsl::n_digits<2, dsl::octal>))
+            .rule(dsl::integer<int, dsl::octal>(dsl::digit<dsl::octal>))
+            .rule(dsl::lit_c<'x'> >> (
+                dsl::integer<int, dsl::hex>(dsl::n_digits<2, dsl::hex>)
+              | dsl::integer<int, dsl::hex>(dsl::digit<dsl::hex>)));
+        return dsl::quoted(character_rule, escape_rule);
+    }();
+
+    static constexpr auto value = lexy::as_string<std::string>;
 };
 
 }
