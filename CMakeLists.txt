@@ -23,7 +23,7 @@ FetchContent_MakeAvailable(lexy)
 add_library(svsc STATIC)
 target_sources(svsc
     PRIVATE
-        ./src/compiler/grammar/sv2017.hpp
+        ./src/compiler/sv2017/grammar_identifier.hpp
 )
 target_link_libraries(svsc PRIVATE foonathan::lexy)
 
@@ -70,6 +70,7 @@ if (ENABLE_UNIT_TESTS)
         PRIVATE
             ./test/compiler/grammar/sv2017/identifier_tests.cpp
             ./test/compiler/grammar/sv2017/string_literal_tests.cpp
+            ./test/compiler/grammar/sv2017/number_tests.cpp
     )
     target_link_libraries(cpp_test
         PRIVATE
