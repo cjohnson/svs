@@ -1,19 +1,28 @@
 #ifndef SVS_COMPILER_SV2017_GRAMMAR_NUMBER_H_
 #define SVS_COMPILER_SV2017_GRAMMAR_NUMBER_H_
 
+#include <lexy/dsl/digit.hpp>
+#include <lexy/dsl/identifier.hpp>
+#include <lexy/grammar.hpp>
 #include <string>
 
 #include <lexy/dsl.hpp>
 #include <lexy/callback.hpp>
-
-#include "ast_number.h"
 
 namespace svs::grammar::sv2017
 {
 
 namespace dsl = lexy::dsl;
 
-namespace ast = svs::ast::sv2017;
+
+constexpr auto _x_set = dsl::lit_c<'x'> / dsl::lit_c<'X'>;
+constexpr auto _z_set = dsl::lit_c<'z'> / dsl::lit_c<'Z'> / dsl::lit_c<'?'>;
+constexpr auto _z_or_x_cset = (_x_set / _z_set) - dsl::lit_c<'?'>;
+
+constexpr auto _hex_digit = _x_set / _z_set / dsl::digit<dsl::hex>;
+
+constexpr auto _hex_indicator = dsl::lit_c<'h'> / dsl::lit_c<'H'>;
+constexpr auto _signedness_indicator = dsl::lit_c<'s'> / dsl::lit_c<'S'>;
 
 //
 // Z (High-Impedance) or X (Unknown) value
@@ -22,9 +31,7 @@ namespace ast = svs::ast::sv2017;
 //
 struct z_or_x
 {
-    static constexpr auto rule = dsl::capture(
-        dsl::lit_c<'x'> / dsl::lit_c<'X'> / dsl::lit_c<'z'> / dsl::lit_c<'Z'>);
-
+    static constexpr auto rule = dsl::capture(_z_or_x_cset);
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
@@ -35,15 +42,7 @@ struct z_or_x
 //
 struct unbased_unsized_literal
 {
-    static constexpr auto rule = []
-    {
-        auto literal_value =
-            dsl::capture(dsl::lit_c<'0'> / dsl::lit_c<'1'>)
-          | dsl::p<z_or_x>;
-
-        return dsl::lit_c<'\''> + literal_value;
-    }();
-
+    static constexpr auto rule = dsl::lit_c<'\''> + dsl::capture(dsl::digit<dsl::binary> / _z_or_x_cset);
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
@@ -54,9 +53,7 @@ struct unbased_unsized_literal
 //
 struct z_digit
 {
-    static constexpr auto rule = dsl::capture(
-        dsl::lit_c<'z'> / dsl::lit_c<'Z'> / dsl::lit_c<'?'>);
-
+    static constexpr auto rule = dsl::capture(_z_set);
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
@@ -67,9 +64,7 @@ struct z_digit
 //
 struct x_digit
 {
-    static constexpr auto rule = dsl::capture(
-        dsl::lit_c<'x'> / dsl::lit_c<'X'>);
-
+    static constexpr auto rule = dsl::capture(_x_set);
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
@@ -83,11 +78,7 @@ struct x_digit
 //
 struct hex_digit
 {
-    static constexpr auto rule =
-        dsl::p<x_digit>
-      | dsl::p<z_digit>
-      | dsl::capture(dsl::digit<dsl::hex>);
-
+    static constexpr auto rule = dsl::capture(_hex_digit);
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
@@ -96,34 +87,26 @@ struct hex_digit
 //
 // hex_base ::= '[s|S]h | '[s|S]H
 //
-struct hex_base
+struct hex_base : lexy::token_production
 {
 private:
-    static constexpr auto signage_indicator = dsl::lit_c<'s'> | dsl::lit_c<'S'>;
-    static constexpr auto hex_indicator = dsl::lit_c<'h'> | dsl::lit_c<'H'>;
-
-    struct explicit_signed_hex_base
+    struct implicit_signed_hex_base : lexy::transparent_production
     {
-        static constexpr auto rule = signage_indicator >> hex_indicator;
-        static constexpr auto value = lexy::callback<ast::signedness>(
-            []() { return ast::signedness::SIGNED; });
+        static constexpr auto rule = _hex_indicator;
+        static constexpr auto value = lexy::callback<std::string>([]() { return "h"; });
     };
 
-    struct implicit_signed_hex_base
+    struct explicit_signed_hex_base : lexy::transparent_production
     {
-        static constexpr auto rule = hex_indicator;
-        static constexpr auto value = lexy::callback<ast::signedness>(
-            []() { return ast::signedness::UNSIGNED; });
+        static constexpr auto rule = _signedness_indicator >> _hex_indicator;
+        static constexpr auto value = lexy::callback<std::string>([]() { return "sh"; });
     };
 
 public:
     static constexpr auto rule =
-        dsl::lit_c<'\''> >>
-        (dsl::p<explicit_signed_hex_base> | dsl::p<implicit_signed_hex_base>);
-
-    static constexpr auto value = lexy::forward<ast::signedness>;
+        dsl::lit_c<'\''> >> (dsl::p<implicit_signed_hex_base> | dsl::p<explicit_signed_hex_base>);
+    static constexpr auto value = lexy::forward<std::string>;
 };
-
 
 //
 // Hex value
@@ -132,34 +115,7 @@ public:
 //
 struct hex_value
 {
-private:
-    struct sv_hex : dsl::char_class_base<sv_hex>
-    {
-        static LEXY_CONSTEVAL auto char_class_name()
-        {
-            return "digit.sv_hex";
-        }
-
-        static LEXY_CONSTEVAL auto char_class_ascii()
-        {
-            lexy::_detail::ascii_set result;
-            result.insert('0', '9');
-            result.insert('a', 'f');
-            result.insert('A', 'F');
-            result.insert('x');
-            result.insert('X');
-            result.insert('z');
-            result.insert('Z');
-            return result;
-        }
-
-        static constexpr unsigned digit_radix = 16;
-    };
-
-public:
-    static constexpr auto rule = dsl::capture(
-        dsl::digits<sv_hex>.sep(dsl::digit_sep_underscore));
-
+    static constexpr auto rule = dsl::identifier(_hex_digit, _hex_digit / dsl::lit_c<'_'>);
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
@@ -170,10 +126,10 @@ public:
 //
 struct non_zero_unsigned_number
 {
-    static constexpr auto rule =
-        dsl::digits<>.sep(dsl::digit_sep_underscore).no_leading_zero();
-
-    static constexpr auto value = lexy::forward<unsigned int>;
+    static constexpr auto rule = dsl::identifier(
+        dsl::digit<dsl::decimal> - dsl::zero,
+        dsl::digit<dsl::decimal> / dsl::lit_c<'_'>);
+    static constexpr auto value = lexy::as_string<std::string>;
 };
 
 //
@@ -188,10 +144,9 @@ typedef non_zero_unsigned_number size;
 //
 // hex_number ::= [ size ] hex_base hex_value
 //
-struct hex_number
+struct hex_number : lexy::token_production
 {
     static constexpr auto whitespace = dsl::ascii::space;
-
     static constexpr auto rule = dsl::opt(dsl::p<size>) + dsl::p<hex_base> + dsl::p<hex_value>;
 };
 

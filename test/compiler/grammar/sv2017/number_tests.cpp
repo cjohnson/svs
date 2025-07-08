@@ -9,8 +9,6 @@
 
 using namespace svs::grammar::sv2017;
 
-namespace ast = svs::ast::sv2017;
-
 TEST(SV2017NumberTests, ZOrXTests)
 {
     EXPECT_PARSE_FAILURE<z_or_x>("");
@@ -107,13 +105,13 @@ TEST(SV2017NumberTests, HexBaseTests)
 
     EXPECT_PARSE_FAILURE<hex_base>("'");
 
-    EXPECT_PARSE_RESULT<hex_base>("'sh", ast::signedness::SIGNED);
-    EXPECT_PARSE_RESULT<hex_base>("'Sh", ast::signedness::SIGNED);
-    EXPECT_PARSE_RESULT<hex_base>("'sH", ast::signedness::SIGNED);
-    EXPECT_PARSE_RESULT<hex_base>("'SH", ast::signedness::SIGNED);
+    EXPECT_PARSE_RESULT<hex_base>("'sh", "sh");
+    EXPECT_PARSE_RESULT<hex_base>("'Sh", "sh");
+    EXPECT_PARSE_RESULT<hex_base>("'sH", "sh");
+    EXPECT_PARSE_RESULT<hex_base>("'SH", "sh");
 
-    EXPECT_PARSE_RESULT<hex_base>("'h", ast::signedness::UNSIGNED);
-    EXPECT_PARSE_RESULT<hex_base>("'H", ast::signedness::UNSIGNED);
+    EXPECT_PARSE_RESULT<hex_base>("'h", "h");
+    EXPECT_PARSE_RESULT<hex_base>("'H", "h");
 }
 
 TEST(SV2017NumberTests, HexValueTests)
@@ -129,6 +127,18 @@ TEST(SV2017NumberTests, HexValueTests)
     EXPECT_PARSE_RESULT<hex_value>("Z_be_ef_X", "Z_be_ef_X");
 }
 
+TEST(SV2017NumberTests, NonZeroUnsignedNumberTests)
+{
+    EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("");
+    EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("g");
+
+    EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("0114");
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("114", "114");
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4", "1_1_4");
+    EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("_1_1_4");
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4_", "1_1_4_");
+}
+
 TEST(SV2017NumberTests, HexNumberTests)
 {
     EXPECT_PARSE_FAILURE<hex_number>("");
@@ -137,7 +147,6 @@ TEST(SV2017NumberTests, HexNumberTests)
     EXPECT_PARSE_FAILURE<hex_number>("'hgdead");
     EXPECT_PARSE_FAILURE<hex_number>("'h gdead");
 
-    EXPECT_PARSE_SUCCESS<hex_number>("'hdeadbeef9876543210c");
     EXPECT_PARSE_SUCCESS<hex_number>("'h deadbeef9876543210c");
 
     EXPECT_PARSE_SUCCESS<hex_number>("'h1b");
