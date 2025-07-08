@@ -18,7 +18,7 @@ static inline void EXPECT_PARSE_RESULT(std::string string_input, TResult expecte
     auto input = lexy::string_input(string_input);
     auto result = lexy::parse<TProduction>(input, lexy_ext::report_error);
 
-    EXPECT_TRUE(result.has_value())
+    ASSERT_TRUE(result.has_value())
         << "Expected string \"" << string_input << "\" to be parsed successfully.";
 
     EXPECT_EQ(result.value(), expected);
