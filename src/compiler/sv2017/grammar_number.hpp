@@ -403,6 +403,31 @@ struct binary_number
     static constexpr auto rule = dsl::opt(dsl::p<size>) + dsl::p<binary_base> + dsl::p<binary_value>;
 };
 
+//
+// Decimal number
+//
+// decimal_number ::=
+//     unsigned_number
+//   | [ size ] decimal_base unsigned_number
+//   | [ size ] decimal_base x_digit { _ }
+//   | [ size ] decimal_base z_digit { _ }
+//
+struct decimal_number
+{
+    static constexpr auto whitespace = dsl::ascii::space;
+
+    static constexpr auto rule = []
+    {
+        const auto size_with_base = dsl::opt(dsl::p<size>) + dsl::p<decimal_base>;
+
+        return dsl::peek(size_with_base) >> (size_with_base + (
+                dsl::peek(_x) >> (_x + dsl::while_(dsl::lit_c<'_'>)) |
+                dsl::peek(_z) >> (_z + dsl::while_(dsl::lit_c<'_'>)) |
+                dsl::else_ >> dsl::p<unsigned_number>)) |
+            dsl::else_ >> dsl::p<unsigned_number>;
+    }();
+};
+
 }
 
 #endif // SVS_COMPILER_SV2017_GRAMMAR_NUMBER_H_

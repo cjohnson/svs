@@ -410,3 +410,66 @@ TEST(SV2017NumberTests, BinaryNumberTests)
     EXPECT_PARSE_SUCCESS<binary_number>("9 'b 010");
 }
 
+TEST(SV2017NumberTests, DecimalNumberTests)
+{
+    EXPECT_PARSE_FAILURE<decimal_number>("");
+    EXPECT_PARSE_FAILURE<decimal_number>("t");
+
+    EXPECT_PARSE_SUCCESS<decimal_number>("0");
+    EXPECT_PARSE_SUCCESS<decimal_number>("123");
+
+    EXPECT_PARSE_SUCCESS<decimal_number>("'d123");
+    EXPECT_PARSE_SUCCESS<decimal_number>("'d 123");
+
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'd123");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd123");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd 123");
+
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dx");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dX");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dx");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dX");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd x");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd X");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dx_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dX_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dx_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dX_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd x_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd X_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dx__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dX__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dx__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dX__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd x__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd X__");
+
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dz");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dZ");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'd?");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dz");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dZ");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd?");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd z");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd Z");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd ?");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dz_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dZ_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'd?_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dz_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dZ_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd?_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd z_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd Z_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd ?_");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dz__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'dZ__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20'd?__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dz__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dZ__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd?__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd z__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd Z__");
+    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd ?__");
+}
+
