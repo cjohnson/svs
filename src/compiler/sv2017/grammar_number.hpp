@@ -120,23 +120,16 @@ struct binary_digit
 //
 struct hex_base
 {
-private:
-    struct implicit_signedness_hex_base
-    {
-        static constexpr auto rule = _hex_indicator;
-        static constexpr auto value = lexy::callback<std::string>([]() { return "h"; });
-    };
-
-    struct explicit_signedness_hex_base
-    {
-        static constexpr auto rule = _signedness_indicator >> _hex_indicator;
-        static constexpr auto value = lexy::callback<std::string>([]() { return "sh"; });
-    };
-
-public:
-    static constexpr auto rule = dsl::lit_c<'\''> >>
-        (dsl::p<implicit_signedness_hex_base> | dsl::p<explicit_signedness_hex_base>);
-    static constexpr auto value = lexy::forward<std::string>;
+    static constexpr auto rule = dsl::lit_c<'\''> + (
+        dsl::capture(_signedness_indicator) >> _hex_indicator |
+        _hex_indicator);
+    static constexpr auto value = lexy::callback<std::string>(
+        []() { return "h"; },
+        [](auto lexeme)
+        {
+            (void)lexeme;
+            return "sh";
+        });
 };
 
 //
@@ -290,6 +283,17 @@ struct fixed_point_number
 };
 
 //
+// Sign
+//
+// sign ::= + | -
+//
+struct sign
+{
+    static constexpr auto rule = dsl::capture(_sign);
+    static constexpr auto value = lexy::as_string<std::string>;
+};
+
+//
 // Real number
 //
 // real_number ::=
@@ -298,19 +302,6 @@ struct fixed_point_number
 //
 struct real_number
 {
-private:
-    //
-    // Sign
-    //
-    // sign ::= + | -
-    //
-    struct sign
-    {
-        static constexpr auto rule = dsl::capture(_sign);
-        static constexpr auto value = lexy::as_string<std::string>;
-    };
-
-public:
     static constexpr auto rule =
         dsl::p<unsigned_number> +
         dsl::opt(dsl::period >> dsl::p<unsigned_number>) +
@@ -415,17 +406,48 @@ struct binary_number
 struct decimal_number
 {
     static constexpr auto whitespace = dsl::ascii::space;
-
     static constexpr auto rule = []
     {
         const auto size_with_base = dsl::opt(dsl::p<size>) + dsl::p<decimal_base>;
 
         return dsl::peek(size_with_base) >> (size_with_base + (
-                dsl::peek(_x) >> (_x + dsl::while_(dsl::lit_c<'_'>)) |
-                dsl::peek(_z) >> (_z + dsl::while_(dsl::lit_c<'_'>)) |
+                (_x >> dsl::while_(dsl::lit_c<'_'>)) |
+                (_z >> dsl::while_(dsl::lit_c<'_'>)) |
                 dsl::else_ >> dsl::p<unsigned_number>)) |
             dsl::else_ >> dsl::p<unsigned_number>;
     }();
+};
+
+//
+// Integral number
+//
+// integral_number ::=
+//     decimal_number
+//   | octal_number
+//   | binary_number
+//   | hex_number
+//
+struct integral_number
+{
+    static constexpr auto rule =
+        dsl::peek(dsl::p<decimal_number>) >> dsl::p<decimal_number> |
+        dsl::peek(dsl::p<octal_number>) >> dsl::p<octal_number> |
+        dsl::peek(dsl::p<binary_number>) >> dsl::p<binary_number> |
+        dsl::peek(dsl::p<hex_number>) >> dsl::p<hex_number>;
+};
+
+//
+// Number
+//
+// number ::=
+//     integral_number
+//   | real_number 
+//
+struct number
+{
+    static constexpr auto rule =
+        dsl::peek(dsl::p<integral_number>) >> dsl::p<integral_number> |
+        dsl::else_ >> dsl::p<real_number>;
 };
 
 }

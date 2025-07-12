@@ -289,26 +289,32 @@ TEST(SV2017NumberTests, FixedPointNumberTests)
     EXPECT_PARSE_RESULT<fixed_point_number>("13_73_.41_8_9", "13_73_.41_8_9");
 }
 
+template<typename TProduction>
+void test_real_number_parsing()
+{
+    EXPECT_PARSE_FAILURE<TProduction>("");
+    EXPECT_PARSE_FAILURE<TProduction>("g");
+
+    EXPECT_PARSE_SUCCESS<TProduction>("1373.4189");
+    EXPECT_PARSE_SUCCESS<TProduction>("1373");
+
+    EXPECT_PARSE_SUCCESS<TProduction>("1373e24");
+    EXPECT_PARSE_SUCCESS<TProduction>("1373E24");
+
+    EXPECT_PARSE_SUCCESS<TProduction>("1373e+24");
+    EXPECT_PARSE_SUCCESS<TProduction>("1373E+25");
+    EXPECT_PARSE_SUCCESS<TProduction>("1373e-26");
+    EXPECT_PARSE_SUCCESS<TProduction>("1373E-27");
+
+    EXPECT_PARSE_SUCCESS<TProduction>("1373.57e+24");
+    EXPECT_PARSE_SUCCESS<TProduction>("1373.25E+25");
+    EXPECT_PARSE_SUCCESS<TProduction>("1373.78e-26");
+    EXPECT_PARSE_SUCCESS<TProduction>("1373.47E-27");
+}
+
 TEST(SV2017NumberTests, RealNumberTests)
 {
-    EXPECT_PARSE_FAILURE<real_number>("");
-    EXPECT_PARSE_FAILURE<real_number>("g");
-
-    EXPECT_PARSE_RESULT<real_number>("1373.4189", "1373.4189");
-    EXPECT_PARSE_RESULT<real_number>("1373", "1373");
-
-    EXPECT_PARSE_RESULT<real_number>("1373e24", "1373e24");
-    EXPECT_PARSE_RESULT<real_number>("1373E24", "1373e24");
-
-    EXPECT_PARSE_RESULT<real_number>("1373e+24", "1373e+24");
-    EXPECT_PARSE_RESULT<real_number>("1373E+25", "1373e+25");
-    EXPECT_PARSE_RESULT<real_number>("1373e-26", "1373e-26");
-    EXPECT_PARSE_RESULT<real_number>("1373E-27", "1373e-27");
-
-    EXPECT_PARSE_RESULT<real_number>("1373.57e+24", "1373.57e+24");
-    EXPECT_PARSE_RESULT<real_number>("1373.25E+25", "1373.25e+25");
-    EXPECT_PARSE_RESULT<real_number>("1373.78e-26", "1373.78e-26");
-    EXPECT_PARSE_RESULT<real_number>("1373.47E-27", "1373.47e-27");
+    test_real_number_parsing<real_number>();
 }
 
 TEST(SV2017NumberTests, NonZeroUnsignedNumberTests)
@@ -323,153 +329,197 @@ TEST(SV2017NumberTests, NonZeroUnsignedNumberTests)
     EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4_", "1_1_4_");
 }
 
+template<typename TProduction>
+void test_hex_number_parsing()
+{
+    EXPECT_PARSE_FAILURE<TProduction>("");
+    EXPECT_PARSE_FAILURE<TProduction>("t");
+
+    EXPECT_PARSE_FAILURE<TProduction>("'hgdead");
+    EXPECT_PARSE_FAILURE<TProduction>("'h gdead");
+
+    EXPECT_PARSE_SUCCESS<TProduction>("'h deadbeef9876543210c");
+
+    EXPECT_PARSE_SUCCESS<TProduction>("'h1b");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'h1b");
+    EXPECT_PARSE_SUCCESS<TProduction>("'h 1b");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'h 1b");
+    EXPECT_PARSE_SUCCESS<TProduction>("8'h1b");
+    EXPECT_PARSE_SUCCESS<TProduction>("8 'h1b");
+    EXPECT_PARSE_SUCCESS<TProduction>("8'h 1b");
+    EXPECT_PARSE_SUCCESS<TProduction>("8 'h 1b");
+
+    EXPECT_PARSE_SUCCESS<TProduction>("'h4ad");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'h4ad");
+    EXPECT_PARSE_SUCCESS<TProduction>("'h 4ad");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'h 4ad");
+    EXPECT_PARSE_SUCCESS<TProduction>("12'h4ad");
+    EXPECT_PARSE_SUCCESS<TProduction>("12 'h4ad");
+    EXPECT_PARSE_SUCCESS<TProduction>("12'h 4ad");
+    EXPECT_PARSE_SUCCESS<TProduction>("12 'h 4ad");
+}
+
 TEST(SV2017NumberTests, HexNumberTests)
 {
-    EXPECT_PARSE_FAILURE<hex_number>("");
-    EXPECT_PARSE_FAILURE<hex_number>("t");
+    test_hex_number_parsing<hex_number>();
+}
 
-    EXPECT_PARSE_FAILURE<hex_number>("'hgdead");
-    EXPECT_PARSE_FAILURE<hex_number>("'h gdead");
+template<typename TProduction>
+void test_octal_number_parsing()
+{
+    EXPECT_PARSE_FAILURE<TProduction>("");
+    EXPECT_PARSE_FAILURE<TProduction>("t");
 
-    EXPECT_PARSE_SUCCESS<hex_number>("'h deadbeef9876543210c");
+    EXPECT_PARSE_FAILURE<TProduction>("'o8765");
+    EXPECT_PARSE_FAILURE<TProduction>("'o 8765");
 
-    EXPECT_PARSE_SUCCESS<hex_number>("'h1b");
-    EXPECT_PARSE_SUCCESS<hex_number>(" 'h1b");
-    EXPECT_PARSE_SUCCESS<hex_number>("'h 1b");
-    EXPECT_PARSE_SUCCESS<hex_number>(" 'h 1b");
-    EXPECT_PARSE_SUCCESS<hex_number>("8'h1b");
-    EXPECT_PARSE_SUCCESS<hex_number>("8 'h1b");
-    EXPECT_PARSE_SUCCESS<hex_number>("8'h 1b");
-    EXPECT_PARSE_SUCCESS<hex_number>("8 'h 1b");
+    EXPECT_PARSE_SUCCESS<TProduction>("'o 12345670");
 
-    EXPECT_PARSE_SUCCESS<hex_number>("'h4ad");
-    EXPECT_PARSE_SUCCESS<hex_number>(" 'h4ad");
-    EXPECT_PARSE_SUCCESS<hex_number>("'h 4ad");
-    EXPECT_PARSE_SUCCESS<hex_number>(" 'h 4ad");
-    EXPECT_PARSE_SUCCESS<hex_number>("12'h4ad");
-    EXPECT_PARSE_SUCCESS<hex_number>("12 'h4ad");
-    EXPECT_PARSE_SUCCESS<hex_number>("12'h 4ad");
-    EXPECT_PARSE_SUCCESS<hex_number>("12 'h 4ad");
+    EXPECT_PARSE_SUCCESS<TProduction>("'o15");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'o15");
+    EXPECT_PARSE_SUCCESS<TProduction>("'o 15");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'o 15");
+    EXPECT_PARSE_SUCCESS<TProduction>("6'o15");
+    EXPECT_PARSE_SUCCESS<TProduction>("6 'o15");
+    EXPECT_PARSE_SUCCESS<TProduction>("6'o 15");
+    EXPECT_PARSE_SUCCESS<TProduction>("6 'o 15");
+
+    EXPECT_PARSE_SUCCESS<TProduction>("'o423");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'o423");
+    EXPECT_PARSE_SUCCESS<TProduction>("'o 423");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'o 423");
+    EXPECT_PARSE_SUCCESS<TProduction>("9'o423");
+    EXPECT_PARSE_SUCCESS<TProduction>("9 'o423");
+    EXPECT_PARSE_SUCCESS<TProduction>("9'o 423");
+    EXPECT_PARSE_SUCCESS<TProduction>("9 'o 423");
 }
 
 TEST(SV2017NumberTests, OctalNumberTests)
 {
-    EXPECT_PARSE_FAILURE<octal_number>("");
-    EXPECT_PARSE_FAILURE<octal_number>("t");
+    test_octal_number_parsing<octal_number>();
+}
 
-    EXPECT_PARSE_FAILURE<octal_number>("'o8765");
-    EXPECT_PARSE_FAILURE<octal_number>("'o 8765");
+template<typename TProduction>
+void test_binary_number_parsing()
+{
+    EXPECT_PARSE_FAILURE<TProduction>("");
+    EXPECT_PARSE_FAILURE<TProduction>("t");
 
-    EXPECT_PARSE_SUCCESS<octal_number>("'o 12345670");
+    EXPECT_PARSE_FAILURE<TProduction>("'b2010");
+    EXPECT_PARSE_FAILURE<TProduction>("'b 2010");
 
-    EXPECT_PARSE_SUCCESS<octal_number>("'o15");
-    EXPECT_PARSE_SUCCESS<octal_number>(" 'o15");
-    EXPECT_PARSE_SUCCESS<octal_number>("'o 15");
-    EXPECT_PARSE_SUCCESS<octal_number>(" 'o 15");
-    EXPECT_PARSE_SUCCESS<octal_number>("6'o15");
-    EXPECT_PARSE_SUCCESS<octal_number>("6 'o15");
-    EXPECT_PARSE_SUCCESS<octal_number>("6'o 15");
-    EXPECT_PARSE_SUCCESS<octal_number>("6 'o 15");
+    EXPECT_PARSE_SUCCESS<TProduction>("'b 1011011010");
 
-    EXPECT_PARSE_SUCCESS<octal_number>("'o423");
-    EXPECT_PARSE_SUCCESS<octal_number>(" 'o423");
-    EXPECT_PARSE_SUCCESS<octal_number>("'o 423");
-    EXPECT_PARSE_SUCCESS<octal_number>(" 'o 423");
-    EXPECT_PARSE_SUCCESS<octal_number>("9'o423");
-    EXPECT_PARSE_SUCCESS<octal_number>("9 'o423");
-    EXPECT_PARSE_SUCCESS<octal_number>("9'o 423");
-    EXPECT_PARSE_SUCCESS<octal_number>("9 'o 423");
+    EXPECT_PARSE_SUCCESS<TProduction>("'b10");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'b10");
+    EXPECT_PARSE_SUCCESS<TProduction>("'b 10");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'b 10");
+    EXPECT_PARSE_SUCCESS<TProduction>("6'b10");
+    EXPECT_PARSE_SUCCESS<TProduction>("6 'b10");
+    EXPECT_PARSE_SUCCESS<TProduction>("6'b 10");
+    EXPECT_PARSE_SUCCESS<TProduction>("6 'b 10");
+
+    EXPECT_PARSE_SUCCESS<TProduction>("'b010");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'b010");
+    EXPECT_PARSE_SUCCESS<TProduction>("'b 010");
+    EXPECT_PARSE_SUCCESS<TProduction>(" 'b 010");
+    EXPECT_PARSE_SUCCESS<TProduction>("9'b010");
+    EXPECT_PARSE_SUCCESS<TProduction>("9 'b010");
+    EXPECT_PARSE_SUCCESS<TProduction>("9'b 010");
+    EXPECT_PARSE_SUCCESS<TProduction>("9 'b 010");
 }
 
 TEST(SV2017NumberTests, BinaryNumberTests)
 {
-    EXPECT_PARSE_FAILURE<binary_number>("");
-    EXPECT_PARSE_FAILURE<binary_number>("t");
+    test_binary_number_parsing<binary_number>();
+}
 
-    EXPECT_PARSE_FAILURE<binary_number>("'b2010");
-    EXPECT_PARSE_FAILURE<binary_number>("'b 2010");
+template<typename TProduction>
+void test_decimal_number_parsing()
+{
+    EXPECT_PARSE_FAILURE<TProduction>("");
+    EXPECT_PARSE_FAILURE<TProduction>("t");
 
-    EXPECT_PARSE_SUCCESS<binary_number>("'b 1011011010");
+    EXPECT_PARSE_SUCCESS<TProduction>("0");
+    EXPECT_PARSE_SUCCESS<TProduction>("123");
 
-    EXPECT_PARSE_SUCCESS<binary_number>("'b10");
-    EXPECT_PARSE_SUCCESS<binary_number>(" 'b10");
-    EXPECT_PARSE_SUCCESS<binary_number>("'b 10");
-    EXPECT_PARSE_SUCCESS<binary_number>(" 'b 10");
-    EXPECT_PARSE_SUCCESS<binary_number>("6'b10");
-    EXPECT_PARSE_SUCCESS<binary_number>("6 'b10");
-    EXPECT_PARSE_SUCCESS<binary_number>("6'b 10");
-    EXPECT_PARSE_SUCCESS<binary_number>("6 'b 10");
+    EXPECT_PARSE_SUCCESS<TProduction>("'d123");
+    EXPECT_PARSE_SUCCESS<TProduction>("'d 123");
 
-    EXPECT_PARSE_SUCCESS<binary_number>("'b010");
-    EXPECT_PARSE_SUCCESS<binary_number>(" 'b010");
-    EXPECT_PARSE_SUCCESS<binary_number>("'b 010");
-    EXPECT_PARSE_SUCCESS<binary_number>(" 'b 010");
-    EXPECT_PARSE_SUCCESS<binary_number>("9'b010");
-    EXPECT_PARSE_SUCCESS<binary_number>("9 'b010");
-    EXPECT_PARSE_SUCCESS<binary_number>("9'b 010");
-    EXPECT_PARSE_SUCCESS<binary_number>("9 'b 010");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'd123");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd123");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd 123");
+
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dx");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dX");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dx");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dX");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd x");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd X");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dx_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dX_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dx_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dX_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd x_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd X_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dx__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dX__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dx__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dX__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd x__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd X__");
+
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dz");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dZ");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'd?");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dz");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dZ");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd?");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd z");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd Z");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd ?");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dz_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dZ_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'd?_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dz_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dZ_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd?_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd z_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd Z_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd ?_");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dz__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'dZ__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20'd?__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dz__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'dZ__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd?__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd z__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd Z__");
+    EXPECT_PARSE_SUCCESS<TProduction>("20 'd ?__");
 }
 
 TEST(SV2017NumberTests, DecimalNumberTests)
 {
-    EXPECT_PARSE_FAILURE<decimal_number>("");
-    EXPECT_PARSE_FAILURE<decimal_number>("t");
+    test_decimal_number_parsing<decimal_number>();
+}
 
-    EXPECT_PARSE_SUCCESS<decimal_number>("0");
-    EXPECT_PARSE_SUCCESS<decimal_number>("123");
+template<typename TProduction>
+void test_integral_number_parsing()
+{
+    test_decimal_number_parsing<TProduction>();
+    test_octal_number_parsing<TProduction>();
+    test_binary_number_parsing<TProduction>();
+    test_hex_number_parsing<TProduction>();
+}
 
-    EXPECT_PARSE_SUCCESS<decimal_number>("'d123");
-    EXPECT_PARSE_SUCCESS<decimal_number>("'d 123");
+TEST(SV2017NumberTests, IntegralNumberTests)
+{
+    test_integral_number_parsing<integral_number>();
+}
 
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'd123");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd123");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd 123");
-
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dx");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dX");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dx");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dX");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd x");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd X");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dx_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dX_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dx_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dX_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd x_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd X_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dx__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dX__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dx__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dX__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd x__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd X__");
-
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dz");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dZ");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'd?");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dz");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dZ");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd?");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd z");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd Z");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd ?");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dz_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dZ_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'd?_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dz_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dZ_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd?_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd z_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd Z_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd ?_");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dz__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'dZ__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20'd?__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dz__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'dZ__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd?__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd z__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd Z__");
-    EXPECT_PARSE_SUCCESS<decimal_number>("20 'd ?__");
+TEST(SV2017NumberTests, NumberTests)
+{
+    test_integral_number_parsing<number>();
+    test_real_number_parsing<number>();
 }
 
