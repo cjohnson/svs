@@ -1,20 +1,27 @@
 #ifndef SVS_COMPILER_SV2017_GRAMMAR_NUMBER_H_
 #define SVS_COMPILER_SV2017_GRAMMAR_NUMBER_H_
 
+#include <array>
 #include <sstream>
 #include <string>
+#include <sstream>
 #include <optional>
 
 #include <lexy/callback.hpp>
+#include <lexy/callback/fold.hpp>
 #include <lexy/dsl/digit.hpp>
 #include <lexy/dsl/identifier.hpp>
 #include <lexy/dsl.hpp>
 #include <lexy/grammar.hpp>
+#include <sys/types.h>
+
+#include "ast_number.h"
 
 namespace svs::grammar::sv2017
 {
 
 namespace dsl = lexy::dsl;
+namespace ast = svs::ast::sv2017;
 
 constexpr auto _x = dsl::lit_c<'x'> / dsl::lit_c<'X'>;
 constexpr auto _z = dsl::lit_c<'z'> / dsl::lit_c<'Z'> / dsl::lit_c<'?'>;
@@ -41,7 +48,20 @@ constexpr auto _sign = dsl::lit_c<'+'> / dsl::lit_c<'-'>;
 struct z_or_x
 {
     static constexpr auto rule = dsl::capture(_z_or_x);
-    static constexpr auto value = lexy::as_string<std::string>;
+    static constexpr auto value = lexy::callback<ast::logic_value_t>(
+        [](auto lexeme)
+        {
+            char c = std::tolower(lexeme[0]);
+            switch (c)
+            {
+            case 'x':
+                return ast::logic_value_t::_X;
+            case 'z':
+                return ast::logic_value_t::_Z;
+            default:
+                return ast::logic_value_t::_X;
+            }
+        });
 };
 
 //
@@ -62,8 +82,9 @@ struct unbased_unsized_literal
 //
 struct z_digit
 {
-    static constexpr auto rule = dsl::capture(_z);
-    static constexpr auto value = lexy::as_string<std::string>;
+    static constexpr auto rule = _z;
+    static constexpr auto value = lexy::callback<ast::logic_value_t>(
+        [](){ return ast::logic_value_t::_Z; });
 };
 
 //
@@ -73,9 +94,57 @@ struct z_digit
 //
 struct x_digit
 {
-    static constexpr auto rule = dsl::capture(_x);
-    static constexpr auto value = lexy::as_string<std::string>;
+    static constexpr auto rule = _x;
+    static constexpr auto value = lexy::callback<ast::logic_value_t>(
+        [](){ return ast::logic_value_t::_X; });
 };
+
+//
+// Deconstruct a hex character like 'a' into logic value bits.
+//
+// Examples:
+// 'a' => '1010'
+// 'X' => 'XXXX'
+//
+static constexpr std::array<ast::logic_value_t, 4> deconstruct_hex_to_bits(
+    char hex_char)
+{
+    hex_char = std::isalpha(hex_char) ? std::tolower(hex_char) : hex_char;
+
+    if (hex_char == 'x')
+    {
+        return std::array<ast::logic_value_t, 4>
+        {
+            ast::logic_value_t::_X,
+            ast::logic_value_t::_X,
+            ast::logic_value_t::_X,
+            ast::logic_value_t::_X,
+        };
+    }
+
+    if (hex_char == 'z' || hex_char == '?')
+    {
+        return std::array<ast::logic_value_t, 4>
+        {
+            ast::logic_value_t::_Z,
+            ast::logic_value_t::_Z,
+            ast::logic_value_t::_Z,
+            ast::logic_value_t::_Z,
+        };
+    }
+
+    u_int8_t mask = std::isdigit(hex_char)
+        ? hex_char - '0'
+        : hex_char - 'a' + 10;
+
+    return std::array<ast::logic_value_t, 4>
+    {
+        (mask & 1<<0) ? ast::logic_value_t::_1 : ast::logic_value_t::_0,
+        (mask & 1<<1) ? ast::logic_value_t::_1 : ast::logic_value_t::_0,
+        (mask & 1<<2) ? ast::logic_value_t::_1 : ast::logic_value_t::_0,
+        (mask & 1<<3) ? ast::logic_value_t::_1 : ast::logic_value_t::_0,
+    };
+}
 
 //
 // Hex digit
@@ -88,7 +157,8 @@ struct x_digit
 struct hex_digit
 {
     static constexpr auto rule = dsl::capture(_hex);
-    static constexpr auto value = lexy::as_string<std::string>;
+    static constexpr auto value = lexy::callback<std::array<ast::logic_value_t, 4>>(
+        [](auto lexeme) { return deconstruct_hex_to_bits((char)lexeme[0]); });
 };
 
 //
@@ -123,13 +193,9 @@ struct hex_base
     static constexpr auto rule = dsl::lit_c<'\''> + (
         dsl::capture(_signedness_indicator) >> _hex_indicator |
         _hex_indicator);
-    static constexpr auto value = lexy::callback<std::string>(
-        []() { return "h"; },
-        [](auto lexeme)
-        {
-            (void)lexeme;
-            return "sh";
-        });
+    static constexpr auto value = lexy::callback<bool>(
+        []() { return false; },
+        [](auto _) { (void)_; return true; });
 };
 
 //
@@ -211,14 +277,71 @@ public:
 };
 
 //
+// Deconstruct a hex string like 'aX' into logic value bits.
+//
+// Examples:
+// 'a', 'X' => '1010XXXX'
+//
+static constexpr std::vector<ast::logic_value_t> deconstruct_hex_to_bits(
+    char head, std::optional<std::string> tail)
+{
+    std::vector<ast::logic_value_t> result;
+
+    std::array<ast::logic_value_t, 4> nibble =
+        deconstruct_hex_to_bits(head);
+    for (const auto& bit : nibble)
+    {
+        result.push_back(bit);
+    }
+
+    if (!tail.has_value())
+    {
+        return result;
+    }
+
+    for (const char &c : tail.value())
+    {
+        if (c == '_')
+        {
+            continue;
+        }
+
+        std::array<ast::logic_value_t, 4> nibble =
+            deconstruct_hex_to_bits(c);
+        for (const auto& bit : nibble)
+        {
+            result.push_back(bit);
+        }
+    }
+
+    return result;
+}
+
+//
 // Hex value
 //
 // hex_value ::= hex_digit { _ | hex_digit }
 //
 struct hex_value
 {
-    static constexpr auto rule = dsl::identifier(_hex, _hex / dsl::lit_c<'_'>);
-    static constexpr auto value = lexy::as_string<std::string>;
+private:
+    struct _head
+    {
+        static constexpr auto rule = dsl::capture(_hex);
+        static constexpr auto value = lexy::as_string<std::string>;
+    };
+    struct _tail
+    {
+        static constexpr auto rule = dsl::list(dsl::capture(_hex / dsl::lit_c<'_'>));
+        static constexpr auto value = lexy::as_string<std::string>;
+    };
+
+public:
+    static constexpr auto rule = dsl::p<_head> + dsl::opt(dsl::p<_tail>);
+    static constexpr auto value =
+        lexy::callback<std::vector<ast::logic_value_t>>(
+            [](std::string head, std::optional<std::string> tail)
+            { return deconstruct_hex_to_bits(head[0], tail); });
 };
 
 //
@@ -342,16 +465,62 @@ struct real_number
 };
 
 //
+// Deconstruct an unsigned number like '1_2' into an integer.
+//
+// Examples:
+// '1_2' => 12
+//
+static uint64_t unsigned_number_to_int(
+    char head,
+    std::optional<std::string> tail)
+{
+    std::stringstream ss;
+    ss << head;
+
+    if (!tail.has_value())
+    {
+        return std::stoull(ss.str());
+    }
+
+    for (const char &c : tail.value())
+    {
+        if (c == '_')
+        {
+            continue;
+        }
+        ss << c;
+    }
+
+    return std::stoull(ss.str());
+}
+
+//
 // Non-zero unsigned number
 //
-// non_zero_unsigned_number ::= non_zero_decimal_digit { _ | decimal_digit} 
+// non_zero_unsigned_number ::= non_zero_decimal_digit { _ | decimal_digit }
 //
 struct non_zero_unsigned_number
 {
-    static constexpr auto rule = dsl::identifier(
-        dsl::digit<dsl::decimal> - dsl::zero,
-        dsl::digit<dsl::decimal> / dsl::lit_c<'_'>);
-    static constexpr auto value = lexy::as_string<std::string>;
+private:
+    struct _head
+    {
+        static constexpr auto rule =
+            dsl::capture(dsl::digit<dsl::decimal> - dsl::zero);
+        static constexpr auto value = lexy::as_string<std::string>;
+    };
+    struct _tail
+    {
+        static constexpr auto rule =
+            dsl::list(dsl::capture(dsl::digit<dsl::decimal> / dsl::lit_c<'_'>));
+        static constexpr auto value = lexy::as_string<std::string>;
+    };
+
+public:
+    static constexpr auto rule = dsl::p<_head> + dsl::opt(dsl::p<_tail>);
+    static constexpr auto value =
+        lexy::callback<uint64_t>(
+            [](std::string head, std::optional<std::string> tail)
+            { return unsigned_number_to_int(head[0], tail); });
 };
 
 //
@@ -369,7 +538,9 @@ typedef non_zero_unsigned_number size;
 struct hex_number
 {
     static constexpr auto whitespace = dsl::ascii::space;
-    static constexpr auto rule = dsl::opt(dsl::p<size>) + dsl::p<hex_base> + dsl::p<hex_value>;
+    static constexpr auto rule =
+        dsl::opt(dsl::peek(dsl::p<size>) >> dsl::p<size>) + dsl::p<hex_base> + dsl::p<hex_value>;
+    static constexpr auto value = lexy::construct<ast::integer_literal_constant_t>;
 };
 
 //
@@ -380,7 +551,8 @@ struct hex_number
 struct octal_number
 {
     static constexpr auto whitespace = dsl::ascii::space;
-    static constexpr auto rule = dsl::opt(dsl::p<size>) + dsl::p<octal_base> + dsl::p<octal_value>;
+    static constexpr auto rule =
+        dsl::opt(dsl::peek(dsl::p<size>) >> dsl::p<size>) + dsl::p<octal_base> + dsl::p<octal_value>;
 };
 
 //
@@ -391,7 +563,8 @@ struct octal_number
 struct binary_number
 {
     static constexpr auto whitespace = dsl::ascii::space;
-    static constexpr auto rule = dsl::opt(dsl::p<size>) + dsl::p<binary_base> + dsl::p<binary_value>;
+    static constexpr auto rule =
+        dsl::opt(dsl::peek(dsl::p<size>) >> dsl::p<size>) + dsl::p<binary_base> + dsl::p<binary_value>;
 };
 
 //
@@ -408,7 +581,8 @@ struct decimal_number
     static constexpr auto whitespace = dsl::ascii::space;
     static constexpr auto rule = []
     {
-        const auto size_with_base = dsl::opt(dsl::p<size>) + dsl::p<decimal_base>;
+        const auto size_with_base =
+            dsl::opt(dsl::peek(dsl::p<size>) >> dsl::p<size>) + dsl::p<decimal_base>;
 
         return dsl::peek(size_with_base) >> (size_with_base + (
                 (_x >> dsl::while_(dsl::lit_c<'_'>)) |

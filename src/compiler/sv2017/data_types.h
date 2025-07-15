@@ -1,0 +1,11 @@
+#ifndef SVS_COMPILER_SV2017_DATA_TYPES_H_
+#define SVS_COMPILER_SV2017_DATA_TYPES_H_
+
+namespace svs::sv
+{
+
+
+}
+
+#endif // SVS_COMPILER_SV2017_DATA_TYPES_H_
+

@@ -2,25 +2,35 @@
 #include <unordered_set>
 
 #include <gtest/gtest.h>
+#include <vector>
 
 #include "../../../../src/compiler/sv2017/grammar_number.hpp"
+#include "../../../../src/compiler/sv2017/ast_number.h"
 
 #include "../grammar_test_utils.hpp"
 
 using namespace svs::grammar::sv2017;
+namespace ast = svs::ast::sv2017;
 
 TEST(SV2017NumberTests, ZOrXTests)
 {
     EXPECT_PARSE_FAILURE<z_or_x>("");
 
-    std::unordered_set<char> characters { 'x', 'X', 'z', 'Z' };
+    std::unordered_map<char, ast::logic_value_t> valid_mappings
+    {
+        { 'x', ast::logic_value_t::_X },
+        { 'X', ast::logic_value_t::_X },
+        { 'z', ast::logic_value_t::_Z },
+        { 'Z', ast::logic_value_t::_Z },
+    };
 
     for (char c = CHAR_MIN; c < CHAR_MAX; ++c)
     {
         std::string string(1, c);
 
-        if (characters.find(c) != characters.end())
-            EXPECT_PARSE_RESULT<z_or_x>(string, string);
+        auto it = valid_mappings.find(c);
+        if (it != valid_mappings.end())
+            EXPECT_PARSE_RESULT<z_or_x>(string, it->second);
         else
             EXPECT_PARSE_FAILURE<z_or_x>(string);
     }
@@ -44,13 +54,20 @@ TEST(SV2017NumberTests, ZDigitTests)
 {
     EXPECT_PARSE_FAILURE<z_digit>("");
 
-    std::unordered_set<char> characters { 'z', 'Z', '?' };
+    std::unordered_map<char, ast::logic_value_t> valid_mappings
+    {
+        { 'z', ast::logic_value_t::_Z },
+        { 'Z', ast::logic_value_t::_Z },
+        { '?', ast::logic_value_t::_Z },
+    };
 
     for (char c = CHAR_MIN; c < CHAR_MAX; ++c)
     {
         std::string string(1, c);
-        if (characters.find(c) != characters.end())
-            EXPECT_PARSE_RESULT<z_digit>(string, string);
+
+        auto it = valid_mappings.find(c);
+        if (it != valid_mappings.end())
+            EXPECT_PARSE_RESULT<z_digit>(string, it->second);
         else
             EXPECT_PARSE_FAILURE<z_digit>(string);
     }
@@ -60,16 +77,151 @@ TEST(SV2017NumberTests, XDigitTests)
 {
     EXPECT_PARSE_FAILURE<x_digit>("");
 
-    std::unordered_set<char> allowed_characters{ 'x', 'X' };
+    std::unordered_map<char, ast::logic_value_t> valid_mappings
+    {
+        { 'x', ast::logic_value_t::_X },
+        { 'X', ast::logic_value_t::_X },
+    };
 
     for (char c = CHAR_MIN; c < CHAR_MAX; ++c)
     {
         std::string string(1, c);
-        if (allowed_characters.find(c) != allowed_characters.end())
-            EXPECT_PARSE_RESULT<x_digit>(string, string);
+
+        auto it = valid_mappings.find(c);
+        if (it != valid_mappings.end())
+            EXPECT_PARSE_RESULT<x_digit>(string, it->second);
         else
             EXPECT_PARSE_FAILURE<x_digit>(string);
     }
+}
+
+static constexpr std::array<ast::logic_value_t, 4> get_hex_bits(
+    char c)
+{
+    std::array<ast::logic_value_t, 4> result
+    {
+        ast::logic_value_t::_X,
+        ast::logic_value_t::_X,
+        ast::logic_value_t::_X,
+        ast::logic_value_t::_X,
+    };
+
+    c = std::tolower(c);
+
+    switch (c)
+    {
+    case '0':
+    case '2':
+    case '4':
+    case '6':
+    case '8':
+    case 'a':
+    case 'c':
+    case 'e':
+        result[0] = ast::logic_value_t::_0;
+        break;
+    case '1':
+    case '3':
+    case '5':
+    case '7':
+    case '9':
+    case 'b':
+    case 'd':
+    case 'f':
+        result[0] = ast::logic_value_t::_1;
+        break;
+    }
+
+    switch (c)
+    {
+    case '0':
+    case '1':
+    case '4':
+    case '5':
+    case '8':
+    case '9':
+    case 'c':
+    case 'd':
+        result[1] = ast::logic_value_t::_0;
+        break;
+    case '2':
+    case '3':
+    case '6':
+    case '7':
+    case 'a':
+    case 'b':
+    case 'e':
+    case 'f':
+        result[1] = ast::logic_value_t::_1;
+        break;
+    }
+
+    switch (c)
+    {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '8':
+    case '9':
+    case 'a':
+    case 'b':
+        result[2] = ast::logic_value_t::_0;
+        break;
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+        result[2] = ast::logic_value_t::_1;
+        break;
+    }
+
+    switch (c)
+    {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+        result[3] = ast::logic_value_t::_0;
+        break;
+    case '8':
+    case '9':
+    case 'a':
+    case 'b':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+        result[3] = ast::logic_value_t::_1;
+        break;
+    }
+
+    switch (c)
+    {
+    case 'x':
+        result[0] = ast::logic_value_t::_X;
+        result[1] = ast::logic_value_t::_X;
+        result[2] = ast::logic_value_t::_X;
+        result[3] = ast::logic_value_t::_X;
+        break;
+    case 'z':
+    case '?':
+        result[0] = ast::logic_value_t::_Z;
+        result[1] = ast::logic_value_t::_Z;
+        result[2] = ast::logic_value_t::_Z;
+        result[3] = ast::logic_value_t::_Z;
+        break;
+    }
+
+    return result;
 }
 
 TEST(SV2017NumberTests, HexDigitTests)
@@ -89,8 +241,9 @@ TEST(SV2017NumberTests, HexDigitTests)
     {
         std::string string(1, c);
 
+        std::array<ast::logic_value_t, 4> bits = get_hex_bits(c);
         if (characters.find(c) != characters.end())
-            EXPECT_PARSE_RESULT<hex_digit>(string, string);
+            EXPECT_PARSE_RESULT<hex_digit>(string, bits);
         else
             EXPECT_PARSE_FAILURE<hex_digit>(string);
     }
@@ -145,23 +298,19 @@ TEST(SV2017NumberTests, HexBaseTests)
 
     EXPECT_PARSE_FAILURE<hex_base>("'");
 
-    EXPECT_PARSE_FAILURE<hex_base>("'");
+    EXPECT_PARSE_RESULT<hex_base>("'sh", true);
+    EXPECT_PARSE_RESULT<hex_base>("'Sh", true);
+    EXPECT_PARSE_RESULT<hex_base>("'sH", true);
+    EXPECT_PARSE_RESULT<hex_base>("'SH", true);
 
-    EXPECT_PARSE_RESULT<hex_base>("'sh", "sh");
-    EXPECT_PARSE_RESULT<hex_base>("'Sh", "sh");
-    EXPECT_PARSE_RESULT<hex_base>("'sH", "sh");
-    EXPECT_PARSE_RESULT<hex_base>("'SH", "sh");
-
-    EXPECT_PARSE_RESULT<hex_base>("'h", "h");
-    EXPECT_PARSE_RESULT<hex_base>("'H", "h");
+    EXPECT_PARSE_RESULT<hex_base>("'h", false);
+    EXPECT_PARSE_RESULT<hex_base>("'H", false);
 }
 
 TEST(SV2017NumberTests, OctalBaseTests)
 {
     EXPECT_PARSE_FAILURE<octal_base>("");
     EXPECT_PARSE_FAILURE<octal_base>("a");
-
-    EXPECT_PARSE_FAILURE<octal_base>("'");
 
     EXPECT_PARSE_FAILURE<octal_base>("'");
 
@@ -178,8 +327,6 @@ TEST(SV2017NumberTests, BinaryBaseTests)
 {
     EXPECT_PARSE_FAILURE<binary_base>("");
     EXPECT_PARSE_FAILURE<binary_base>("a");
-
-    EXPECT_PARSE_FAILURE<binary_base>("'");
 
     EXPECT_PARSE_FAILURE<binary_base>("'");
 
@@ -210,6 +357,23 @@ TEST(SV2017NumberTests, DecimalBaseTests)
     EXPECT_PARSE_RESULT<decimal_base>("'D", "d");
 }
 
+static constexpr std::vector<ast::logic_value_t> get_hex_bits(
+    std::string hex_string)
+{
+    std::vector<ast::logic_value_t> result;
+
+    for (const char& c : hex_string)
+    {
+        std::array<ast::logic_value_t, 4> nibble = get_hex_bits(c);
+        for (const ast::logic_value_t& bit : nibble)
+        {
+            result.push_back(bit);
+        }
+    }
+
+    return result;
+}
+
 TEST(SV2017NumberTests, HexValueTests)
 {
     EXPECT_PARSE_FAILURE<hex_value>("");
@@ -217,10 +381,10 @@ TEST(SV2017NumberTests, HexValueTests)
 
     EXPECT_PARSE_FAILURE<hex_value>("_01dead");
 
-    EXPECT_PARSE_RESULT<hex_value>("01dead", "01dead");
-    EXPECT_PARSE_RESULT<hex_value>("01_de_ad", "01_de_ad");
-    EXPECT_PARSE_RESULT<hex_value>("ZbeefX", "ZbeefX");
-    EXPECT_PARSE_RESULT<hex_value>("Z_be_ef_X", "Z_be_ef_X");
+    EXPECT_PARSE_RESULT<hex_value>("01dead", get_hex_bits("01dead"));
+    EXPECT_PARSE_RESULT<hex_value>("01_de_ad", get_hex_bits("01dead"));
+    EXPECT_PARSE_RESULT<hex_value>("ZbeefX", get_hex_bits("ZbeefX"));
+    EXPECT_PARSE_RESULT<hex_value>("Z_be_ef_X", get_hex_bits("ZbeefX"));
 }
 
 TEST(SV2017NumberTests, OctalValueTests)
@@ -323,10 +487,10 @@ TEST(SV2017NumberTests, NonZeroUnsignedNumberTests)
     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("g");
 
     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("0114");
-    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("114", "114");
-    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4", "1_1_4");
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("114", 114);
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4", 114);
     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("_1_1_4");
-    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4_", "1_1_4_");
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4_", 114);
 }
 
 template<typename TProduction>
@@ -361,7 +525,81 @@ void test_hex_number_parsing()
 
 TEST(SV2017NumberTests, HexNumberTests)
 {
-    test_hex_number_parsing<hex_number>();
+    EXPECT_PARSE_FAILURE<hex_number>("");
+    EXPECT_PARSE_FAILURE<hex_number>("t");
+
+    EXPECT_PARSE_FAILURE<hex_number>("'hgdead");
+    EXPECT_PARSE_FAILURE<hex_number>("'h gdead");
+
+    EXPECT_PARSE_RESULT<hex_number>(
+        "'h deadbeef9876543210c",
+        ast::integer_literal_constant_t
+        { std::nullopt, false, get_hex_bits("deadbeef9876543210c"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        "'h1b",
+        ast::integer_literal_constant_t
+        { std::nullopt, false, get_hex_bits("1b"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        " 'h1b",
+        ast::integer_literal_constant_t
+        { std::nullopt, false, get_hex_bits("1b"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        "'h 1b",
+        ast::integer_literal_constant_t
+        { std::nullopt, false, get_hex_bits("1b"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        " 'h 1b",
+        ast::integer_literal_constant_t
+        { std::nullopt, false, get_hex_bits("1b"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        "8'h1b",
+        ast::integer_literal_constant_t
+        { 8, false, get_hex_bits("1b"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        "8 'h1b",
+        ast::integer_literal_constant_t
+        { 8, false, get_hex_bits("1b"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        "8'h 1b",
+        ast::integer_literal_constant_t
+        { 8, false, get_hex_bits("1b"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        "8 'h 1b",
+        ast::integer_literal_constant_t
+        { 8, false, get_hex_bits("1b"), });
+
+    EXPECT_PARSE_RESULT<hex_number>(
+        "'h4ad",
+        ast::integer_literal_constant_t
+        { std::nullopt, false, get_hex_bits("4ad"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        " 'h4ad",
+        ast::integer_literal_constant_t
+        { std::nullopt, false, get_hex_bits("4ad"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        "'h 4ad",
+        ast::integer_literal_constant_t
+        { std::nullopt, false, get_hex_bits("4ad"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        " 'h 4ad",
+        ast::integer_literal_constant_t
+        { std::nullopt, false, get_hex_bits("4ad"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        "12'h4ad",
+        ast::integer_literal_constant_t
+        { 12, false, get_hex_bits("4ad"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        "12 'h4ad",
+        ast::integer_literal_constant_t
+        { 12, false, get_hex_bits("4ad"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        "12'h 4ad",
+        ast::integer_literal_constant_t
+        { 12, false, get_hex_bits("4ad"), });
+    EXPECT_PARSE_RESULT<hex_number>(
+        "12 'h 4ad",
+        ast::integer_literal_constant_t
+        { 12, false, get_hex_bits("4ad"), });
 }
 
 template<typename TProduction>
