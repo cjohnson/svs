@@ -162,6 +162,47 @@ struct hex_digit
 };
 
 //
+// Deconstruct an octal character like '6' into logic value bits.
+//
+// Examples:
+// '6' => '110'
+// 'X' => 'XXX'
+//
+static constexpr std::array<ast::logic_value_t, 3> deconstruct_octal_to_bits(
+    char octal_char)
+{
+    octal_char = std::isalpha(octal_char) ? std::tolower(octal_char) : octal_char;
+
+    if (octal_char == 'x')
+    {
+        return std::array<ast::logic_value_t, 3>
+        {
+            ast::logic_value_t::_X,
+            ast::logic_value_t::_X,
+            ast::logic_value_t::_X,
+        };
+    }
+
+    if (octal_char == 'z' || octal_char == '?')
+    {
+        return std::array<ast::logic_value_t, 3>
+        {
+            ast::logic_value_t::_Z,
+            ast::logic_value_t::_Z,
+            ast::logic_value_t::_Z,
+        };
+    }
+
+    u_int8_t mask = octal_char - '0';
+    return std::array<ast::logic_value_t, 3>
+    {
+        (mask & 1<<0) ? ast::logic_value_t::_1 : ast::logic_value_t::_0,
+        (mask & 1<<1) ? ast::logic_value_t::_1 : ast::logic_value_t::_0,
+        (mask & 1<<2) ? ast::logic_value_t::_1 : ast::logic_value_t::_0,
+    };
+}
+
+//
 // Octal digit
 //
 // octal_digit ::= x_digit | z_digit | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
@@ -169,7 +210,8 @@ struct hex_digit
 struct octal_digit
 {
     static constexpr auto rule = dsl::capture(_octal);
-    static constexpr auto value = lexy::as_string<std::string>;
+    static constexpr auto value = lexy::callback<std::array<ast::logic_value_t, 3>>(
+        [](auto lexeme) { return deconstruct_octal_to_bits((char)lexeme[0]); });
 };
 
 //
@@ -205,23 +247,12 @@ struct hex_base
 //
 struct octal_base
 {
-private:
-    struct implicit_signedness_octal_base
-    {
-        static constexpr auto rule = _octal_indicator;
-        static constexpr auto value = lexy::callback<std::string>([]() { return "o"; });
-    };
-
-    struct explicit_signedness_octal_base
-    {
-        static constexpr auto rule = _signedness_indicator >> _octal_indicator;
-        static constexpr auto value = lexy::callback<std::string>([]() { return "so"; });
-    };
-
-public:
-    static constexpr auto rule = dsl::lit_c<'\''> >>
-        (dsl::p<implicit_signedness_octal_base> | dsl::p<explicit_signedness_octal_base>);
-    static constexpr auto value = lexy::forward<std::string>;
+    static constexpr auto rule = dsl::lit_c<'\''> + (
+        dsl::capture(_signedness_indicator) >> _octal_indicator |
+        _octal_indicator);
+    static constexpr auto value = lexy::callback<bool>(
+        []() { return false; },
+        [](auto _) { (void)_; return true; });
 };
 
 //
@@ -345,14 +376,71 @@ public:
 };
 
 //
+// Deconstruct an octal string like '2X' into logic value bits.
+//
+// Examples:
+// '2X' => '010XXX'
+//
+static constexpr std::vector<ast::logic_value_t> deconstruct_octal_to_bits(
+    char head, std::optional<std::string> tail)
+{
+    std::vector<ast::logic_value_t> result;
+
+    std::array<ast::logic_value_t, 3> trio =
+        deconstruct_octal_to_bits(head);
+    for (const auto& bit : trio)
+    {
+        result.push_back(bit);
+    }
+
+    if (!tail.has_value())
+    {
+        return result;
+    }
+
+    for (const char &c : tail.value())
+    {
+        if (c == '_')
+        {
+            continue;
+        }
+
+        std::array<ast::logic_value_t, 3> trio =
+            deconstruct_octal_to_bits(c);
+        for (const auto& bit : trio)
+        {
+            result.push_back(bit);
+        }
+    }
+
+    return result;
+}
+
+//
 // Octal value
 //
 // octal_value ::= octal_digit { _ | octal_digit } 
 //
 struct octal_value
 {
-    static constexpr auto rule = dsl::identifier(_octal, _octal / dsl::lit_c<'_'>);
-    static constexpr auto value = lexy::as_string<std::string>;
+private:
+    struct _head
+    {
+        static constexpr auto rule = dsl::capture(_octal);
+        static constexpr auto value = lexy::as_string<std::string>;
+    };
+    struct _tail
+    {
+        static constexpr auto rule = dsl::list(dsl::capture(_octal / dsl::lit_c<'_'>));
+        static constexpr auto value = lexy::as_string<std::string>;
+    };
+
+public:
+    static constexpr auto rule = dsl::p<_head> + dsl::opt(dsl::p<_tail>);
+    static constexpr auto value =
+        lexy::callback<std::vector<ast::logic_value_t>>(
+            [](std::string head, std::optional<std::string> tail)
+            { return deconstruct_octal_to_bits(head[0], tail); });
 };
 
 //
@@ -553,6 +641,7 @@ struct octal_number
     static constexpr auto whitespace = dsl::ascii::space;
     static constexpr auto rule =
         dsl::opt(dsl::peek(dsl::p<size>) >> dsl::p<size>) + dsl::p<octal_base> + dsl::p<octal_value>;
+    static constexpr auto value = lexy::construct<ast::integer_literal_constant_t>;
 };
 
 //

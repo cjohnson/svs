@@ -95,8 +95,7 @@ TEST(SV2017NumberTests, XDigitTests)
     }
 }
 
-static constexpr std::array<ast::logic_value_t, 4> get_hex_bits(
-    char c)
+static constexpr std::array<ast::logic_value_t, 4> get_hex_bits(char c)
 {
     std::array<ast::logic_value_t, 4> result
     {
@@ -249,6 +248,83 @@ TEST(SV2017NumberTests, HexDigitTests)
     }
 }
 
+static constexpr std::array<ast::logic_value_t, 3> get_octal_bits(char c)
+{
+    std::array<ast::logic_value_t, 3> result
+    {
+        ast::logic_value_t::_X,
+        ast::logic_value_t::_X,
+        ast::logic_value_t::_X,
+    };
+
+    c = std::tolower(c);
+
+    switch (c)
+    {
+    case '0':
+    case '2':
+    case '4':
+    case '6':
+        result[0] = ast::logic_value_t::_0;
+        break;
+    case '1':
+    case '3':
+    case '5':
+    case '7':
+        result[0] = ast::logic_value_t::_1;
+        break;
+    }
+
+    switch (c)
+    {
+    case '0':
+    case '1':
+    case '4':
+    case '5':
+        result[1] = ast::logic_value_t::_0;
+        break;
+    case '2':
+    case '3':
+    case '6':
+    case '7':
+        result[1] = ast::logic_value_t::_1;
+        break;
+    }
+
+    switch (c)
+    {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+        result[2] = ast::logic_value_t::_0;
+        break;
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+        result[2] = ast::logic_value_t::_1;
+        break;
+    }
+
+    switch (c)
+    {
+    case 'x':
+        result[0] = ast::logic_value_t::_X;
+        result[1] = ast::logic_value_t::_X;
+        result[2] = ast::logic_value_t::_X;
+        break;
+    case 'z':
+    case '?':
+        result[0] = ast::logic_value_t::_Z;
+        result[1] = ast::logic_value_t::_Z;
+        result[2] = ast::logic_value_t::_Z;
+        break;
+    }
+
+    return result;
+}
+
 TEST(SV2017NumberTests, OctalDigitTests)
 {
     EXPECT_PARSE_FAILURE<octal_digit>("");
@@ -265,7 +341,7 @@ TEST(SV2017NumberTests, OctalDigitTests)
         std::string string(1, c);
 
         if (characters.find(c) != characters.end())
-            EXPECT_PARSE_RESULT<octal_digit>(string, string);
+            EXPECT_PARSE_RESULT<octal_digit>(string, get_octal_bits(c));
         else
             EXPECT_PARSE_FAILURE<octal_digit>(string);
     }
@@ -314,13 +390,13 @@ TEST(SV2017NumberTests, OctalBaseTests)
 
     EXPECT_PARSE_FAILURE<octal_base>("'");
 
-    EXPECT_PARSE_RESULT<octal_base>("'so", "so");
-    EXPECT_PARSE_RESULT<octal_base>("'So", "so");
-    EXPECT_PARSE_RESULT<octal_base>("'sO", "so");
-    EXPECT_PARSE_RESULT<octal_base>("'SO", "so");
+    EXPECT_PARSE_RESULT<octal_base>("'so", true);
+    EXPECT_PARSE_RESULT<octal_base>("'So", true);
+    EXPECT_PARSE_RESULT<octal_base>("'sO", true);
+    EXPECT_PARSE_RESULT<octal_base>("'SO", true);
 
-    EXPECT_PARSE_RESULT<octal_base>("'o", "o");
-    EXPECT_PARSE_RESULT<octal_base>("'O", "o");
+    EXPECT_PARSE_RESULT<octal_base>("'o", false);
+    EXPECT_PARSE_RESULT<octal_base>("'O", false);
 }
 
 TEST(SV2017NumberTests, BinaryBaseTests)
@@ -387,6 +463,23 @@ TEST(SV2017NumberTests, HexValueTests)
     EXPECT_PARSE_RESULT<hex_value>("Z_be_ef_X", get_hex_bits("ZbeefX"));
 }
 
+static constexpr std::vector<ast::logic_value_t> get_octal_bits(
+    std::string octal_string)
+{
+    std::vector<ast::logic_value_t> result;
+
+    for (const char& c : octal_string)
+    {
+        std::array<ast::logic_value_t, 3> trio = get_octal_bits(c);
+        for (const ast::logic_value_t& bit : trio)
+        {
+            result.push_back(bit);
+        }
+    }
+
+    return result;
+}
+
 TEST(SV2017NumberTests, OctalValueTests)
 {
     EXPECT_PARSE_FAILURE<octal_value>("");
@@ -394,10 +487,10 @@ TEST(SV2017NumberTests, OctalValueTests)
 
     EXPECT_PARSE_FAILURE<octal_value>("_012567");
 
-    EXPECT_PARSE_RESULT<octal_value>("12567", "12567");
-    EXPECT_PARSE_RESULT<octal_value>("1_25_67", "1_25_67");
-    EXPECT_PARSE_RESULT<octal_value>("Z1024X", "Z1024X");
-    EXPECT_PARSE_RESULT<octal_value>("Z_10_2_4X", "Z_10_2_4X");
+    EXPECT_PARSE_RESULT<octal_value>("12567", get_octal_bits("12567"));
+    EXPECT_PARSE_RESULT<octal_value>("1_25_67", get_octal_bits("12567"));
+    EXPECT_PARSE_RESULT<octal_value>("Z1024X", get_octal_bits("Z1024X"));
+    EXPECT_PARSE_RESULT<octal_value>("Z_10_2_4X", get_octal_bits("Z1024X"));
 }
 
 TEST(SV2017NumberTests, BinaryValueTests)
@@ -634,7 +727,64 @@ void test_octal_number_parsing()
 
 TEST(SV2017NumberTests, OctalNumberTests)
 {
-    test_octal_number_parsing<octal_number>();
+    EXPECT_PARSE_FAILURE<octal_number>("");
+    EXPECT_PARSE_FAILURE<octal_number>("t");
+
+    EXPECT_PARSE_FAILURE<octal_number>("'o8765");
+    EXPECT_PARSE_FAILURE<octal_number>("'o 8765");
+
+    EXPECT_PARSE_RESULT<octal_number>(
+        "'o 12345670",
+        ast::integer_literal_constant_t{ std::nullopt, false, get_octal_bits("12345670"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        "'o15",
+        ast::integer_literal_constant_t{ std::nullopt, false, get_octal_bits("15"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        " 'o15",
+        ast::integer_literal_constant_t{ std::nullopt, false, get_octal_bits("15"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        "'o 15",
+        ast::integer_literal_constant_t{ std::nullopt, false, get_octal_bits("15"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        " 'o 15",
+        ast::integer_literal_constant_t{ std::nullopt, false, get_octal_bits("15"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        "6'o15",
+        ast::integer_literal_constant_t{ 6, false, get_octal_bits("15"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        "6 'o15",
+        ast::integer_literal_constant_t{ 6, false, get_octal_bits("15"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        "6'o 15",
+        ast::integer_literal_constant_t{ 6, false, get_octal_bits("15"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        "6 'o 15",
+        ast::integer_literal_constant_t{ 6, false, get_octal_bits("15"), });
+
+    EXPECT_PARSE_RESULT<octal_number>(
+        "'o423",
+        ast::integer_literal_constant_t{ std::nullopt, false, get_octal_bits("423"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        " 'o423",
+        ast::integer_literal_constant_t{ std::nullopt, false, get_octal_bits("423"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        "'o 423",
+        ast::integer_literal_constant_t{ std::nullopt, false, get_octal_bits("423"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        " 'o 423",
+        ast::integer_literal_constant_t{ std::nullopt, false, get_octal_bits("423"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        "9'o423",
+        ast::integer_literal_constant_t{ 9, false, get_octal_bits("423"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        "9 'o423",
+        ast::integer_literal_constant_t{ 9, false, get_octal_bits("423"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        "9'o 423",
+        ast::integer_literal_constant_t{ 9, false, get_octal_bits("423"), });
+    EXPECT_PARSE_RESULT<octal_number>(
+        "9 'o 423",
+        ast::integer_literal_constant_t{ 9, false, get_octal_bits("423"), });
 }
 
 template<typename TProduction>
