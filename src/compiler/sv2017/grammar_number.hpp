@@ -106,8 +106,7 @@ struct x_digit
 // 'a' => '1010'
 // 'X' => 'XXXX'
 //
-static constexpr std::array<ast::logic_value_t, 4> deconstruct_hex_to_bits(
-    char hex_char)
+static constexpr std::array<ast::logic_value_t, 4> deconstruct_hex_to_bits(char hex_char)
 {
     hex_char = std::isalpha(hex_char) ? std::tolower(hex_char) : hex_char;
 
@@ -168,8 +167,7 @@ struct hex_digit
 // '6' => '110'
 // 'X' => 'XXX'
 //
-static constexpr std::array<ast::logic_value_t, 3> deconstruct_octal_to_bits(
-    char octal_char)
+static constexpr std::array<ast::logic_value_t, 3> deconstruct_octal_to_bits(char octal_char)
 {
     octal_char = std::isalpha(octal_char) ? std::tolower(octal_char) : octal_char;
 
@@ -215,6 +213,36 @@ struct octal_digit
 };
 
 //
+// Convert a character like '1' into a logic value bit.
+//
+// Examples:
+// '1' => '1'
+// 'X' => 'X'
+//
+static constexpr ast::logic_value_t get_bit_from_char(char octal_char)
+{
+    octal_char = std::isalpha(octal_char) ? std::tolower(octal_char) : octal_char;
+
+    switch (octal_char)
+    {
+    case 'x':
+        return ast::logic_value_t::_X;
+        break;
+    case 'z':
+        return ast::logic_value_t::_Z;
+        break;
+    case '0':
+        return ast::logic_value_t::_0;
+        break;
+    case '1':
+        return ast::logic_value_t::_1;
+        break;
+    }
+
+    return ast::logic_value_t::_X;
+}
+
+//
 // (B)inary dig(it)
 //
 // binary_digit ::= x_digit | z_digit | 0 | 1
@@ -222,7 +250,8 @@ struct octal_digit
 struct binary_digit
 {
     static constexpr auto rule = dsl::capture(_binary);
-    static constexpr auto value = lexy::as_string<std::string>;
+    static constexpr auto value = lexy::callback<ast::logic_value_t>(
+        [](auto lexeme) { return get_bit_from_char((char)lexeme[0]); });
 };
 
 //
@@ -262,23 +291,12 @@ struct octal_base
 //
 struct binary_base
 {
-private:
-    struct implicit_signedness_binary_base
-    {
-        static constexpr auto rule = _binary_indicator;
-        static constexpr auto value = lexy::callback<std::string>([]() { return "b"; });
-    };
-
-    struct explicit_signedness_binary_base
-    {
-        static constexpr auto rule = _signedness_indicator >> _binary_indicator;
-        static constexpr auto value = lexy::callback<std::string>([]() { return "sb"; });
-    };
-
-public:
-    static constexpr auto rule = dsl::lit_c<'\''> >>
-        (dsl::p<implicit_signedness_binary_base> | dsl::p<explicit_signedness_binary_base>);
-    static constexpr auto value = lexy::forward<std::string>;
+    static constexpr auto rule = dsl::lit_c<'\''> + (
+        dsl::capture(_signedness_indicator) >> _binary_indicator |
+        _binary_indicator);
+    static constexpr auto value = lexy::callback<bool>(
+        []() { return false; },
+        [](auto _) { (void)_; return true; });
 };
 
 //
@@ -314,7 +332,8 @@ public:
 // 'a', 'X' => '1010XXXX'
 //
 static constexpr std::vector<ast::logic_value_t> deconstruct_hex_to_bits(
-    char head, std::optional<std::string> tail)
+    char head,
+    std::optional<std::string> tail)
 {
     std::vector<ast::logic_value_t> result;
 
@@ -382,7 +401,8 @@ public:
 // '2X' => '010XXX'
 //
 static constexpr std::vector<ast::logic_value_t> deconstruct_octal_to_bits(
-    char head, std::optional<std::string> tail)
+    char head,
+    std::optional<std::string> tail)
 {
     std::vector<ast::logic_value_t> result;
 
@@ -444,14 +464,64 @@ public:
 };
 
 //
+// Deconstruct a binary string like '1X' into logic value bits.
+//
+// Examples:
+// '1X' => '1X'
+//
+static constexpr std::vector<ast::logic_value_t> deconstruct_binary_to_bits(
+    char head,
+    std::optional<std::string> tail)
+{
+    std::vector<ast::logic_value_t> result;
+
+    ast::logic_value_t bit = get_bit_from_char(head);
+    result.push_back(bit);
+
+    if (!tail.has_value())
+    {
+        return result;
+    }
+
+    for (const char &c : tail.value())
+    {
+        if (c == '_')
+        {
+            continue;
+        }
+
+        ast::logic_value_t bit = get_bit_from_char(c);
+        result.push_back(bit);
+    }
+
+    return result;
+}
+
+//
 // Binary value
 //
 // binary_value ::= binary_digit { _ | binary_digit }
 //
 struct binary_value
 {
-    static constexpr auto rule = dsl::identifier(_binary, _binary / dsl::lit_c<'_'>);
-    static constexpr auto value = lexy::as_string<std::string>;
+private:
+    struct _head
+    {
+        static constexpr auto rule = dsl::capture(_binary);
+        static constexpr auto value = lexy::as_string<std::string>;
+    };
+    struct _tail
+    {
+        static constexpr auto rule = dsl::list(dsl::capture(_binary / dsl::lit_c<'_'>));
+        static constexpr auto value = lexy::as_string<std::string>;
+    };
+
+public:
+    static constexpr auto rule = dsl::p<_head> + dsl::opt(dsl::p<_tail>);
+    static constexpr auto value =
+        lexy::callback<std::vector<ast::logic_value_t>>(
+            [](std::string head, std::optional<std::string> tail)
+            { return deconstruct_binary_to_bits(head[0], tail); });
 };
 
 //
@@ -654,6 +724,7 @@ struct binary_number
     static constexpr auto whitespace = dsl::ascii::space;
     static constexpr auto rule =
         dsl::opt(dsl::peek(dsl::p<size>) >> dsl::p<size>) + dsl::p<binary_base> + dsl::p<binary_value>;
+    static constexpr auto value = lexy::construct<ast::integer_literal_constant_t>;
 };
 
 //

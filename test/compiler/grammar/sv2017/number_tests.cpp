@@ -347,6 +347,29 @@ TEST(SV2017NumberTests, OctalDigitTests)
     }
 }
 
+static constexpr ast::logic_value_t to_bit(char c)
+{
+    c = std::tolower(c);
+
+    switch (c)
+    {
+    case 'x':
+        return ast::logic_value_t::_X;
+        break;
+    case 'z':
+        return ast::logic_value_t::_Z;
+        break;
+    case '0':
+        return ast::logic_value_t::_0;
+        break;
+    case '1':
+        return ast::logic_value_t::_1;
+        break;
+    }
+
+    return ast::logic_value_t::_X;
+}
+
 TEST(SV2017NumberTests, BinaryDigitTests)
 {
     EXPECT_PARSE_FAILURE<binary_digit>("");
@@ -361,7 +384,7 @@ TEST(SV2017NumberTests, BinaryDigitTests)
         std::string string(1, c);
 
         if (characters.find(c) != characters.end())
-            EXPECT_PARSE_RESULT<binary_digit>(string, string);
+            EXPECT_PARSE_RESULT<binary_digit>(string, to_bit(c));
         else
             EXPECT_PARSE_FAILURE<binary_digit>(string);
     }
@@ -406,13 +429,13 @@ TEST(SV2017NumberTests, BinaryBaseTests)
 
     EXPECT_PARSE_FAILURE<binary_base>("'");
 
-    EXPECT_PARSE_RESULT<binary_base>("'sb", "sb");
-    EXPECT_PARSE_RESULT<binary_base>("'Sb", "sb");
-    EXPECT_PARSE_RESULT<binary_base>("'sB", "sb");
-    EXPECT_PARSE_RESULT<binary_base>("'SB", "sb");
+    EXPECT_PARSE_RESULT<binary_base>("'sb", true);
+    EXPECT_PARSE_RESULT<binary_base>("'Sb", true);
+    EXPECT_PARSE_RESULT<binary_base>("'sB", true);
+    EXPECT_PARSE_RESULT<binary_base>("'SB", true);
 
-    EXPECT_PARSE_RESULT<binary_base>("'b", "b");
-    EXPECT_PARSE_RESULT<binary_base>("'B", "b");
+    EXPECT_PARSE_RESULT<binary_base>("'b", false);
+    EXPECT_PARSE_RESULT<binary_base>("'B", false);
 }
 
 TEST(SV2017NumberTests, DecimalBaseTests)
@@ -433,8 +456,7 @@ TEST(SV2017NumberTests, DecimalBaseTests)
     EXPECT_PARSE_RESULT<decimal_base>("'D", "d");
 }
 
-static constexpr std::vector<ast::logic_value_t> get_hex_bits(
-    std::string hex_string)
+static constexpr std::vector<ast::logic_value_t> get_hex_bits(std::string hex_string)
 {
     std::vector<ast::logic_value_t> result;
 
@@ -463,8 +485,7 @@ TEST(SV2017NumberTests, HexValueTests)
     EXPECT_PARSE_RESULT<hex_value>("Z_be_ef_X", get_hex_bits("ZbeefX"));
 }
 
-static constexpr std::vector<ast::logic_value_t> get_octal_bits(
-    std::string octal_string)
+static constexpr std::vector<ast::logic_value_t> get_octal_bits(std::string octal_string)
 {
     std::vector<ast::logic_value_t> result;
 
@@ -493,6 +514,19 @@ TEST(SV2017NumberTests, OctalValueTests)
     EXPECT_PARSE_RESULT<octal_value>("Z_10_2_4X", get_octal_bits("Z1024X"));
 }
 
+static constexpr std::vector<ast::logic_value_t> get_binary_bits(std::string binary_string)
+{
+    std::vector<ast::logic_value_t> result;
+
+    for (const char& c : binary_string)
+    {
+        ast::logic_value_t bit = to_bit(c);
+        result.push_back(bit);
+    }
+
+    return result;
+}
+
 TEST(SV2017NumberTests, BinaryValueTests)
 {
     EXPECT_PARSE_FAILURE<binary_value>("");
@@ -500,10 +534,10 @@ TEST(SV2017NumberTests, BinaryValueTests)
 
     EXPECT_PARSE_FAILURE<binary_value>("_010110");
 
-    EXPECT_PARSE_RESULT<binary_value>("010110", "010110");
-    EXPECT_PARSE_RESULT<binary_value>("01_0_11_0", "01_0_11_0");
-    EXPECT_PARSE_RESULT<binary_value>("Z1010X", "Z1010X");
-    EXPECT_PARSE_RESULT<binary_value>("Z_10_1_0X", "Z_10_1_0X");
+    EXPECT_PARSE_RESULT<binary_value>("010110", get_binary_bits("010110"));
+    EXPECT_PARSE_RESULT<binary_value>("01_0_11_0", get_binary_bits("010110"));
+    EXPECT_PARSE_RESULT<binary_value>("Z1010X", get_binary_bits("Z1010X"));
+    EXPECT_PARSE_RESULT<binary_value>("Z_10_1_0X", get_binary_bits("Z1010X"));
 }
 
 TEST(SV2017NumberTests, UnsignedNumberTests)
@@ -819,7 +853,65 @@ void test_binary_number_parsing()
 
 TEST(SV2017NumberTests, BinaryNumberTests)
 {
-    test_binary_number_parsing<binary_number>();
+    EXPECT_PARSE_FAILURE<binary_number>("");
+    EXPECT_PARSE_FAILURE<binary_number>("t");
+
+    EXPECT_PARSE_FAILURE<binary_number>("'b2010");
+    EXPECT_PARSE_FAILURE<binary_number>("'b 2010");
+
+    EXPECT_PARSE_RESULT<binary_number>(
+        "'b 1011011010",
+        ast::integer_literal_constant_t { std::nullopt, false, get_binary_bits("1011011010") });
+
+    EXPECT_PARSE_RESULT<binary_number>(
+        "'b10",
+        ast::integer_literal_constant_t { std::nullopt, false, get_binary_bits("10") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        " 'b10",
+        ast::integer_literal_constant_t { std::nullopt, false, get_binary_bits("10") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        "'b 10",
+        ast::integer_literal_constant_t { std::nullopt, false, get_binary_bits("10") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        " 'b 10",
+        ast::integer_literal_constant_t { std::nullopt, false, get_binary_bits("10") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        "2'b10",
+        ast::integer_literal_constant_t { 2, false, get_binary_bits("10") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        "2 'b10",
+        ast::integer_literal_constant_t { 2, false, get_binary_bits("10") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        "2'b 10",
+        ast::integer_literal_constant_t { 2, false, get_binary_bits("10") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        "2 'b 10",
+        ast::integer_literal_constant_t { 2, false, get_binary_bits("10") });
+
+    EXPECT_PARSE_RESULT<binary_number>(
+        "'b010",
+        ast::integer_literal_constant_t { std::nullopt, false, get_binary_bits("010") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        " 'b010",
+        ast::integer_literal_constant_t { std::nullopt, false, get_binary_bits("010") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        "'b 010",
+        ast::integer_literal_constant_t { std::nullopt, false, get_binary_bits("010") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        " 'b 010",
+        ast::integer_literal_constant_t { std::nullopt, false, get_binary_bits("010") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        "3'b010",
+        ast::integer_literal_constant_t { 3, false, get_binary_bits("010") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        "3 'b010",
+        ast::integer_literal_constant_t { 3, false, get_binary_bits("010") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        "3'b 010",
+        ast::integer_literal_constant_t { 3, false, get_binary_bits("010") });
+    EXPECT_PARSE_RESULT<binary_number>(
+        "3 'b 010",
+        ast::integer_literal_constant_t { 3, false, get_binary_bits("010") });
 }
 
 template<typename TProduction>
