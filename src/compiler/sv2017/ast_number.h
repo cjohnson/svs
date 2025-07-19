@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <optional>
-#include <vector>
+#include <string>
 
 namespace svs::ast::sv2017
 {
@@ -37,9 +37,35 @@ typedef enum class LogicValue
 } logic_value_t;
 
 //
+// The type and format of the integral number (hex, octal, etc.)
+//
+typedef enum IntegralNumberType
+{
+    //
+    // The integral number is in a decimal format.
+    //
+    Decimal,
+
+    //
+    // The integral number is in an octal format.
+    //
+    Octal,
+
+    //
+    // The integral number is in a binary format.
+    //
+    Binary,
+
+    //
+    // The integral number is in a hexadecimal format.
+    //
+    Hexadecimal,
+} integral_number_type_t;
+
+//
 // An integer literal constant
 //
-typedef struct IntegerLiteralConstant
+typedef struct IntegralNumber
 {
     //
     // The optionally-provided size of the number literal.
@@ -52,16 +78,15 @@ typedef struct IntegerLiteralConstant
     bool is_signed;
 
     //
-    // The vector of bits that compose the number.
+    // The value.
     //
-    std::vector<logic_value_t> bits;
-
-} integer_literal_constant_t;
+    std::string value;
+} integral_number_t;
 
 //
 // Value equality for integer literal constants.
 //
-bool operator==(const IntegerLiteralConstant& lhs, const IntegerLiteralConstant& rhs);
+bool operator==(const IntegralNumber& lhs, const IntegralNumber& rhs);
 
 }
 
