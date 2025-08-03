@@ -24,6 +24,7 @@ add_library(svsc STATIC)
 target_sources(svsc
     PRIVATE
         ./src/compiler/sv2017/ast_number.cpp
+        ./src/compiler/sv2017/ast_visitor.cpp
         ./src/compiler/sv2017/grammar_identifier.hpp
 )
 target_link_libraries(svsc PRIVATE foonathan::lexy)

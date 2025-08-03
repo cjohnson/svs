@@ -2,9 +2,9 @@
 
 namespace ast = svs::ast::sv2017;
 
-bool ast::operator==(const integral_number_t& lhs, const integral_number_t& rhs)
+bool ast::operator==(const integral_number_t &lhs, const integral_number_t &rhs)
 {
-    return (lhs.size == rhs.size) &&
-        (lhs.is_signed == rhs.is_signed) &&
-        (lhs.value == rhs.value);
+    return (lhs.integral_number_type() == rhs.integral_number_type()) &&
+           (lhs.size() == rhs.size()) && (lhs.is_signed() == rhs.is_signed()) &&
+           (lhs.value() == rhs.value());
 }
