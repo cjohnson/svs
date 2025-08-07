@@ -11,34 +11,15 @@ namespace svs::ast::sv2017
 {
 
 //
-// The type of the number
-//
-enum class number_type_t
-{
-    //
-    // The number is an integral number
-    //
-    Integral,
-
-    //
-    // The number is a real number
-    //
-    Real,
-};
-
-//
 // A number.
 //
 class number_t
 {
-  private:
-    number_type_t _type;
-
   protected:
     //
     // Construct a number.
     //
-    number_t(const number_type_t &__type) : _type(__type)
+    number_t()
     {
     }
 
@@ -54,14 +35,6 @@ class number_t
     virtual void accept(visitor_t &visitor) const
     {
         visitor.visit(*this);
-    }
-
-    //
-    // Get the type of the number.
-    //
-    const number_type_t &number_type() const
-    {
-        return _type;
     }
 };
 
@@ -109,8 +82,7 @@ class integral_number_t : public number_t
     integral_number_t(integral_number_type_t __type,
                       std::optional<uint64_t> __size, bool __is_signed,
                       std::string __value)
-        : number_t(number_type_t::Integral), _type(__type), _size(__size),
-          _is_signed(__is_signed), _value(__value)
+        : _type(__type), _size(__size), _is_signed(__is_signed), _value(__value)
     {
     }
 
@@ -160,6 +132,45 @@ class integral_number_t : public number_t
 // Value equality for integral numbers.
 //
 bool operator==(const integral_number_t &lhs, const integral_number_t &rhs);
+
+//
+// A real number
+//
+class real_number_t : public number_t
+{
+  private:
+    double _value;
+
+  public:
+    //
+    // Construct a real number.
+    //
+    real_number_t(double __value) : _value(__value)
+    {
+    }
+
+    //
+    // Accept function for visitor
+    //
+    void accept(visitor_t &visitor) const override
+    {
+        number_t::accept(visitor);
+        visitor.visit(*this);
+    }
+
+    //
+    // The value of the real number
+    //
+    double value() const
+    {
+        return _value;
+    }
+};
+
+//
+// Value equality for real numbers.
+//
+bool operator==(const real_number_t &lhs, const real_number_t &rhs);
 
 } // namespace svs::ast::sv2017
 

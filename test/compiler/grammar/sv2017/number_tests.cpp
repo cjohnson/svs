@@ -322,31 +322,92 @@ TEST(SV2017NumberTests, FixedPointNumberTests)
     EXPECT_PARSE_RESULT<fixed_point_number>("13_73_.41_8_9", "13_73_.41_8_9");
 }
 
+//
+// Test visitor base class
+//
+class test_visitor_t : public ast::visitor_t
+{
+  public:
+    //
+    // Run tests on information collected by this visitor.
+    //
+    virtual void test() = 0;
+};
+
+class real_number_test_visitor : public test_visitor_t
+{
+  private:
+    ast::real_number_t _expected;
+
+    std::vector<const ast::number_t *> numbers;
+    std::vector<const ast::real_number_t *> real_numbers;
+
+  public:
+    real_number_test_visitor(const ast::real_number_t &expected)
+        : _expected(expected)
+    {
+    }
+
+    virtual void test() override
+    {
+        ASSERT_EQ(numbers.size(), 1);
+        ASSERT_EQ(real_numbers.size(), 1);
+
+        const ast::real_number_t *real_number = real_numbers[0];
+        EXPECT_EQ(_expected, *real_number);
+    }
+
+    void visit(const ast::number_t &number) override
+    {
+        numbers.push_back(&number);
+    }
+
+    void visit(const ast::real_number_t &real_number) override
+    {
+        real_numbers.push_back(&real_number);
+    }
+};
+
 template <typename TProduction> void test_real_number_parsing()
 {
     EXPECT_PARSE_FAILURE<TProduction>("");
     EXPECT_PARSE_FAILURE<TProduction>("g");
 
-    EXPECT_PARSE_SUCCESS<TProduction>("1373.4189");
-    EXPECT_PARSE_SUCCESS<TProduction>("1373");
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373.4189", real_number_test_visitor{ast::real_number_t{1373.4189}});
 
-    EXPECT_PARSE_SUCCESS<TProduction>("1373e24");
-    EXPECT_PARSE_SUCCESS<TProduction>("1373E24");
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373e24", real_number_test_visitor{ast::real_number_t{1373e24}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373E24", real_number_test_visitor{ast::real_number_t{1373E24}});
 
-    EXPECT_PARSE_SUCCESS<TProduction>("1373e+24");
-    EXPECT_PARSE_SUCCESS<TProduction>("1373E+25");
-    EXPECT_PARSE_SUCCESS<TProduction>("1373e-26");
-    EXPECT_PARSE_SUCCESS<TProduction>("1373E-27");
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373e+24", real_number_test_visitor{ast::real_number_t{1373e+24}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373E+25", real_number_test_visitor{ast::real_number_t{1373E+25}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373e-26", real_number_test_visitor{ast::real_number_t{1373e-26}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373E-27", real_number_test_visitor{ast::real_number_t{1373E-27}});
 
-    EXPECT_PARSE_SUCCESS<TProduction>("1373.57e+24");
-    EXPECT_PARSE_SUCCESS<TProduction>("1373.25E+25");
-    EXPECT_PARSE_SUCCESS<TProduction>("1373.78e-26");
-    EXPECT_PARSE_SUCCESS<TProduction>("1373.47E-27");
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373.57e+24",
+        real_number_test_visitor{ast::real_number_t{1373.57e+24}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373.25E+25",
+        real_number_test_visitor{ast::real_number_t{1373.25E+25}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373.78e-26",
+        real_number_test_visitor{ast::real_number_t{1373.78e-26}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373.47E-27",
+        real_number_test_visitor{ast::real_number_t{1373.47E-27}});
 }
 
 TEST(SV2017NumberTests, RealNumberTests)
 {
     test_real_number_parsing<real_number>();
+    EXPECT_PARSE_FAILURE<real_number>("1373");
 }
 
 TEST(SV2017NumberTests, NonZeroUnsignedNumberTests)
@@ -360,18 +421,6 @@ TEST(SV2017NumberTests, NonZeroUnsignedNumberTests)
     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("_1_1_4");
     EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4_", "1_1_4_");
 }
-
-//
-// Test visitor base class
-//
-class test_visitor_t : public ast::visitor_t
-{
-  public:
-    //
-    // Run tests on information collected by this visitor.
-    //
-    virtual void test() = 0;
-};
 
 class integral_number_test_visitor : public test_visitor_t
 {
@@ -390,10 +439,6 @@ class integral_number_test_visitor : public test_visitor_t
     virtual void test() override
     {
         ASSERT_EQ(numbers.size(), 1);
-
-        const ast::number_t *number = numbers[0];
-        EXPECT_EQ(_expected.number_type(), number->number_type());
-
         ASSERT_EQ(integral_numbers.size(), 1);
 
         const ast::integral_number_t *integral_number = integral_numbers[0];
@@ -1169,4 +1214,5 @@ TEST(SV2017NumberTests, IntegralNumberTests)
 TEST(SV2017NumberTests, NumberTests)
 {
     test_integral_number_parsing<number>();
+    test_real_number_parsing<number>();
 }
