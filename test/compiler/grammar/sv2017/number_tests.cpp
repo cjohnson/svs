@@ -1216,3 +1216,4 @@ TEST(SV2017NumberTests, NumberTests)
     test_integral_number_parsing<number>();
     test_real_number_parsing<number>();
 }
+

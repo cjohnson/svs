@@ -18,10 +18,8 @@ namespace dsl = lexy::dsl;
 //
 struct system_tf_identifier
 {
-    static constexpr auto rule = []
-    {
-        auto head =
-            dsl::ascii::alpha_digit_underscore / dsl::dollar_sign;
+    static constexpr auto rule = [] {
+        auto head = dsl::ascii::alpha_digit_underscore / dsl::dollar_sign;
         return dsl::dollar_sign + dsl::identifier(head);
     }();
 
@@ -35,11 +33,9 @@ struct system_tf_identifier
 //
 struct simple_identifier
 {
-    static constexpr auto rule = []
-    {
+    static constexpr auto rule = [] {
         auto head = dsl::ascii::alpha_underscore;
-        auto tail =
-            dsl::ascii::alpha_digit_underscore / dsl::dollar_sign;
+        auto tail = dsl::ascii::alpha_digit_underscore / dsl::dollar_sign;
         return dsl::identifier(head, tail);
     }();
 
@@ -49,12 +45,12 @@ struct simple_identifier
 //
 // Escaped Identifier
 //
-// escaped_identifier ::= \ {any_printable_ASCII_character_except_white_space} white_space
+// escaped_identifier ::= \ {any_printable_ASCII_character_except_white_space}
+// white_space
 //
 struct escaped_identifier
 {
-    static constexpr auto rule = []
-    {
+    static constexpr auto rule = [] {
         auto head = dsl::ascii::print - dsl::ascii::space;
         return dsl::lit_c<'\\'> >> dsl::identifier(head);
     }();
@@ -67,7 +63,7 @@ struct escaped_identifier
 //
 // identifier ::=
 //     simple_identifier
-//   | escaped_identifier 
+//   | escaped_identifier
 //
 struct identifier
 {

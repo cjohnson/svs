@@ -29,18 +29,6 @@ target_sources(svsc
 )
 target_link_libraries(svsc PRIVATE foonathan::lexy)
 
-add_library(svs
-    STATIC
-        ./src/parser/parser.cpp
-
-        # SystemVerilog 2017
-        ./src/parser/sv2017/string_literal_parser.cpp
-        ./src/parser/sv2017/comment_parser.cpp
-        ./src/parser/sv2017/identifier_parser.cpp
-        ./src/parser/sv2017/white_space_parser.cpp
-)
-target_link_libraries(svs PRIVATE foonathan::lexy)
-
 #add_executable(svsc ./src/main.cpp)
 #target_link_libraries(svsc svs)
 

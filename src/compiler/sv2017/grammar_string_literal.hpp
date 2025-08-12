@@ -27,25 +27,26 @@ struct string_literal
         .map<'f'>('\f')
         .map<'a'>('\a');
 
-    static constexpr auto rule = []
-    {
+    static constexpr auto rule = [] {
         auto character_rule = dsl::ascii::character - dsl::ascii::control;
 
-        auto escape_rule = dsl::backslash_escape
-            .rule(dsl::ascii::control)
-            .symbol<escaped_symbols>()
-            .rule(dsl::integer<int, dsl::octal>(dsl::n_digits<3, dsl::octal>))
-            .rule(dsl::integer<int, dsl::octal>(dsl::n_digits<2, dsl::octal>))
-            .rule(dsl::integer<int, dsl::octal>(dsl::digit<dsl::octal>))
-            .rule(dsl::lit_c<'x'> >> (
-                dsl::integer<int, dsl::hex>(dsl::n_digits<2, dsl::hex>)
-              | dsl::integer<int, dsl::hex>(dsl::digit<dsl::hex>)));
+        auto escape_rule =
+            dsl::backslash_escape.rule(dsl::ascii::control)
+                .symbol<escaped_symbols>()
+                .rule(
+                    dsl::integer<int, dsl::octal>(dsl::n_digits<3, dsl::octal>))
+                .rule(
+                    dsl::integer<int, dsl::octal>(dsl::n_digits<2, dsl::octal>))
+                .rule(dsl::integer<int, dsl::octal>(dsl::digit<dsl::octal>))
+                .rule(dsl::lit_c<'x'> >>
+                      (dsl::integer<int, dsl::hex>(dsl::n_digits<2, dsl::hex>) |
+                       dsl::integer<int, dsl::hex>(dsl::digit<dsl::hex>)));
         return dsl::quoted(character_rule, escape_rule);
     }();
 
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
-}
+} // namespace svs::grammar::sv2017
 
 #endif // SVS_COMPILER_SV2017_GRAMMAR_STRING_LITERAL_H_
