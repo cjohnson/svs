@@ -14,7 +14,7 @@
 #include <lexy/grammar.hpp>
 #include <sys/types.h>
 
-#include "ast_number.h"
+#include "ast.h"
 
 namespace svs::grammar::sv2017
 {

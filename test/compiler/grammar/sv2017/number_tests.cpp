@@ -1,11 +1,9 @@
 #include <climits>
-#include <memory>
 #include <unordered_set>
 
 #include <gtest/gtest.h>
 
-#include "../../../../src/compiler/sv2017/ast_number.h"
-#include "../../../../src/compiler/sv2017/ast_visitor.h"
+#include "../../../../src/compiler/sv2017/ast.h"
 #include "../../../../src/compiler/sv2017/grammar_number.hpp"
 
 #include "../grammar_test_utils.hpp"

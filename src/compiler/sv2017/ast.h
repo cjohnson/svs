@@ -1,14 +1,17 @@
-#ifndef SVS_COMPILER_SV2017_AST_NUMBER_H_
-#define SVS_COMPILER_SV2017_AST_NUMBER_H_
+#ifndef SVS_COMPILER_SV2017_AST_H_
+#define SVS_COMPILER_SV2017_AST_H_
 
 #include <cstdint>
 #include <optional>
 #include <string>
 
-#include "ast_visitor.h"
-
 namespace svs::ast::sv2017
 {
+
+//
+// Base visitor class for SystemVerilog 2017
+//
+class visitor_t;
 
 //
 // A number.
@@ -19,23 +22,18 @@ class number_t
     //
     // Construct a number.
     //
-    number_t()
-    {
-    }
+    number_t();
 
   public:
     //
     // Destruct a number.
     //
-    virtual ~number_t() = default;
+    virtual ~number_t();
 
     //
     // Accept function for visitor
     //
-    virtual void accept(visitor_t &visitor) const
-    {
-        visitor.visit(*this);
-    }
+    virtual void accept(visitor_t &visitor) const;
 };
 
 //
@@ -81,51 +79,32 @@ class integral_number_t : public number_t
     //
     integral_number_t(integral_number_type_t __type,
                       std::optional<uint64_t> __size, bool __is_signed,
-                      std::string __value)
-        : _type(__type), _size(__size), _is_signed(__is_signed), _value(__value)
-    {
-    }
+                      std::string __value);
 
     //
     // Accept function for visitor
     //
-    void accept(visitor_t &visitor) const override
-    {
-        number_t::accept(visitor);
-        visitor.visit(*this);
-    }
+    void accept(visitor_t &visitor) const override;
 
     //
     // The type of integral number
     //
-    const integral_number_type_t &integral_number_type() const
-    {
-        return _type;
-    }
+    const integral_number_type_t &integral_number_type() const;
 
     //
     // The optionally-provided size of the number literal.
     //
-    const std::optional<uint64_t> &size() const
-    {
-        return _size;
-    }
+    const std::optional<uint64_t> &size() const;
 
     //
     // True if the number is signed.
     //
-    bool is_signed() const
-    {
-        return _is_signed;
-    }
+    bool is_signed() const;
 
     //
     // The value.
     //
-    const std::string &value() const
-    {
-        return _value;
-    }
+    const std::string &value() const;
 };
 
 //
@@ -145,26 +124,17 @@ class real_number_t : public number_t
     //
     // Construct a real number.
     //
-    real_number_t(double __value) : _value(__value)
-    {
-    }
+    real_number_t(double __value);
 
     //
     // Accept function for visitor
     //
-    void accept(visitor_t &visitor) const override
-    {
-        number_t::accept(visitor);
-        visitor.visit(*this);
-    }
+    void accept(visitor_t &visitor) const override;
 
     //
     // The value of the real number
     //
-    double value() const
-    {
-        return _value;
-    }
+    double value() const;
 };
 
 //
@@ -172,6 +142,28 @@ class real_number_t : public number_t
 //
 bool operator==(const real_number_t &lhs, const real_number_t &rhs);
 
+//
+// Base visitor class for SystemVerilog 2017
+//
+class visitor_t
+{
+  public:
+    //
+    // Visit method for number_t
+    //
+    virtual void visit(const number_t &number);
+
+    //
+    // Visit method for integral_number_t
+    //
+    virtual void visit(const integral_number_t &integral_number);
+
+    //
+    // Visit method for real_number_t.
+    //
+    virtual void visit(const real_number_t &integral_number);
+};
+
 } // namespace svs::ast::sv2017
 
-#endif // SVS_COMPILER_SV2017_AST_NUMBER_H_
+#endif // SVS_COMPILER_SV2017_AST_H_
