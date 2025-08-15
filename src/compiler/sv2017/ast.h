@@ -37,30 +37,26 @@ class number_t
 };
 
 //
-// The type and format of the integral number (hex, octal, etc.)
+// Contains information about an integral number base
 //
-enum class integral_number_type_t
+struct integral_number_base_info_t
 {
     //
-    // The integral number value is in a decimal format.
+    // Indicates the signedness of the base
     //
-    Decimal,
+    std::optional<char> signedness_indicator;
 
     //
-    // The integral number value is in an octal format.
+    // Indicates the base
     //
-    Octal,
-
-    //
-    // The integral number value is in a binary format.
-    //
-    Binary,
-
-    //
-    // The integral number value is in a hexadecimal format.
-    //
-    Hexadecimal,
+    char base_indicator;
 };
+
+//
+// Value equality for integral number base information
+//
+bool operator==(const integral_number_base_info_t &lhs,
+                const integral_number_base_info_t &rhs);
 
 //
 // An integral number
@@ -68,18 +64,18 @@ enum class integral_number_type_t
 class integral_number_t : public number_t
 {
   private:
-    integral_number_type_t _type;
-    std::optional<uint64_t> _size;
-    bool _is_signed;
+    std::optional<std::string> _size;
+    std::optional<std::string> _signedness_indicator;
+    std::optional<std::string> _base_indicator;
     std::string _value;
 
   public:
     //
     // Construct an integral number.
     //
-    integral_number_t(integral_number_type_t __type,
-                      std::optional<uint64_t> __size, bool __is_signed,
-                      std::string __value);
+    integral_number_t(std::optional<std::string> __size,
+                      std::optional<std::string> __signedness_indicator,
+                      std::string __base_indicator, std::string __value);
 
     //
     // Accept function for visitor
@@ -87,22 +83,22 @@ class integral_number_t : public number_t
     void accept(visitor_t &visitor) const override;
 
     //
-    // The type of integral number
+    // The size of the number
     //
-    const integral_number_type_t &integral_number_type() const;
+    const std::optional<std::string> &size() const;
 
     //
-    // The optionally-provided size of the number literal.
+    // Indicates if the number is signed
     //
-    const std::optional<uint64_t> &size() const;
+    const std::optional<std::string> &signedness_indicator() const;
 
     //
-    // True if the number is signed.
+    // Indicates the base of the number (hex, octal, etc)
     //
-    bool is_signed() const;
+    const std::optional<std::string> &base_indicator() const;
 
     //
-    // The value.
+    // The value of the number
     //
     const std::string &value() const;
 };

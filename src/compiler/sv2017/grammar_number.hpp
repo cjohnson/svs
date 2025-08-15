@@ -106,18 +106,27 @@ struct unbased_unsized_literal
 struct hex_base
 {
   private:
-    static constexpr auto indicator = dsl::lit_c<'h'> / dsl::lit_c<'H'>;
+    static constexpr auto base_indicator = dsl::lit_c<'h'> / dsl::lit_c<'H'>;
 
   public:
     static constexpr auto rule =
-        dsl::lit_c<'\''> +
-        (dsl::capture(dsl::lit_c<'s'> / dsl::lit_c<'S'>) >> indicator |
-         indicator);
-    static constexpr auto value = lexy::callback<bool>([]() { return false; },
-                                                       [](auto _) {
-                                                           (void)_;
-                                                           return true;
-                                                       });
+        dsl::lit_c<'\''> + (dsl::capture(dsl::lit_c<'s'> / dsl::lit_c<'S'>) >>
+                                dsl::capture(base_indicator) |
+                            dsl::capture(base_indicator));
+    static constexpr auto value =
+        lexy::callback<ast::integral_number_base_info_t>(
+            [](auto base_indicator_lexeme) {
+                return ast::integral_number_base_info_t{
+                    std::nullopt,
+                    base_indicator_lexeme[0],
+                };
+            },
+            [](auto signedness_indicator_lexeme, auto base_indicator_lexeme) {
+                return ast::integral_number_base_info_t{
+                    signedness_indicator_lexeme[0],
+                    base_indicator_lexeme[0],
+                };
+            });
 };
 
 //
@@ -128,18 +137,27 @@ struct hex_base
 struct octal_base
 {
   private:
-    static constexpr auto indicator = dsl::lit_c<'o'> / dsl::lit_c<'O'>;
+    static constexpr auto base_indicator = dsl::lit_c<'o'> / dsl::lit_c<'O'>;
 
   public:
     static constexpr auto rule =
-        dsl::lit_c<'\''> +
-        (dsl::capture(dsl::lit_c<'s'> / dsl::lit_c<'S'>) >> indicator |
-         indicator);
-    static constexpr auto value = lexy::callback<bool>([]() { return false; },
-                                                       [](auto _) {
-                                                           (void)_;
-                                                           return true;
-                                                       });
+        dsl::lit_c<'\''> + (dsl::capture(dsl::lit_c<'s'> / dsl::lit_c<'S'>) >>
+                                dsl::capture(base_indicator) |
+                            dsl::capture(base_indicator));
+    static constexpr auto value =
+        lexy::callback<ast::integral_number_base_info_t>(
+            [](auto base_indicator_lexeme) {
+                return ast::integral_number_base_info_t{
+                    std::nullopt,
+                    base_indicator_lexeme[0],
+                };
+            },
+            [](auto signedness_indicator_lexeme, auto base_indicator_lexeme) {
+                return ast::integral_number_base_info_t{
+                    signedness_indicator_lexeme[0],
+                    base_indicator_lexeme[0],
+                };
+            });
 };
 
 //
@@ -150,18 +168,27 @@ struct octal_base
 struct binary_base
 {
   private:
-    static constexpr auto indicator = dsl::lit_c<'b'> / dsl::lit_c<'B'>;
+    static constexpr auto base_indicator = dsl::lit_c<'b'> / dsl::lit_c<'B'>;
 
   public:
     static constexpr auto rule =
-        dsl::lit_c<'\''> +
-        (dsl::capture(dsl::lit_c<'s'> / dsl::lit_c<'S'>) >> indicator |
-         indicator);
-    static constexpr auto value = lexy::callback<bool>([]() { return false; },
-                                                       [](auto _) {
-                                                           (void)_;
-                                                           return true;
-                                                       });
+        dsl::lit_c<'\''> + (dsl::capture(dsl::lit_c<'s'> / dsl::lit_c<'S'>) >>
+                                dsl::capture(base_indicator) |
+                            dsl::capture(base_indicator));
+    static constexpr auto value =
+        lexy::callback<ast::integral_number_base_info_t>(
+            [](auto base_indicator_lexeme) {
+                return ast::integral_number_base_info_t{
+                    std::nullopt,
+                    base_indicator_lexeme[0],
+                };
+            },
+            [](auto signedness_indicator_lexeme, auto base_indicator_lexeme) {
+                return ast::integral_number_base_info_t{
+                    signedness_indicator_lexeme[0],
+                    base_indicator_lexeme[0],
+                };
+            });
 };
 
 //
@@ -172,18 +199,27 @@ struct binary_base
 struct decimal_base
 {
   private:
-    static constexpr auto indicator = dsl::lit_c<'d'> / dsl::lit_c<'D'>;
+    static constexpr auto base_indicator = dsl::lit_c<'d'> / dsl::lit_c<'D'>;
 
   public:
     static constexpr auto rule =
-        dsl::lit_c<'\''> +
-        (dsl::capture(dsl::lit_c<'s'> / dsl::lit_c<'S'>) >> indicator |
-         indicator);
-    static constexpr auto value = lexy::callback<bool>([]() { return false; },
-                                                       [](auto _) {
-                                                           (void)_;
-                                                           return true;
-                                                       });
+        dsl::lit_c<'\''> + (dsl::capture(dsl::lit_c<'s'> / dsl::lit_c<'S'>) >>
+                                dsl::capture(base_indicator) |
+                            dsl::capture(base_indicator));
+    static constexpr auto value =
+        lexy::callback<ast::integral_number_base_info_t>(
+            [](auto base_indicator_lexeme) {
+                return ast::integral_number_base_info_t{
+                    std::nullopt,
+                    base_indicator_lexeme[0],
+                };
+            },
+            [](auto signedness_indicator_lexeme, auto base_indicator_lexeme) {
+                return ast::integral_number_base_info_t{
+                    signedness_indicator_lexeme[0],
+                    base_indicator_lexeme[0],
+                };
+            });
 };
 
 //
@@ -251,298 +287,289 @@ struct fixed_point_number
 };
 
 //
-// Real number
+// //
+// // Real number
+// //
+// // real_number ::=
+// //     fixed_point_number
+// //     | unsigned_number [ . unsigned_number ] exp [ sign ] unsigned_number
+// //
+// struct real_number
+// {
+//   private:
+//     struct sign_production
+//     {
+//         static constexpr auto rule = dsl::capture(sign);
+//         static constexpr auto value = lexy::as_string<std::string>;
+//     };
 //
-// real_number ::=
-//     fixed_point_number
-//     | unsigned_number [ . unsigned_number ] exp [ sign ] unsigned_number
+//     struct real_number_with_exponent
+//     {
+//         static constexpr auto rule =
+//             dsl::p<unsigned_number> +
+//             dsl::opt(dsl::period >> dsl::p<unsigned_number>) + exp +
+//             dsl::opt(dsl::peek(sign) >> dsl::p<sign_production>) +
+//             dsl::p<unsigned_number>;
+//         static constexpr auto value =
+//             lexy::callback<std::shared_ptr<ast::real_number_t>>(
+//                 [](std::string integer_part,
+//                    std::optional<std::string> fractional_part,
+//                    std::optional<std::string> sign, std::string exponent) {
+//                     std::stringstream ss;
+//                     ss << integer_part;
+//                     if (fractional_part.has_value())
+//                     {
+//                         ss << '.';
+//                         ss << fractional_part.value();
+//                     }
+//                     ss << 'e';
+//                     if (sign.has_value())
+//                     {
+//                         ss << sign.value();
+//                     }
+//                     ss << exponent;
+//                     return std::make_shared<ast::real_number_t>(
+//                         std::stod(ss.str()));
+//                 });
+//     };
 //
-struct real_number
-{
-  private:
-    struct sign_production
-    {
-        static constexpr auto rule = dsl::capture(sign);
-        static constexpr auto value = lexy::as_string<std::string>;
-    };
-
-    struct real_number_with_exponent
-    {
-        static constexpr auto rule =
-            dsl::p<unsigned_number> +
-            dsl::opt(dsl::period >> dsl::p<unsigned_number>) + exp +
-            dsl::opt(dsl::peek(sign) >> dsl::p<sign_production>) +
-            dsl::p<unsigned_number>;
-        static constexpr auto value =
-            lexy::callback<std::shared_ptr<ast::real_number_t>>(
-                [](std::string integer_part,
-                   std::optional<std::string> fractional_part,
-                   std::optional<std::string> sign, std::string exponent) {
-                    std::stringstream ss;
-                    ss << integer_part;
-                    if (fractional_part.has_value())
-                    {
-                        ss << '.';
-                        ss << fractional_part.value();
-                    }
-                    ss << 'e';
-                    if (sign.has_value())
-                    {
-                        ss << sign.value();
-                    }
-                    ss << exponent;
-                    return std::make_shared<ast::real_number_t>(
-                        std::stod(ss.str()));
-                });
-    };
-
-  public:
-    static constexpr auto rule =
-        dsl::peek(dsl::p<real_number_with_exponent>) >>
-            dsl::p<real_number_with_exponent> |
-        dsl::peek(dsl::p<fixed_point_number>) >> dsl::p<fixed_point_number>;
-    static constexpr auto value =
-        lexy::callback<std::shared_ptr<ast::real_number_t>>(
-            [](std::shared_ptr<ast::real_number_t> real_number) {
-                return real_number;
-            },
-            [](std::string fixed_point_number_literal) {
-                return std::make_shared<ast::real_number_t>(
-                    std::stod(fixed_point_number_literal));
-            });
-};
-
+//   public:
+//     static constexpr auto rule =
+//         dsl::peek(dsl::p<real_number_with_exponent>) >>
+//             dsl::p<real_number_with_exponent> |
+//         dsl::peek(dsl::p<fixed_point_number>) >> dsl::p<fixed_point_number>;
+//     static constexpr auto value =
+//         lexy::callback<std::shared_ptr<ast::real_number_t>>(
+//             [](std::shared_ptr<ast::real_number_t> real_number) {
+//                 return real_number;
+//             },
+//             [](std::string fixed_point_number_literal) {
+//                 return std::make_shared<ast::real_number_t>(
+//                     std::stod(fixed_point_number_literal));
+//             });
+// };
 //
-// Non-zero unsigned number
+// //
+// // Non-zero unsigned number
+// //
+// // non_zero_unsigned_number ::= non_zero_decimal_digit { _ | decimal_digit }
+// //
+// struct non_zero_unsigned_number
+// {
+//     static constexpr auto rule =
+//         dsl::identifier(dsl::digit<dsl::decimal> - dsl::zero,
+//                         dsl::digit<dsl::decimal> /
+//                         dsl::digit_sep_underscore);
+//     static constexpr auto value = lexy::as_string<std::string>;
 //
-// non_zero_unsigned_number ::= non_zero_decimal_digit { _ | decimal_digit }
+//     //
+//     // Converts the result of the parsing operation to a uint64_t.
+//     //
+//     static uint64_t to_uint64_t(std::string value)
+//     {
+//         std::string without_underscores;
+//         for (const char &c : value)
+//         {
+//             without_underscores += c;
+//         }
+//         return (uint64_t)std::stoull(without_underscores);
+//     }
+// };
 //
-struct non_zero_unsigned_number
-{
-    static constexpr auto rule =
-        dsl::identifier(dsl::digit<dsl::decimal> - dsl::zero,
-                        dsl::digit<dsl::decimal> / dsl::digit_sep_underscore);
-    static constexpr auto value = lexy::as_string<std::string>;
-
-    //
-    // Converts the result of the parsing operation to a uint64_t.
-    //
-    static uint64_t to_uint64_t(std::string value)
-    {
-        std::string without_underscores;
-        for (const char &c : value)
-        {
-            without_underscores += c;
-        }
-        return (uint64_t)std::stoull(without_underscores);
-    }
-};
-
+// //
+// // Size
+// //
+// // size ::= non_zero_unsigned_number
+// //
+// typedef non_zero_unsigned_number size;
 //
-// Size
+// //
+// // Hex number
+// //
+// // hex_number ::= [ size ] hex_base hex_value
+// //
+// struct hex_number
+// {
+//     static constexpr auto whitespace = dsl::ascii::space;
+//     static constexpr auto rule =
+//         dsl::opt(dsl::p<size>) + dsl::p<hex_base> + dsl::p<hex_value>;
+//     static constexpr auto value =
+//         lexy::callback<std::shared_ptr<ast::integral_number_t>>(
+//             [](std::optional<std::string> size_string, bool is_signed,
+//                std::string value) {
+//                 return std::make_shared<ast::integral_number_t>(size_string);
+//             });
+// };
 //
-// size ::= non_zero_unsigned_number
+// //
+// // Octal number
+// //
+// // octal_number ::= [ size ] octal_base octal_value
+// //
+// struct octal_number
+// {
+//     static constexpr auto whitespace = dsl::ascii::space;
+//     static constexpr auto rule =
+//         dsl::opt(dsl::p<size>) + dsl::p<octal_base> + dsl::p<octal_value>;
+//     static constexpr auto value =
+//         lexy::callback<std::shared_ptr<ast::integral_number_t>>(
+//             [](std::optional<std::string> size_string, bool is_signed,
+//                std::string value) {
+//                 return std::make_shared<ast::integral_number_t>(
+//                     size_string.has_value()
+//                         ? (std::optional<uint64_t>)size::to_uint64_t(
+//                               size_string.value())
+//                         : (std::optional<uint64_t>)std::nullopt,
+//                     is_signed, value);
+//             });
+// };
 //
-typedef non_zero_unsigned_number size;
-
+// //
+// // Binary number
+// //
+// // binary_number ::= [ size ] binary_base binary_value
+// //
+// struct binary_number
+// {
+//     static constexpr auto whitespace = dsl::ascii::space;
+//     static constexpr auto rule =
+//         dsl::opt(dsl::p<size>) + dsl::p<binary_base> + dsl::p<binary_value>;
+//     static constexpr auto value =
+//         lexy::callback<std::shared_ptr<ast::integral_number_t>>(
+//             [](std::optional<std::string> size_string, bool is_signed,
+//                std::string value) {
+//                 return std::make_shared<ast::integral_number_t>(
+//                     size_string.has_value()
+//                         ? (std::optional<uint64_t>)size::to_uint64_t(
+//                               size_string.value())
+//                         : (std::optional<uint64_t>)std::nullopt,
+//                     is_signed, value);
+//             });
+// };
 //
-// Hex number
+// //
+// // Decimal number
+// //
+// // decimal_number ::=
+// //     unsigned_number
+// //   | [ size ] decimal_base unsigned_number
+// //   | [ size ] decimal_base x_digit { _ }
+// //   | [ size ] decimal_base z_digit { _ }
+// //
+// struct decimal_number
+// {
+//   private:
+//     struct based_sized_unsigned_number
+//     {
+//         static constexpr auto whitespace = dsl::ascii::space;
+//         static constexpr auto rule = dsl::opt(dsl::p<size>) +
+//                                      dsl::p<decimal_base> +
+//                                      dsl::p<unsigned_number>;
+//         static constexpr auto value =
+//             lexy::callback<std::shared_ptr<ast::integral_number_t>>(
+//                 [](std::optional<std::string> size_string, bool is_signed,
+//                    std::string value) {
+//                     return std::make_shared<ast::integral_number_t>(
+//                         size_string.has_value()
+//                             ? (std::optional<uint64_t>)size::to_uint64_t(
+//                                   size_string.value())
+//                             : (std::optional<uint64_t>)std::nullopt,
+//                         is_signed, value);
+//                 });
+//     };
 //
-// hex_number ::= [ size ] hex_base hex_value
+//     struct based_sized_unknown_number
+//     {
+//         static constexpr auto whitespace = dsl::ascii::space;
+//         static constexpr auto rule = dsl::opt(dsl::p<size>) +
+//                                      dsl::p<decimal_base> + x_digit +
+//                                      dsl::while_(dsl::lit_c<'_'>);
+//         static constexpr auto value =
+//             lexy::callback<std::shared_ptr<ast::integral_number_t>>(
+//                 [](std::optional<std::string> size_string, bool is_signed) {
+//                     return std::make_shared<ast::integral_number_t>(
+//                         size_string.has_value()
+//                             ? (std::optional<uint64_t>)size::to_uint64_t(
+//                                   size_string.value())
+//                             : (std::optional<uint64_t>)std::nullopt,
+//                         is_signed, "X");
+//                 });
+//     };
 //
-struct hex_number
-{
-    static constexpr auto whitespace = dsl::ascii::space;
-    static constexpr auto rule =
-        dsl::opt(dsl::p<size>) + dsl::p<hex_base> + dsl::p<hex_value>;
-    static constexpr auto value =
-        lexy::callback<std::shared_ptr<ast::integral_number_t>>(
-            [](std::optional<std::string> size_string, bool is_signed,
-               std::string value) {
-                return std::make_shared<ast::integral_number_t>(
-                    ast::integral_number_type_t::Hexadecimal,
-                    size_string.has_value()
-                        ? (std::optional<uint64_t>)size::to_uint64_t(
-                              size_string.value())
-                        : (std::optional<uint64_t>)std::nullopt,
-                    is_signed, value);
-            });
-};
-
+//     struct based_sized_high_impedance_number
+//     {
+//         static constexpr auto whitespace = dsl::ascii::space;
+//         static constexpr auto rule = dsl::opt(dsl::p<size>) +
+//                                      dsl::p<decimal_base> + z_digit +
+//                                      dsl::while_(dsl::lit_c<'_'>);
+//         static constexpr auto value =
+//             lexy::callback<std::shared_ptr<ast::integral_number_t>>(
+//                 [](std::optional<std::string> size_string, bool is_signed) {
+//                     return std::make_shared<ast::integral_number_t>(
+//                         size_string.has_value()
+//                             ? (std::optional<uint64_t>)size::to_uint64_t(
+//                                   size_string.value())
+//                             : (std::optional<uint64_t>)std::nullopt,
+//                         is_signed, "Z");
+//                 });
+//     };
 //
-// Octal number
+//   public:
+//     static constexpr auto whitespace = dsl::ascii::space;
+//     static constexpr auto rule =
+//         dsl::peek(dsl::p<based_sized_unsigned_number>) >>
+//             dsl::p<based_sized_unsigned_number> |
+//         dsl::peek(dsl::p<based_sized_unknown_number>) >>
+//             dsl::p<based_sized_unknown_number> |
+//         dsl::peek(dsl::p<based_sized_high_impedance_number>) >>
+//             dsl::p<based_sized_high_impedance_number> |
+//         dsl::else_ >> dsl::p<unsigned_number>;
+//     static constexpr auto value =
+//         lexy::callback<std::shared_ptr<ast::integral_number_t>>(
+//             lexy::forward<std::shared_ptr<ast::integral_number_t>>,
+//             [](std::string unsigned_value) {
+//                 return std::make_shared<ast::integral_number_t>(
+//                     true, // The value specified matching the unsigned value
+//                           // rule is actually a signed value
+//                     unsigned_value);
+//             });
+// };
 //
-// octal_number ::= [ size ] octal_base octal_value
+// //
+// // Integral number
+// //
+// // integral_number ::=
+// //     decimal_number
+// //   | octal_number
+// //   | binary_number
+// //   | hex_number
+// //
+// struct integral_number
+// {
+//     static constexpr auto rule =
+//         dsl::peek(dsl::p<octal_number>) >> dsl::p<octal_number> |
+//         dsl::peek(dsl::p<binary_number>) >> dsl::p<binary_number> |
+//         dsl::peek(dsl::p<hex_number>) >> dsl::p<hex_number> |
+//         dsl::peek(dsl::p<decimal_number>) >> dsl::p<decimal_number>;
+//     static constexpr auto value =
+//         lexy::forward<std::shared_ptr<ast::integral_number_t>>;
+// };
 //
-struct octal_number
-{
-    static constexpr auto whitespace = dsl::ascii::space;
-    static constexpr auto rule =
-        dsl::opt(dsl::p<size>) + dsl::p<octal_base> + dsl::p<octal_value>;
-    static constexpr auto value =
-        lexy::callback<std::shared_ptr<ast::integral_number_t>>(
-            [](std::optional<std::string> size_string, bool is_signed,
-               std::string value) {
-                return std::make_shared<ast::integral_number_t>(
-                    ast::integral_number_type_t::Octal,
-                    size_string.has_value()
-                        ? (std::optional<uint64_t>)size::to_uint64_t(
-                              size_string.value())
-                        : (std::optional<uint64_t>)std::nullopt,
-                    is_signed, value);
-            });
-};
-
-//
-// Binary number
-//
-// binary_number ::= [ size ] binary_base binary_value
-//
-struct binary_number
-{
-    static constexpr auto whitespace = dsl::ascii::space;
-    static constexpr auto rule =
-        dsl::opt(dsl::p<size>) + dsl::p<binary_base> + dsl::p<binary_value>;
-    static constexpr auto value =
-        lexy::callback<std::shared_ptr<ast::integral_number_t>>(
-            [](std::optional<std::string> size_string, bool is_signed,
-               std::string value) {
-                return std::make_shared<ast::integral_number_t>(
-                    ast::integral_number_type_t::Binary,
-                    size_string.has_value()
-                        ? (std::optional<uint64_t>)size::to_uint64_t(
-                              size_string.value())
-                        : (std::optional<uint64_t>)std::nullopt,
-                    is_signed, value);
-            });
-};
-
-//
-// Decimal number
-//
-// decimal_number ::=
-//     unsigned_number
-//   | [ size ] decimal_base unsigned_number
-//   | [ size ] decimal_base x_digit { _ }
-//   | [ size ] decimal_base z_digit { _ }
-//
-struct decimal_number
-{
-  private:
-    struct based_sized_unsigned_number
-    {
-        static constexpr auto whitespace = dsl::ascii::space;
-        static constexpr auto rule = dsl::opt(dsl::p<size>) +
-                                     dsl::p<decimal_base> +
-                                     dsl::p<unsigned_number>;
-        static constexpr auto value =
-            lexy::callback<std::shared_ptr<ast::integral_number_t>>(
-                [](std::optional<std::string> size_string, bool is_signed,
-                   std::string value) {
-                    return std::make_shared<ast::integral_number_t>(
-                        ast::integral_number_type_t::Decimal,
-                        size_string.has_value()
-                            ? (std::optional<uint64_t>)size::to_uint64_t(
-                                  size_string.value())
-                            : (std::optional<uint64_t>)std::nullopt,
-                        is_signed, value);
-                });
-    };
-
-    struct based_sized_unknown_number
-    {
-        static constexpr auto whitespace = dsl::ascii::space;
-        static constexpr auto rule = dsl::opt(dsl::p<size>) +
-                                     dsl::p<decimal_base> + x_digit +
-                                     dsl::while_(dsl::lit_c<'_'>);
-        static constexpr auto value =
-            lexy::callback<std::shared_ptr<ast::integral_number_t>>(
-                [](std::optional<std::string> size_string, bool is_signed) {
-                    return std::make_shared<ast::integral_number_t>(
-                        ast::integral_number_type_t::Decimal,
-                        size_string.has_value()
-                            ? (std::optional<uint64_t>)size::to_uint64_t(
-                                  size_string.value())
-                            : (std::optional<uint64_t>)std::nullopt,
-                        is_signed, "X");
-                });
-    };
-
-    struct based_sized_high_impedance_number
-    {
-        static constexpr auto whitespace = dsl::ascii::space;
-        static constexpr auto rule = dsl::opt(dsl::p<size>) +
-                                     dsl::p<decimal_base> + z_digit +
-                                     dsl::while_(dsl::lit_c<'_'>);
-        static constexpr auto value =
-            lexy::callback<std::shared_ptr<ast::integral_number_t>>(
-                [](std::optional<std::string> size_string, bool is_signed) {
-                    return std::make_shared<ast::integral_number_t>(
-                        ast::integral_number_type_t::Decimal,
-                        size_string.has_value()
-                            ? (std::optional<uint64_t>)size::to_uint64_t(
-                                  size_string.value())
-                            : (std::optional<uint64_t>)std::nullopt,
-                        is_signed, "Z");
-                });
-    };
-
-  public:
-    static constexpr auto whitespace = dsl::ascii::space;
-    static constexpr auto rule =
-        dsl::peek(dsl::p<based_sized_unsigned_number>) >>
-            dsl::p<based_sized_unsigned_number> |
-        dsl::peek(dsl::p<based_sized_unknown_number>) >>
-            dsl::p<based_sized_unknown_number> |
-        dsl::peek(dsl::p<based_sized_high_impedance_number>) >>
-            dsl::p<based_sized_high_impedance_number> |
-        dsl::else_ >> dsl::p<unsigned_number>;
-    static constexpr auto value =
-        lexy::callback<std::shared_ptr<ast::integral_number_t>>(
-            lexy::forward<std::shared_ptr<ast::integral_number_t>>,
-            [](std::string unsigned_value) {
-                return std::make_shared<ast::integral_number_t>(
-                    ast::integral_number_type_t::Decimal, std::nullopt,
-                    true, // The value specified matching the unsigned value
-                          // rule is actually a signed value
-                    unsigned_value);
-            });
-};
-
-//
-// Integral number
-//
-// integral_number ::=
-//     decimal_number
-//   | octal_number
-//   | binary_number
-//   | hex_number
-//
-struct integral_number
-{
-    static constexpr auto rule =
-        dsl::peek(dsl::p<octal_number>) >> dsl::p<octal_number> |
-        dsl::peek(dsl::p<binary_number>) >> dsl::p<binary_number> |
-        dsl::peek(dsl::p<hex_number>) >> dsl::p<hex_number> |
-        dsl::peek(dsl::p<decimal_number>) >> dsl::p<decimal_number>;
-    static constexpr auto value =
-        lexy::forward<std::shared_ptr<ast::integral_number_t>>;
-};
-
-//
-// Number
-//
-// number ::=
-//     integral_number
-//   | real_number
-//
-struct number
-{
-    static constexpr auto rule =
-        dsl::peek(dsl::p<real_number>) >> dsl::p<real_number> |
-        dsl::peek(dsl::p<integral_number>) >> dsl::p<integral_number>;
-    static constexpr auto value = lexy::forward<std::shared_ptr<ast::number_t>>;
-};
+// //
+// // Number
+// //
+// // number ::=
+// //     integral_number
+// //   | real_number
+// //
+// struct number
+// {
+//     static constexpr auto rule =
+//         dsl::peek(dsl::p<real_number>) >> dsl::p<real_number> |
+//         dsl::peek(dsl::p<integral_number>) >> dsl::p<integral_number>;
+//     static constexpr auto value =
+//     lexy::forward<std::shared_ptr<ast::number_t>>;
+// };
 
 } // namespace svs::grammar::sv2017
 

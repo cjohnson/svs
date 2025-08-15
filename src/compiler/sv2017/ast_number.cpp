@@ -13,10 +13,19 @@ void ast::number_t::accept(visitor_t &visitor) const
     visitor.visit(*this);
 }
 
-ast::integral_number_t::integral_number_t(integral_number_type_t __type,
-                                          std::optional<uint64_t> __size,
-                                          bool __is_signed, std::string __value)
-    : _type(__type), _size(__size), _is_signed(__is_signed), _value(__value)
+bool ast::operator==(const integral_number_base_info_t &lhs,
+                     const integral_number_base_info_t &rhs)
+{
+    return lhs.signedness_indicator == rhs.signedness_indicator &&
+           lhs.base_indicator == rhs.base_indicator;
+}
+
+ast::integral_number_t::integral_number_t(
+    std::optional<std::string> __size,
+    std::optional<std::string> __signedness_indicator,
+    std::string __base_indicator, std::string __value)
+    : _size(__size), _signedness_indicator(__signedness_indicator),
+      _base_indicator(__base_indicator), _value(__value)
 {
 }
 
@@ -26,20 +35,20 @@ void ast::integral_number_t::accept(visitor_t &visitor) const
     visitor.visit(*this);
 }
 
-const ast::integral_number_type_t &ast::integral_number_t::
-    integral_number_type() const
-{
-    return _type;
-}
-
-const std::optional<uint64_t> &ast::integral_number_t::size() const
+const std::optional<std::string> &ast::integral_number_t::size() const
 {
     return _size;
 }
 
-bool ast::integral_number_t::is_signed() const
+const std::optional<std::string> &ast::integral_number_t::signedness_indicator()
+    const
 {
-    return _is_signed;
+    return _signedness_indicator;
+}
+
+const std::optional<std::string> &ast::integral_number_t::base_indicator() const
+{
+    return _base_indicator;
 }
 
 const std::string &ast::integral_number_t::value() const
@@ -49,8 +58,9 @@ const std::string &ast::integral_number_t::value() const
 
 bool ast::operator==(const integral_number_t &lhs, const integral_number_t &rhs)
 {
-    return (lhs.integral_number_type() == rhs.integral_number_type()) &&
-           (lhs.size() == rhs.size()) && (lhs.is_signed() == rhs.is_signed()) &&
+    return (lhs.size() == rhs.size()) &&
+           (lhs.signedness_indicator() == rhs.signedness_indicator()) &&
+           (lhs.base_indicator() == rhs.base_indicator()) &&
            (lhs.value() == rhs.value());
 }
 
