@@ -73,7 +73,7 @@ constexpr auto binary_digit = x_digit / z_digit / dsl::digit<dsl::binary>;
 //
 // exp ::= e | E
 //
-constexpr auto exp = dsl::lit_c<'e'> / dsl::lit_c<'E'>;
+constexpr auto exp_ = dsl::lit_c<'e'> / dsl::lit_c<'E'>;
 
 //
 // Sign

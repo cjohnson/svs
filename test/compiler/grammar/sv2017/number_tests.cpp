@@ -358,7 +358,7 @@ TEST(SV2017NumberTests, UnsignedNumberTests)
 
 struct exp_production
 {
-    static constexpr auto rule = dsl::capture(exp);
+    static constexpr auto rule = dsl::capture(exp_);
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
