@@ -65,8 +65,7 @@ class integral_number_t : public number_t
 {
   private:
     std::optional<std::string> _size;
-    std::optional<std::string> _signedness_indicator;
-    std::optional<std::string> _base_indicator;
+    std::optional<integral_number_base_info_t> _base_info;
     std::string _value;
 
   public:
@@ -74,8 +73,8 @@ class integral_number_t : public number_t
     // Construct an integral number.
     //
     integral_number_t(std::optional<std::string> __size,
-                      std::optional<std::string> __signedness_indicator,
-                      std::string __base_indicator, std::string __value);
+                      std::optional<integral_number_base_info_t> __base_info,
+                      std::string __value);
 
     //
     // Accept function for visitor
@@ -88,14 +87,9 @@ class integral_number_t : public number_t
     const std::optional<std::string> &size() const;
 
     //
-    // Indicates if the number is signed
+    // The information about the base
     //
-    const std::optional<std::string> &signedness_indicator() const;
-
-    //
-    // Indicates the base of the number (hex, octal, etc)
-    //
-    const std::optional<std::string> &base_indicator() const;
+    const std::optional<integral_number_base_info_t> &base_info() const;
 
     //
     // The value of the number
@@ -109,18 +103,44 @@ class integral_number_t : public number_t
 bool operator==(const integral_number_t &lhs, const integral_number_t &rhs);
 
 //
+// Contains information about a fixed point number.
+//
+struct fixed_point_number_info_t
+{
+    //
+    // The integer part of the fixed point number
+    //
+    std::string integer_part;
+
+    //
+    // The fractional part of the fixed point number
+    //
+    std::string fractional_part;
+};
+
+//
+// Value equality for fixed point number infos.
+//
+bool operator==(const fixed_point_number_info_t &lhs,
+                const fixed_point_number_info_t &rhs);
+
+//
 // A real number
 //
 class real_number_t : public number_t
 {
   private:
-    double _value;
+    std::string _integer_part;
+    std::optional<std::string> _fractional_part;
+    std::optional<std::string> _exponent;
 
   public:
     //
     // Construct a real number.
     //
-    real_number_t(double __value);
+    real_number_t(std::string __integer_part,
+                  std::optional<std::string> __fractional_part,
+                  std::optional<std::string> __exponent);
 
     //
     // Accept function for visitor
@@ -128,9 +148,19 @@ class real_number_t : public number_t
     void accept(visitor_t &visitor) const override;
 
     //
-    // The value of the real number
+    // The integer part of the real number
     //
-    double value() const;
+    const std::string &integer_part() const;
+
+    //
+    // The fractional part of the number
+    //
+    const std::optional<std::string> &fractional_part() const;
+
+    //
+    // The exponent of the real number
+    //
+    const std::optional<std::string> &exponent() const;
 };
 
 //

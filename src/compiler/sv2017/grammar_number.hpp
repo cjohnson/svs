@@ -280,75 +280,65 @@ struct fixed_point_number
 {
     static constexpr auto rule =
         dsl::p<unsigned_number> + dsl::lit_c<'.'> + dsl::p<unsigned_number>;
-    static constexpr auto value = lexy::callback<std::string>(
-        [](std::string integer_part, std::string fractional_part) {
-            return integer_part + "." + fractional_part;
-        });
+    static constexpr auto value =
+        lexy::callback<ast::fixed_point_number_info_t>(
+            [](std::string integer_part, std::string fractional_part) {
+                return ast::fixed_point_number_info_t{integer_part,
+                                                      fractional_part};
+            });
 };
 
 //
-// //
-// // Real number
-// //
-// // real_number ::=
-// //     fixed_point_number
-// //     | unsigned_number [ . unsigned_number ] exp [ sign ] unsigned_number
-// //
-// struct real_number
-// {
-//   private:
-//     struct sign_production
-//     {
-//         static constexpr auto rule = dsl::capture(sign);
-//         static constexpr auto value = lexy::as_string<std::string>;
-//     };
+// Real number
 //
-//     struct real_number_with_exponent
-//     {
-//         static constexpr auto rule =
-//             dsl::p<unsigned_number> +
-//             dsl::opt(dsl::period >> dsl::p<unsigned_number>) + exp +
-//             dsl::opt(dsl::peek(sign) >> dsl::p<sign_production>) +
-//             dsl::p<unsigned_number>;
-//         static constexpr auto value =
-//             lexy::callback<std::shared_ptr<ast::real_number_t>>(
-//                 [](std::string integer_part,
-//                    std::optional<std::string> fractional_part,
-//                    std::optional<std::string> sign, std::string exponent) {
-//                     std::stringstream ss;
-//                     ss << integer_part;
-//                     if (fractional_part.has_value())
-//                     {
-//                         ss << '.';
-//                         ss << fractional_part.value();
-//                     }
-//                     ss << 'e';
-//                     if (sign.has_value())
-//                     {
-//                         ss << sign.value();
-//                     }
-//                     ss << exponent;
-//                     return std::make_shared<ast::real_number_t>(
-//                         std::stod(ss.str()));
-//                 });
-//     };
+// real_number ::=
+//     fixed_point_number
+//     | unsigned_number [ . unsigned_number ] exp [ sign ] unsigned_number
 //
-//   public:
-//     static constexpr auto rule =
-//         dsl::peek(dsl::p<real_number_with_exponent>) >>
-//             dsl::p<real_number_with_exponent> |
-//         dsl::peek(dsl::p<fixed_point_number>) >> dsl::p<fixed_point_number>;
-//     static constexpr auto value =
-//         lexy::callback<std::shared_ptr<ast::real_number_t>>(
-//             [](std::shared_ptr<ast::real_number_t> real_number) {
-//                 return real_number;
-//             },
-//             [](std::string fixed_point_number_literal) {
-//                 return std::make_shared<ast::real_number_t>(
-//                     std::stod(fixed_point_number_literal));
-//             });
-// };
-//
+struct real_number
+{
+  private:
+    struct sign_production
+    {
+        static constexpr auto rule = dsl::capture(sign);
+        static constexpr auto value = lexy::as_string<std::string>;
+    };
+
+    struct real_number_with_exponent
+    {
+        static constexpr auto rule =
+            dsl::p<unsigned_number> +
+            dsl::opt(dsl::period >> dsl::p<unsigned_number>) + exp_ +
+            dsl::opt(dsl::peek(sign) >> dsl::p<sign_production>) +
+            dsl::p<unsigned_number>;
+        static constexpr auto value =
+            lexy::callback<std::shared_ptr<ast::real_number_t>>(
+                [](std::string integer_part,
+                   std::optional<std::string> fractional_part,
+                   std::optional<std::string> sign, std::string exponent) {
+                    return std::make_shared<ast::real_number_t>(
+                        integer_part, fractional_part,
+                        sign.has_value() ? sign.value() + exponent : exponent);
+                });
+    };
+
+  public:
+    static constexpr auto rule =
+        dsl::peek(dsl::p<real_number_with_exponent>) >>
+            dsl::p<real_number_with_exponent> |
+        dsl::peek(dsl::p<fixed_point_number>) >> dsl::p<fixed_point_number>;
+    static constexpr auto value =
+        lexy::callback<std::shared_ptr<ast::real_number_t>>(
+            [](std::shared_ptr<ast::real_number_t> real_number) {
+                return real_number;
+            },
+            [](ast::fixed_point_number_info_t fixed_point_number_info) {
+                return std::make_shared<ast::real_number_t>(
+                    fixed_point_number_info.integer_part,
+                    fixed_point_number_info.fractional_part, std::nullopt);
+            });
+};
+
 // //
 // // Non-zero unsigned number
 // //

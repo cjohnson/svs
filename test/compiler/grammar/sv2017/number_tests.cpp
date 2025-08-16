@@ -388,99 +388,107 @@ TEST(SV2017NumberTests, FixedPointNumberTests)
     EXPECT_PARSE_FAILURE<fixed_point_number>("1373._4189");
     EXPECT_PARSE_FAILURE<fixed_point_number>("_1373._4189");
 
-    EXPECT_PARSE_RESULT<fixed_point_number>("1373.4189", "1373.4189");
-    EXPECT_PARSE_RESULT<fixed_point_number>("13_73_.41_8_9", "13_73_.41_8_9");
+    EXPECT_PARSE_RESULT<fixed_point_number>(
+        "1373.4189", ast::fixed_point_number_info_t{"1373", "4189"});
+    EXPECT_PARSE_RESULT<fixed_point_number>(
+        "13_73_.41_8_9", ast::fixed_point_number_info_t{"13_73_", "41_8_9"});
 }
 
-// //
-// // Test visitor base class
-// //
-// class test_visitor_t : public ast::visitor_t
-// {
-//   public:
-//     //
-//     // Run tests on information collected by this visitor.
-//     //
-//     virtual void test() = 0;
-// };
 //
-// class real_number_test_visitor : public test_visitor_t
-// {
-//   private:
-//     ast::real_number_t _expected;
+// Test visitor base class
 //
-//     std::vector<const ast::number_t *> numbers;
-//     std::vector<const ast::real_number_t *> real_numbers;
-//
-//   public:
-//     real_number_test_visitor(const ast::real_number_t &expected)
-//         : _expected(expected)
-//     {
-//     }
-//
-//     virtual void test() override
-//     {
-//         ASSERT_EQ(numbers.size(), 1);
-//         ASSERT_EQ(real_numbers.size(), 1);
-//
-//         const ast::real_number_t *real_number = real_numbers[0];
-//         EXPECT_EQ(_expected, *real_number);
-//     }
-//
-//     void visit(const ast::number_t &number) override
-//     {
-//         numbers.push_back(&number);
-//     }
-//
-//     void visit(const ast::real_number_t &real_number) override
-//     {
-//         real_numbers.push_back(&real_number);
-//     }
-// };
-//
-// template <typename TProduction> void test_real_number_parsing()
-// {
-//     EXPECT_PARSE_FAILURE<TProduction>("");
-//     EXPECT_PARSE_FAILURE<TProduction>("g");
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "1373.4189",
-//         real_number_test_visitor{ast::real_number_t{1373.4189}});
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "1373e24", real_number_test_visitor{ast::real_number_t{1373e24}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "1373E24", real_number_test_visitor{ast::real_number_t{1373E24}});
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "1373e+24", real_number_test_visitor{ast::real_number_t{1373e+24}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "1373E+25", real_number_test_visitor{ast::real_number_t{1373E+25}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "1373e-26", real_number_test_visitor{ast::real_number_t{1373e-26}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "1373E-27", real_number_test_visitor{ast::real_number_t{1373E-27}});
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "1373.57e+24",
-//         real_number_test_visitor{ast::real_number_t{1373.57e+24}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "1373.25E+25",
-//         real_number_test_visitor{ast::real_number_t{1373.25E+25}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "1373.78e-26",
-//         real_number_test_visitor{ast::real_number_t{1373.78e-26}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "1373.47E-27",
-//         real_number_test_visitor{ast::real_number_t{1373.47E-27}});
-// }
-//
-// TEST(SV2017NumberTests, RealNumberTests)
-// {
-//     test_real_number_parsing<real_number>();
-//     EXPECT_PARSE_FAILURE<real_number>("1373");
-// }
-//
+class test_visitor_t : public ast::visitor_t
+{
+  public:
+    //
+    // Run tests on information collected by this visitor.
+    //
+    virtual void test() = 0;
+};
+
+class real_number_test_visitor : public test_visitor_t
+{
+  private:
+    ast::real_number_t _expected;
+
+    std::vector<const ast::number_t *> numbers;
+    std::vector<const ast::real_number_t *> real_numbers;
+
+  public:
+    real_number_test_visitor(const ast::real_number_t &expected)
+        : _expected(expected)
+    {
+    }
+
+    virtual void test() override
+    {
+        ASSERT_EQ(numbers.size(), 1);
+        ASSERT_EQ(real_numbers.size(), 1);
+
+        const ast::real_number_t *real_number = real_numbers[0];
+        EXPECT_EQ(_expected, *real_number);
+    }
+
+    void visit(const ast::number_t &number) override
+    {
+        numbers.push_back(&number);
+    }
+
+    void visit(const ast::real_number_t &real_number) override
+    {
+        real_numbers.push_back(&real_number);
+    }
+};
+
+template <typename TProduction> void test_real_number_parsing()
+{
+    EXPECT_PARSE_FAILURE<TProduction>("");
+    EXPECT_PARSE_FAILURE<TProduction>("g");
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373.4189", real_number_test_visitor{
+                         ast::real_number_t{"1373", "4189", std::nullopt}});
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373e24", real_number_test_visitor{
+                       ast::real_number_t{"1373", std::nullopt, "24"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373E24", real_number_test_visitor{
+                       ast::real_number_t{"1373", std::nullopt, "24"}});
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373e+24", real_number_test_visitor{
+                        ast::real_number_t{"1373", std::nullopt, "+24"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373E+25", real_number_test_visitor{
+                        ast::real_number_t{"1373", std::nullopt, "+25"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373e-26", real_number_test_visitor{
+                        ast::real_number_t{"1373", std::nullopt, "-26"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373E-27", real_number_test_visitor{
+                        ast::real_number_t{"1373", std::nullopt, "-27"}});
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373.57e+24",
+        real_number_test_visitor{ast::real_number_t{"1373", "57", "+24"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373.25E+25",
+        real_number_test_visitor{ast::real_number_t{"1373", "25", "+25"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373.78e-26",
+        real_number_test_visitor{ast::real_number_t{"1373", "78", "-26"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "1373.47E-27",
+        real_number_test_visitor{ast::real_number_t{"1373", "47", "-27"}});
+}
+
+TEST(SV2017NumberTests, RealNumberTests)
+{
+    test_real_number_parsing<real_number>();
+    EXPECT_PARSE_FAILURE<real_number>("1373");
+}
+
 // TEST(SV2017NumberTests, NonZeroUnsignedNumberTests)
 // {
 //     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("");
@@ -512,8 +520,8 @@ TEST(SV2017NumberTests, FixedPointNumberTests)
 //         ASSERT_EQ(numbers.size(), 1);
 //         ASSERT_EQ(integral_numbers.size(), 1);
 //
-//         const ast::integral_number_t *integral_number = integral_numbers[0];
-//         EXPECT_EQ(_expected, *integral_number);
+//         const ast::integral_number_t *integral_number =
+//         integral_numbers[0]; EXPECT_EQ(_expected, *integral_number);
 //     }
 //
 //     void visit(const ast::number_t &number) override
@@ -680,7 +688,8 @@ TEST(SV2017NumberTests, FixedPointNumberTests)
 //     EXPECT_PARSE_FAILURE<TProduction>("'o 8765");
 //
 //     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'o 12345670", integral_number_test_visitor{ast::integral_number_t{
+//         "'o 12345670",
+//         integral_number_test_visitor{ast::integral_number_t{
 //                            ast::integral_number_type_t::Octal,
 //                            std::nullopt,
 //                            false,
@@ -815,7 +824,8 @@ TEST(SV2017NumberTests, FixedPointNumberTests)
 //     EXPECT_PARSE_FAILURE<TProduction>("'b 2010");
 //
 //     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'b 1011011010", integral_number_test_visitor{ast::integral_number_t{
+//         "'b 1011011010",
+//         integral_number_test_visitor{ast::integral_number_t{
 //                              ast::integral_number_type_t::Binary,
 //                              std::nullopt, false, "1011011010"}});
 //     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
@@ -840,13 +850,16 @@ TEST(SV2017NumberTests, FixedPointNumberTests)
 //             "10"}});
 //     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
 //         "2'b10", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Binary, 2, false, "10"}});
+//                      ast::integral_number_type_t::Binary, 2, false,
+//                      "10"}});
 //     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
 //         "2 'b10", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Binary, 2, false, "10"}});
+//                       ast::integral_number_type_t::Binary, 2, false,
+//                       "10"}});
 //     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
 //         "2'b 10", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Binary, 2, false, "10"}});
+//                       ast::integral_number_type_t::Binary, 2, false,
+//                       "10"}});
 //     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
 //         "2 'b 10", integral_number_test_visitor{ast::integral_number_t{
 //                        ast::integral_number_type_t::Binary, 2, false,

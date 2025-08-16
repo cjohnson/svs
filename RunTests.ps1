@@ -1,9 +1,9 @@
 # Configure build
 New-Item -Force -ItemType Directory Build 
-cmake . -B Build
+cmake . -B Build -G Ninja
 
 # Build
-cmake Build -G ninja -DCMAKE_BUILD_TYPE=Debug
+cmake Build -DCMAKE_BUILD_TYPE=Debug
 cmake --build Build
 
-./build/Debug/cpp_test.exe
+./build/cpp_test.exe
