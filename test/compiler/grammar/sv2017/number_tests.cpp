@@ -495,824 +495,732 @@ TEST(SV2017NumberTests, NonZeroUnsignedNumberTests)
     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("g");
 
     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("0114");
-    EXPECT_PARSE_RESULT<non_zero_unsigned_number>(
-        "114", ast::non_zero_unsigned_number_info_t{"114"});
-    EXPECT_PARSE_RESULT<non_zero_unsigned_number>(
-        "1_1_4", ast::non_zero_unsigned_number_info_t{"1_1_4"});
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("114", "114");
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4", "1_1_4");
     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("_1_1_4");
-    EXPECT_PARSE_RESULT<non_zero_unsigned_number>(
-        "1_1_4_", ast::non_zero_unsigned_number_info_t{"1_1_4_"});
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4_", "1_1_4_");
 }
 
-// class integral_number_test_visitor : public test_visitor_t
-// {
-//   private:
-//     ast::integral_number_t _expected;
-//
-//     std::vector<const ast::number_t *> numbers;
-//     std::vector<const ast::integral_number_t *> integral_numbers;
-//
-//   public:
-//     integral_number_test_visitor(const ast::integral_number_t &expected)
-//         : _expected(expected)
-//     {
-//     }
-//
-//     virtual void test() override
-//     {
-//         ASSERT_EQ(numbers.size(), 1);
-//         ASSERT_EQ(integral_numbers.size(), 1);
-//
-//         const ast::integral_number_t *integral_number =
-//         integral_numbers[0]; EXPECT_EQ(_expected, *integral_number);
-//     }
-//
-//     void visit(const ast::number_t &number) override
-//     {
-//         numbers.push_back(&number);
-//     }
-//
-//     void visit(const ast::integral_number_t &integral_number) override
-//     {
-//         integral_numbers.push_back(&integral_number);
-//     }
-// };
-//
-// template <typename TProduction> void test_hex_number_parsing()
-// {
-//     EXPECT_PARSE_FAILURE<TProduction>("");
-//     EXPECT_PARSE_FAILURE<TProduction>("t");
-//
-//     EXPECT_PARSE_FAILURE<TProduction>("'hgdead");
-//     EXPECT_PARSE_FAILURE<TProduction>("'h gdead");
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'h deadbeef9876543210c",
-//         integral_number_test_visitor{ast::integral_number_t{
-//             ast::integral_number_type_t::Hexadecimal,
-//             std::nullopt,
-//             false,
-//             "deadbeef9876543210c",
-//         }});
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'h deadbeef9876543210c",
-//         integral_number_test_visitor{ast::integral_number_t{
-//             ast::integral_number_type_t::Hexadecimal,
-//             std::nullopt,
-//             false,
-//             "deadbeef9876543210c",
-//         }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'h1b", integral_number_test_visitor{ast::integral_number_t{
-//                     ast::integral_number_type_t::Hexadecimal,
-//                     std::nullopt,
-//                     false,
-//                     "1b",
-//                 }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'h1b", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Hexadecimal,
-//                      std::nullopt,
-//                      false,
-//                      "1b",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'h 1b", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Hexadecimal,
-//                      std::nullopt,
-//                      false,
-//                      "1b",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'h 1b", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Hexadecimal,
-//                       std::nullopt,
-//                       false,
-//                       "1b",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "8'h1b", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Hexadecimal,
-//                      8,
-//                      false,
-//                      "1b",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "8 'h1b", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Hexadecimal,
-//                       8,
-//                       false,
-//                       "1b",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "8'h 1b", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Hexadecimal,
-//                       8,
-//                       false,
-//                       "1b",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "8 'h 1b", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Hexadecimal,
-//                        8,
-//                        false,
-//                        "1b",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'h4ad", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Hexadecimal,
-//                      std::nullopt,
-//                      false,
-//                      "4ad",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'h4ad", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Hexadecimal,
-//                       std::nullopt,
-//                       false,
-//                       "4ad",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'h 4ad", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Hexadecimal,
-//                       std::nullopt,
-//                       false,
-//                       "4ad",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'h 4ad", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Hexadecimal,
-//                        std::nullopt,
-//                        false,
-//                        "4ad",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "12'h4ad", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Hexadecimal,
-//                        12,
-//                        false,
-//                        "4ad",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "12 'h4ad", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Hexadecimal,
-//                         12,
-//                         false,
-//                         "4ad",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "12'h 4ad", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Hexadecimal,
-//                         12,
-//                         false,
-//                         "4ad",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "12 'h 4ad", integral_number_test_visitor{ast::integral_number_t{
-//                          ast::integral_number_type_t::Hexadecimal,
-//                          12,
-//                          false,
-//                          "4ad",
-//                      }});
-// }
-//
-// TEST(SV2017NumberTests, HexNumberTests)
-// {
-//     test_hex_number_parsing<hex_number>();
-// }
-//
-// template <typename TProduction> void test_octal_number_parsing()
-// {
-//     EXPECT_PARSE_FAILURE<TProduction>("");
-//     EXPECT_PARSE_FAILURE<TProduction>("t");
-//
-//     EXPECT_PARSE_FAILURE<TProduction>("'o8765");
-//     EXPECT_PARSE_FAILURE<TProduction>("'o 8765");
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'o 12345670",
-//         integral_number_test_visitor{ast::integral_number_t{
-//                            ast::integral_number_type_t::Octal,
-//                            std::nullopt,
-//                            false,
-//                            "12345670",
-//                        }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'o15", integral_number_test_visitor{ast::integral_number_t{
-//                     ast::integral_number_type_t::Octal,
-//                     std::nullopt,
-//                     false,
-//                     "15",
-//                 }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'o15", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Octal,
-//                      std::nullopt,
-//                      false,
-//                      "15",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'o 15", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Octal,
-//                      std::nullopt,
-//                      false,
-//                      "15",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'o 15", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Octal,
-//                       std::nullopt,
-//                       false,
-//                       "15",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "6'o15", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Octal,
-//                      6,
-//                      false,
-//                      "15",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "6 'o15", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Octal,
-//                       6,
-//                       false,
-//                       "15",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "6'o 15", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Octal,
-//                       6,
-//                       false,
-//                       "15",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "6 'o 15", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Octal,
-//                        6,
-//                        false,
-//                        "15",
-//                    }});
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'o423", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Octal,
-//                      std::nullopt,
-//                      false,
-//                      "423",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'o423", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Octal,
-//                       std::nullopt,
-//                       false,
-//                       "423",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'o 423", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Octal,
-//                       std::nullopt,
-//                       false,
-//                       "423",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'o 423", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Octal,
-//                        std::nullopt,
-//                        false,
-//                        "423",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "9'o423", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Octal,
-//                       9,
-//                       false,
-//                       "423",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "9 'o423", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Octal,
-//                        9,
-//                        false,
-//                        "423",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "9'o 423", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Octal,
-//                        9,
-//                        false,
-//                        "423",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "9 'o 423", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Octal,
-//                         9,
-//                         false,
-//                         "423",
-//                     }});
-// }
-//
-// TEST(SV2017NumberTests, OctalNumberTests)
-// {
-//     test_octal_number_parsing<octal_number>();
-// }
-//
-// template <typename TProduction> void test_binary_number_parsing()
-// {
-//     EXPECT_PARSE_FAILURE<TProduction>("");
-//     EXPECT_PARSE_FAILURE<TProduction>("t");
-//
-//     EXPECT_PARSE_FAILURE<TProduction>("'b2010");
-//     EXPECT_PARSE_FAILURE<TProduction>("'b 2010");
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'b 1011011010",
-//         integral_number_test_visitor{ast::integral_number_t{
-//                              ast::integral_number_type_t::Binary,
-//                              std::nullopt, false, "1011011010"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'b10",
-//         integral_number_test_visitor{ast::integral_number_t{
-//             ast::integral_number_type_t::Binary, std::nullopt, false,
-//             "10"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'b10",
-//         integral_number_test_visitor{ast::integral_number_t{
-//             ast::integral_number_type_t::Binary, std::nullopt, false,
-//             "10"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'b 10",
-//         integral_number_test_visitor{ast::integral_number_t{
-//             ast::integral_number_type_t::Binary, std::nullopt, false,
-//             "10"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'b 10",
-//         integral_number_test_visitor{ast::integral_number_t{
-//             ast::integral_number_type_t::Binary, std::nullopt, false,
-//             "10"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "2'b10", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Binary, 2, false,
-//                      "10"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "2 'b10", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Binary, 2, false,
-//                       "10"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "2'b 10", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Binary, 2, false,
-//                       "10"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "2 'b 10", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Binary, 2, false,
-//                        "10"}});
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'b010",
-//         integral_number_test_visitor{ast::integral_number_t{
-//             ast::integral_number_type_t::Binary, std::nullopt, false,
-//             "010"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'b010",
-//         integral_number_test_visitor{ast::integral_number_t{
-//             ast::integral_number_type_t::Binary, std::nullopt, false,
-//             "010"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'b 010",
-//         integral_number_test_visitor{ast::integral_number_t{
-//             ast::integral_number_type_t::Binary, std::nullopt, false,
-//             "010"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         " 'b 010",
-//         integral_number_test_visitor{ast::integral_number_t{
-//             ast::integral_number_type_t::Binary, std::nullopt, false,
-//             "010"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "3'b010", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Binary, 3, false,
-//                       "010"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "3 'b010", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Binary, 3, false,
-//                        "010"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "3'b 010", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Binary, 3, false,
-//                        "010"}});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "3 'b 010", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Binary, 3, false,
-//                         "010"}});
-// }
-//
-// TEST(SV2017NumberTests, BinaryNumberTests)
-// {
-//     test_binary_number_parsing<binary_number>();
-// }
-//
-// template <typename TProduction> void test_decimal_number_parsing()
-// {
-//     EXPECT_PARSE_FAILURE<TProduction>("");
-//     EXPECT_PARSE_FAILURE<TProduction>("t");
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "0", integral_number_test_visitor{ast::integral_number_t{
-//                  ast::integral_number_type_t::Decimal,
-//                  std::nullopt,
-//                  true,
-//                  "0",
-//              }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "123", integral_number_test_visitor{ast::integral_number_t{
-//                    ast::integral_number_type_t::Decimal,
-//                    std::nullopt,
-//                    true,
-//                    "123",
-//                }});
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'d0", integral_number_test_visitor{ast::integral_number_t{
-//                    ast::integral_number_type_t::Decimal,
-//                    std::nullopt,
-//                    false,
-//                    "0",
-//                }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'d123", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Decimal,
-//                      std::nullopt,
-//                      false,
-//                      "123",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "'d 123", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Decimal,
-//                       std::nullopt,
-//                       false,
-//                       "123",
-//                   }});
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'd123", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "123",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd123", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Decimal,
-//                         20,
-//                         false,
-//                         "123",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd 123", integral_number_test_visitor{ast::integral_number_t{
-//                          ast::integral_number_type_t::Decimal,
-//                          20,
-//                          false,
-//                          "123",
-//                      }});
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dx", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Decimal,
-//                      20,
-//                      false,
-//                      "X",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dX", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Decimal,
-//                      20,
-//                      false,
-//                      "X",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dx", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Decimal,
-//                       20,
-//                       false,
-//                       "X",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dX", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Decimal,
-//                       20,
-//                       false,
-//                       "X",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd x", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "X",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd X", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "X",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dx_", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Decimal,
-//                       20,
-//                       false,
-//                       "X",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dX_", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Decimal,
-//                       20,
-//                       false,
-//                       "X",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dx_", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "X",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dX_", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "X",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd x_", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Decimal,
-//                         20,
-//                         false,
-//                         "X",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd X_", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Decimal,
-//                         20,
-//                         false,
-//                         "X",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dx__", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "X",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dX__", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "X",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dx__", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Decimal,
-//                         20,
-//                         false,
-//                         "X",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dX__", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Decimal,
-//                         20,
-//                         false,
-//                         "X",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd x__", integral_number_test_visitor{ast::integral_number_t{
-//                          ast::integral_number_type_t::Decimal,
-//                          20,
-//                          false,
-//                          "X",
-//                      }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd X__", integral_number_test_visitor{ast::integral_number_t{
-//                          ast::integral_number_type_t::Decimal,
-//                          20,
-//                          false,
-//                          "X",
-//                      }});
-//
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dz", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Decimal,
-//                      20,
-//                      false,
-//                      "Z",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dZ", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Decimal,
-//                      20,
-//                      false,
-//                      "Z",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'd?", integral_number_test_visitor{ast::integral_number_t{
-//                      ast::integral_number_type_t::Decimal,
-//                      20,
-//                      false,
-//                      "Z",
-//                  }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dz", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Decimal,
-//                       20,
-//                       false,
-//                       "Z",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dZ", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Decimal,
-//                       20,
-//                       false,
-//                       "Z",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd?", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Decimal,
-//                       20,
-//                       false,
-//                       "Z",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd z", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "Z",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd Z", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "Z",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd ?", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "Z",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dz_", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Decimal,
-//                       20,
-//                       false,
-//                       "Z",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dZ_", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Decimal,
-//                       20,
-//                       false,
-//                       "Z",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'd?_", integral_number_test_visitor{ast::integral_number_t{
-//                       ast::integral_number_type_t::Decimal,
-//                       20,
-//                       false,
-//                       "Z",
-//                   }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dz_", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "Z",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dZ_", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "Z",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd?_", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "Z",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd z_", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Decimal,
-//                         20,
-//                         false,
-//                         "Z",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd Z_", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Decimal,
-//                         20,
-//                         false,
-//                         "Z",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd ?_", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Decimal,
-//                         20,
-//                         false,
-//                         "Z",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dz__", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "Z",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'dZ__", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "Z",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20'd?__", integral_number_test_visitor{ast::integral_number_t{
-//                        ast::integral_number_type_t::Decimal,
-//                        20,
-//                        false,
-//                        "Z",
-//                    }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dz__", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Decimal,
-//                         20,
-//                         false,
-//                         "Z",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'dZ__", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Decimal,
-//                         20,
-//                         false,
-//                         "Z",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd?__", integral_number_test_visitor{ast::integral_number_t{
-//                         ast::integral_number_type_t::Decimal,
-//                         20,
-//                         false,
-//                         "Z",
-//                     }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd z__", integral_number_test_visitor{ast::integral_number_t{
-//                          ast::integral_number_type_t::Decimal,
-//                          20,
-//                          false,
-//                          "Z",
-//                      }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd Z__", integral_number_test_visitor{ast::integral_number_t{
-//                          ast::integral_number_type_t::Decimal,
-//                          20,
-//                          false,
-//                          "Z",
-//                      }});
-//     EXPECT_AST_VISITOR_SUCCESS<TProduction>(
-//         "20 'd ?__", integral_number_test_visitor{ast::integral_number_t{
-//                          ast::integral_number_type_t::Decimal,
-//                          20,
-//                          false,
-//                          "Z",
-//                      }});
-// }
-//
-// TEST(SV2017NumberTests, DecimalNumberTests)
-// {
-//     test_decimal_number_parsing<decimal_number>();
-// }
-//
-// template <typename TProduction> void test_integral_number_parsing()
-// {
-//     test_decimal_number_parsing<TProduction>();
-//     test_octal_number_parsing<TProduction>();
-//     test_binary_number_parsing<TProduction>();
-//     test_hex_number_parsing<TProduction>();
-// }
-//
-// TEST(SV2017NumberTests, IntegralNumberTests)
-// {
-//     test_integral_number_parsing<integral_number>();
-// }
-//
-// TEST(SV2017NumberTests, NumberTests)
-// {
-//     test_integral_number_parsing<number>();
-//     test_real_number_parsing<number>();
-// }
+class integral_number_test_visitor : public test_visitor_t
+{
+  private:
+    ast::integral_number_t _expected;
+
+    std::vector<const ast::number_t *> numbers;
+    std::vector<const ast::integral_number_t *> integral_numbers;
+
+  public:
+    integral_number_test_visitor(const ast::integral_number_t &expected)
+        : _expected(expected)
+    {
+    }
+
+    virtual void test() override
+    {
+        ASSERT_EQ(numbers.size(), 1);
+        ASSERT_EQ(integral_numbers.size(), 1);
+
+        const ast::integral_number_t *integral_number = integral_numbers[0];
+        EXPECT_EQ(_expected, *integral_number);
+    }
+
+    void visit(const ast::number_t &number) override
+    {
+        numbers.push_back(&number);
+    }
+
+    void visit(const ast::integral_number_t &integral_number) override
+    {
+        integral_numbers.push_back(&integral_number);
+    }
+};
+
+template <typename TProduction> void test_hex_number_parsing()
+{
+    EXPECT_PARSE_FAILURE<TProduction>("");
+    EXPECT_PARSE_FAILURE<TProduction>("t");
+
+    EXPECT_PARSE_FAILURE<TProduction>("'hgdead");
+    EXPECT_PARSE_FAILURE<TProduction>("'h gdead");
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'h deadbeef9876543210c",
+        integral_number_test_visitor{ast::integral_number_t{
+            std::nullopt,
+            ast::integral_number_base_info_t{std::nullopt, 'h'},
+            "deadbeef9876543210c",
+        }});
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'h deadbeef9876543210c",
+        integral_number_test_visitor{ast::integral_number_t{
+            std::nullopt,
+            ast::integral_number_base_info_t{std::nullopt, 'h'},
+            "deadbeef9876543210c",
+        }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'h1b", integral_number_test_visitor{ast::integral_number_t{
+                    std::nullopt,
+                    ast::integral_number_base_info_t{std::nullopt, 'h'},
+                    "1b",
+                }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'h1b", integral_number_test_visitor{ast::integral_number_t{
+                     std::nullopt,
+                     ast::integral_number_base_info_t{std::nullopt, 'h'},
+                     "1b",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'h 1b", integral_number_test_visitor{ast::integral_number_t{
+                     std::nullopt,
+                     ast::integral_number_base_info_t{std::nullopt, 'h'},
+                     "1b",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'h 1b", integral_number_test_visitor{ast::integral_number_t{
+                      std::nullopt,
+                      ast::integral_number_base_info_t{std::nullopt, 'h'},
+                      "1b",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "8'h1b", integral_number_test_visitor{ast::integral_number_t{
+                     "8",
+                     ast::integral_number_base_info_t{std::nullopt, 'h'},
+                     "1b",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "8 'h1b", integral_number_test_visitor{ast::integral_number_t{
+                      "8",
+                      ast::integral_number_base_info_t{std::nullopt, 'h'},
+                      "1b",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "8'h 1b", integral_number_test_visitor{ast::integral_number_t{
+                      "8",
+                      ast::integral_number_base_info_t{std::nullopt, 'h'},
+                      "1b",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "8 'h 1b", integral_number_test_visitor{ast::integral_number_t{
+                       "8",
+                       ast::integral_number_base_info_t{std::nullopt, 'h'},
+                       "1b",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'h4ad", integral_number_test_visitor{ast::integral_number_t{
+                     std::nullopt,
+                     ast::integral_number_base_info_t{std::nullopt, 'h'},
+                     "4ad",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'h4ad", integral_number_test_visitor{ast::integral_number_t{
+                      std::nullopt,
+                      ast::integral_number_base_info_t{std::nullopt, 'h'},
+                      "4ad",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'h 4ad", integral_number_test_visitor{ast::integral_number_t{
+                      std::nullopt,
+                      ast::integral_number_base_info_t{std::nullopt, 'h'},
+                      "4ad",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'h 4ad", integral_number_test_visitor{ast::integral_number_t{
+                       std::nullopt,
+                       ast::integral_number_base_info_t{std::nullopt, 'h'},
+                       "4ad",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "12'h4ad", integral_number_test_visitor{ast::integral_number_t{
+                       "12",
+                       ast::integral_number_base_info_t{std::nullopt, 'h'},
+                       "4ad",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "12 'h4ad", integral_number_test_visitor{ast::integral_number_t{
+                        "12",
+                        ast::integral_number_base_info_t{std::nullopt, 'h'},
+                        "4ad",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "12'h 4ad", integral_number_test_visitor{ast::integral_number_t{
+                        "12",
+                        ast::integral_number_base_info_t{std::nullopt, 'h'},
+                        "4ad",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "12 'h 4ad", integral_number_test_visitor{ast::integral_number_t{
+                         "12",
+                         ast::integral_number_base_info_t{std::nullopt, 'h'},
+                         "4ad",
+                     }});
+}
+
+TEST(SV2017NumberTests, HexNumberTests)
+{
+    test_hex_number_parsing<hex_number>();
+}
+
+template <typename TProduction> void test_octal_number_parsing()
+{
+    EXPECT_PARSE_FAILURE<TProduction>("");
+    EXPECT_PARSE_FAILURE<TProduction>("t");
+
+    EXPECT_PARSE_FAILURE<TProduction>("'o8765");
+    EXPECT_PARSE_FAILURE<TProduction>("'o 8765");
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'o 12345670", integral_number_test_visitor{ast::integral_number_t{
+                           std::nullopt,
+                           ast::integral_number_base_info_t{std::nullopt, 'o'},
+                           "12345670",
+                       }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'o15", integral_number_test_visitor{ast::integral_number_t{
+                    std::nullopt,
+                    ast::integral_number_base_info_t{std::nullopt, 'o'},
+                    "15",
+                }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'o15", integral_number_test_visitor{ast::integral_number_t{
+                     std::nullopt,
+                     ast::integral_number_base_info_t{std::nullopt, 'o'},
+                     "15",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'o 15", integral_number_test_visitor{ast::integral_number_t{
+                     std::nullopt,
+                     ast::integral_number_base_info_t{std::nullopt, 'o'},
+                     "15",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'o 15", integral_number_test_visitor{ast::integral_number_t{
+                      std::nullopt,
+                      ast::integral_number_base_info_t{std::nullopt, 'o'},
+                      "15",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "6'o15", integral_number_test_visitor{ast::integral_number_t{
+                     "6",
+                     ast::integral_number_base_info_t{std::nullopt, 'o'},
+                     "15",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "6 'o15", integral_number_test_visitor{ast::integral_number_t{
+                      "6",
+                      ast::integral_number_base_info_t{std::nullopt, 'o'},
+                      "15",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "6'o 15", integral_number_test_visitor{ast::integral_number_t{
+                      "6",
+                      ast::integral_number_base_info_t{std::nullopt, 'o'},
+                      "15",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "6 'o 15", integral_number_test_visitor{ast::integral_number_t{
+                       "6",
+                       ast::integral_number_base_info_t{std::nullopt, 'o'},
+                       "15",
+                   }});
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'o423", integral_number_test_visitor{ast::integral_number_t{
+                     std::nullopt,
+                     ast::integral_number_base_info_t{std::nullopt, 'o'},
+                     "423",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'o423", integral_number_test_visitor{ast::integral_number_t{
+                      std::nullopt,
+                      ast::integral_number_base_info_t{std::nullopt, 'o'},
+                      "423",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'o 423", integral_number_test_visitor{ast::integral_number_t{
+                      std::nullopt,
+                      ast::integral_number_base_info_t{std::nullopt, 'o'},
+                      "423",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'o 423", integral_number_test_visitor{ast::integral_number_t{
+                       std::nullopt,
+                       ast::integral_number_base_info_t{std::nullopt, 'o'},
+                       "423",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "9'o423", integral_number_test_visitor{ast::integral_number_t{
+                      "9",
+                      ast::integral_number_base_info_t{std::nullopt, 'o'},
+                      "423",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "9 'o423", integral_number_test_visitor{ast::integral_number_t{
+                       "9",
+                       ast::integral_number_base_info_t{std::nullopt, 'o'},
+                       "423",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "9'o 423", integral_number_test_visitor{ast::integral_number_t{
+                       "9",
+                       ast::integral_number_base_info_t{std::nullopt, 'o'},
+                       "423",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "9 'o 423", integral_number_test_visitor{ast::integral_number_t{
+                        "9",
+                        ast::integral_number_base_info_t{std::nullopt, 'o'},
+                        "423",
+                    }});
+}
+
+TEST(SV2017NumberTests, OctalNumberTests)
+{
+    test_octal_number_parsing<octal_number>();
+}
+
+template <typename TProduction> void test_binary_number_parsing()
+{
+    EXPECT_PARSE_FAILURE<TProduction>("");
+    EXPECT_PARSE_FAILURE<TProduction>("t");
+
+    EXPECT_PARSE_FAILURE<TProduction>("'b2010");
+    EXPECT_PARSE_FAILURE<TProduction>("'b 2010");
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'b 1011011010",
+        integral_number_test_visitor{ast::integral_number_t{
+            std::nullopt, ast::integral_number_base_info_t{std::nullopt, 'b'},
+            "1011011010"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'b10",
+        integral_number_test_visitor{ast::integral_number_t{
+            std::nullopt, ast::integral_number_base_info_t{std::nullopt, 'b'},
+            "10"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'b10",
+        integral_number_test_visitor{ast::integral_number_t{
+            std::nullopt, ast::integral_number_base_info_t{std::nullopt, 'b'},
+            "10"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'b 10",
+        integral_number_test_visitor{ast::integral_number_t{
+            std::nullopt, ast::integral_number_base_info_t{std::nullopt, 'b'},
+            "10"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'b 10",
+        integral_number_test_visitor{ast::integral_number_t{
+            std::nullopt, ast::integral_number_base_info_t{std::nullopt, 'b'},
+            "10"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "2'b10",
+        integral_number_test_visitor{ast::integral_number_t{
+            "2", ast::integral_number_base_info_t{std::nullopt, 'b'}, "10"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "2 'b10",
+        integral_number_test_visitor{ast::integral_number_t{
+            "2", ast::integral_number_base_info_t{std::nullopt, 'b'}, "10"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "2'b 10",
+        integral_number_test_visitor{ast::integral_number_t{
+            "2", ast::integral_number_base_info_t{std::nullopt, 'b'}, "10"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "2 'b 10",
+        integral_number_test_visitor{ast::integral_number_t{
+            "2", ast::integral_number_base_info_t{std::nullopt, 'b'}, "10"}});
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'b010",
+        integral_number_test_visitor{ast::integral_number_t{
+            std::nullopt, ast::integral_number_base_info_t{std::nullopt, 'b'},
+            "010"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'b010",
+        integral_number_test_visitor{ast::integral_number_t{
+            std::nullopt, ast::integral_number_base_info_t{std::nullopt, 'b'},
+            "010"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'b 010",
+        integral_number_test_visitor{ast::integral_number_t{
+            std::nullopt, ast::integral_number_base_info_t{std::nullopt, 'b'},
+            "010"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        " 'b 010",
+        integral_number_test_visitor{ast::integral_number_t{
+            std::nullopt, ast::integral_number_base_info_t{std::nullopt, 'b'},
+            "010"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "3'b010",
+        integral_number_test_visitor{ast::integral_number_t{
+            "3", ast::integral_number_base_info_t{std::nullopt, 'b'}, "010"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "3 'b010",
+        integral_number_test_visitor{ast::integral_number_t{
+            "3", ast::integral_number_base_info_t{std::nullopt, 'b'}, "010"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "3'b 010",
+        integral_number_test_visitor{ast::integral_number_t{
+            "3", ast::integral_number_base_info_t{std::nullopt, 'b'}, "010"}});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "3 'b 010",
+        integral_number_test_visitor{ast::integral_number_t{
+            "3", ast::integral_number_base_info_t{std::nullopt, 'b'}, "010"}});
+}
+
+TEST(SV2017NumberTests, BinaryNumberTests)
+{
+    test_binary_number_parsing<binary_number>();
+}
+
+template <typename TProduction> void test_decimal_number_parsing()
+{
+    EXPECT_PARSE_FAILURE<TProduction>("");
+    EXPECT_PARSE_FAILURE<TProduction>("t");
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "0", integral_number_test_visitor{ast::integral_number_t{
+                 std::nullopt,
+                 std::nullopt,
+                 "0",
+             }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "123", integral_number_test_visitor{ast::integral_number_t{
+                   std::nullopt,
+                   std::nullopt,
+                   "123",
+               }});
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'d0", integral_number_test_visitor{ast::integral_number_t{
+                   std::nullopt,
+                   ast::integral_number_base_info_t{std::nullopt, 'd'},
+                   "0",
+               }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'d123", integral_number_test_visitor{ast::integral_number_t{
+                     std::nullopt,
+                     ast::integral_number_base_info_t{std::nullopt, 'd'},
+                     "123",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "'d 123", integral_number_test_visitor{ast::integral_number_t{
+                      std::nullopt,
+                      ast::integral_number_base_info_t{std::nullopt, 'd'},
+                      "123",
+                  }});
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'd123", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "123",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd123", integral_number_test_visitor{ast::integral_number_t{
+                        "20",
+                        ast::integral_number_base_info_t{std::nullopt, 'd'},
+                        "123",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd 123", integral_number_test_visitor{ast::integral_number_t{
+                         "20",
+                         ast::integral_number_base_info_t{std::nullopt, 'd'},
+                         "123",
+                     }});
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dx", integral_number_test_visitor{ast::integral_number_t{
+                     "20",
+                     ast::integral_number_base_info_t{std::nullopt, 'd'},
+                     "x",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dX", integral_number_test_visitor{ast::integral_number_t{
+                     "20",
+                     ast::integral_number_base_info_t{std::nullopt, 'd'},
+                     "X",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dx", integral_number_test_visitor{ast::integral_number_t{
+                      "20",
+                      ast::integral_number_base_info_t{std::nullopt, 'd'},
+                      "x",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dX", integral_number_test_visitor{ast::integral_number_t{
+                      "20",
+                      ast::integral_number_base_info_t{std::nullopt, 'd'},
+                      "X",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd x", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "x",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd X", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "X",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dx_", integral_number_test_visitor{ast::integral_number_t{
+                      "20",
+                      ast::integral_number_base_info_t{std::nullopt, 'd'},
+                      "x",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dX_", integral_number_test_visitor{ast::integral_number_t{
+                      "20",
+                      ast::integral_number_base_info_t{std::nullopt, 'd'},
+                      "X",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dx_", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "x",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dX_", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "X",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd x_", integral_number_test_visitor{ast::integral_number_t{
+                        "20",
+                        ast::integral_number_base_info_t{std::nullopt, 'd'},
+                        "x",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd X_", integral_number_test_visitor{ast::integral_number_t{
+                        "20",
+                        ast::integral_number_base_info_t{std::nullopt, 'd'},
+                        "X",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dx__", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "x",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dX__", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "X",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dx__", integral_number_test_visitor{ast::integral_number_t{
+                        "20",
+                        ast::integral_number_base_info_t{std::nullopt, 'd'},
+                        "x",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dX__", integral_number_test_visitor{ast::integral_number_t{
+                        "20",
+                        ast::integral_number_base_info_t{std::nullopt, 'd'},
+                        "X",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd x__", integral_number_test_visitor{ast::integral_number_t{
+                         "20",
+                         ast::integral_number_base_info_t{std::nullopt, 'd'},
+                         "x",
+                     }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd X__", integral_number_test_visitor{ast::integral_number_t{
+                         "20",
+                         ast::integral_number_base_info_t{std::nullopt, 'd'},
+                         "X",
+                     }});
+
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dz", integral_number_test_visitor{ast::integral_number_t{
+                     "20",
+                     ast::integral_number_base_info_t{std::nullopt, 'd'},
+                     "z",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dZ", integral_number_test_visitor{ast::integral_number_t{
+                     "20",
+                     ast::integral_number_base_info_t{std::nullopt, 'd'},
+                     "Z",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'd?", integral_number_test_visitor{ast::integral_number_t{
+                     "20",
+                     ast::integral_number_base_info_t{std::nullopt, 'd'},
+                     "?",
+                 }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dz", integral_number_test_visitor{ast::integral_number_t{
+                      "20",
+                      ast::integral_number_base_info_t{std::nullopt, 'd'},
+                      "z",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dZ", integral_number_test_visitor{ast::integral_number_t{
+                      "20",
+                      ast::integral_number_base_info_t{std::nullopt, 'd'},
+                      "Z",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd?", integral_number_test_visitor{ast::integral_number_t{
+                      "20",
+                      ast::integral_number_base_info_t{std::nullopt, 'd'},
+                      "?",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd z", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "z",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd Z", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "Z",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd ?", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "?",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dz_", integral_number_test_visitor{ast::integral_number_t{
+                      "20",
+                      ast::integral_number_base_info_t{std::nullopt, 'd'},
+                      "z",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dZ_", integral_number_test_visitor{ast::integral_number_t{
+                      "20",
+                      ast::integral_number_base_info_t{std::nullopt, 'd'},
+                      "Z",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'd?_", integral_number_test_visitor{ast::integral_number_t{
+                      "20",
+                      ast::integral_number_base_info_t{std::nullopt, 'd'},
+                      "?",
+                  }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dz_", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "z",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dZ_", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "Z",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd?_", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "?",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd z_", integral_number_test_visitor{ast::integral_number_t{
+                        "20",
+                        ast::integral_number_base_info_t{std::nullopt, 'd'},
+                        "z",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd Z_", integral_number_test_visitor{ast::integral_number_t{
+                        "20",
+                        ast::integral_number_base_info_t{std::nullopt, 'd'},
+                        "Z",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd ?_", integral_number_test_visitor{ast::integral_number_t{
+                        "20",
+                        ast::integral_number_base_info_t{std::nullopt, 'd'},
+                        "?",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dz__", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "z",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'dZ__", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "Z",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20'd?__", integral_number_test_visitor{ast::integral_number_t{
+                       "20",
+                       ast::integral_number_base_info_t{std::nullopt, 'd'},
+                       "?",
+                   }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dz__", integral_number_test_visitor{ast::integral_number_t{
+                        "20",
+                        ast::integral_number_base_info_t{std::nullopt, 'd'},
+                        "z",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'dZ__", integral_number_test_visitor{ast::integral_number_t{
+                        "20",
+                        ast::integral_number_base_info_t{std::nullopt, 'd'},
+                        "Z",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd?__", integral_number_test_visitor{ast::integral_number_t{
+                        "20",
+                        ast::integral_number_base_info_t{std::nullopt, 'd'},
+                        "?",
+                    }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd z__", integral_number_test_visitor{ast::integral_number_t{
+                         "20",
+                         ast::integral_number_base_info_t{std::nullopt, 'd'},
+                         "z",
+                     }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd Z__", integral_number_test_visitor{ast::integral_number_t{
+                         "20",
+                         ast::integral_number_base_info_t{std::nullopt, 'd'},
+                         "Z",
+                     }});
+    EXPECT_AST_VISITOR_SUCCESS<TProduction>(
+        "20 'd ?__", integral_number_test_visitor{ast::integral_number_t{
+                         "20",
+                         ast::integral_number_base_info_t{std::nullopt, 'd'},
+                         "?",
+                     }});
+}
+
+TEST(SV2017NumberTests, DecimalNumberTests)
+{
+    test_decimal_number_parsing<decimal_number>();
+}
+
+template <typename TProduction> void test_integral_number_parsing()
+{
+    test_decimal_number_parsing<TProduction>();
+    test_octal_number_parsing<TProduction>();
+    test_binary_number_parsing<TProduction>();
+    test_hex_number_parsing<TProduction>();
+}
+
+TEST(SV2017NumberTests, IntegralNumberTests)
+{
+    test_integral_number_parsing<integral_number>();
+}
+
+TEST(SV2017NumberTests, NumberTests)
+{
+    test_integral_number_parsing<number>();
+    test_real_number_parsing<number>();
+}

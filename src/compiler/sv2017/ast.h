@@ -168,23 +168,6 @@ class real_number_t : public number_t
 bool operator==(const real_number_t &lhs, const real_number_t &rhs);
 
 //
-// Contains informantion about a non-zero unsigned number.
-//
-struct non_zero_unsigned_number_info_t
-{
-    //
-    // The value of the non-zero unsigned number.
-    //
-    std::string value;
-};
-
-//
-// Value equality for non-zero unsigned numbers.
-//
-bool operator==(const non_zero_unsigned_number_info_t &lhs,
-                const non_zero_unsigned_number_info_t &rhs);
-
-//
 // Base visitor class for SystemVerilog 2017
 //
 class visitor_t

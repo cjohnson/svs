@@ -98,8 +98,3 @@ bool ast::operator==(const real_number_t &lhs, const real_number_t &rhs)
            lhs.exponent() == rhs.exponent();
 }
 
-bool ast::operator==(const non_zero_unsigned_number_info_t &lhs,
-                     const non_zero_unsigned_number_info_t &rhs)
-{
-    return lhs.value == rhs.value;
-}
