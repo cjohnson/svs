@@ -489,18 +489,21 @@ TEST(SV2017NumberTests, RealNumberTests)
     EXPECT_PARSE_FAILURE<real_number>("1373");
 }
 
-// TEST(SV2017NumberTests, NonZeroUnsignedNumberTests)
-// {
-//     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("");
-//     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("g");
-//
-//     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("0114");
-//     EXPECT_PARSE_RESULT<non_zero_unsigned_number>("114", "114");
-//     EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4", "1_1_4");
-//     EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("_1_1_4");
-//     EXPECT_PARSE_RESULT<non_zero_unsigned_number>("1_1_4_", "1_1_4_");
-// }
-//
+TEST(SV2017NumberTests, NonZeroUnsignedNumberTests)
+{
+    EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("");
+    EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("g");
+
+    EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("0114");
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>(
+        "114", ast::non_zero_unsigned_number_info_t{"114"});
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>(
+        "1_1_4", ast::non_zero_unsigned_number_info_t{"1_1_4"});
+    EXPECT_PARSE_FAILURE<non_zero_unsigned_number>("_1_1_4");
+    EXPECT_PARSE_RESULT<non_zero_unsigned_number>(
+        "1_1_4_", ast::non_zero_unsigned_number_info_t{"1_1_4_"});
+}
+
 // class integral_number_test_visitor : public test_visitor_t
 // {
 //   private:

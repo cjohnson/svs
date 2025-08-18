@@ -1,7 +1,6 @@
 #ifndef SVS_COMPILER_SV2017_AST_H_
 #define SVS_COMPILER_SV2017_AST_H_
 
-#include <cstdint>
 #include <optional>
 #include <string>
 
@@ -167,6 +166,23 @@ class real_number_t : public number_t
 // Value equality for real numbers.
 //
 bool operator==(const real_number_t &lhs, const real_number_t &rhs);
+
+//
+// Contains informantion about a non-zero unsigned number.
+//
+struct non_zero_unsigned_number_info_t
+{
+    //
+    // The value of the non-zero unsigned number.
+    //
+    std::string value;
+};
+
+//
+// Value equality for non-zero unsigned numbers.
+//
+bool operator==(const non_zero_unsigned_number_info_t &lhs,
+                const non_zero_unsigned_number_info_t &rhs);
 
 //
 // Base visitor class for SystemVerilog 2017

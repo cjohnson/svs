@@ -339,33 +339,23 @@ struct real_number
             });
 };
 
-// //
-// // Non-zero unsigned number
-// //
-// // non_zero_unsigned_number ::= non_zero_decimal_digit { _ | decimal_digit }
-// //
-// struct non_zero_unsigned_number
-// {
-//     static constexpr auto rule =
-//         dsl::identifier(dsl::digit<dsl::decimal> - dsl::zero,
-//                         dsl::digit<dsl::decimal> /
-//                         dsl::digit_sep_underscore);
-//     static constexpr auto value = lexy::as_string<std::string>;
 //
-//     //
-//     // Converts the result of the parsing operation to a uint64_t.
-//     //
-//     static uint64_t to_uint64_t(std::string value)
-//     {
-//         std::string without_underscores;
-//         for (const char &c : value)
-//         {
-//             without_underscores += c;
-//         }
-//         return (uint64_t)std::stoull(without_underscores);
-//     }
-// };
+// Non-zero unsigned number
 //
+// non_zero_unsigned_number ::= non_zero_decimal_digit { _ | decimal_digit }
+//
+struct non_zero_unsigned_number
+{
+    static constexpr auto rule =
+        dsl::identifier(dsl::digit<dsl::decimal> - dsl::zero,
+                        dsl::digit<dsl::decimal> / dsl::digit_sep_underscore);
+    static constexpr auto value =
+        lexy::callback<ast::non_zero_unsigned_number_info_t>([](auto lexeme) {
+            return ast::non_zero_unsigned_number_info_t{
+                std::string(lexeme.begin(), lexeme.end())};
+        });
+};
+
 // //
 // // Size
 // //
