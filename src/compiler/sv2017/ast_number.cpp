@@ -1,6 +1,6 @@
 #include "ast.h"
 
-namespace ast = svs::ast::sv2017;
+namespace ast = svs::sv2017::ast;
 
 ast::number_t::number_t()
 {
@@ -97,4 +97,3 @@ bool ast::operator==(const real_number_t &lhs, const real_number_t &rhs)
            lhs.fractional_part() == rhs.fractional_part() &&
            lhs.exponent() == rhs.exponent();
 }
-

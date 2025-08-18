@@ -6,7 +6,7 @@
 #include <lexy/callback/string.hpp>
 #include <lexy/dsl.hpp>
 
-namespace svs::grammar::sv2017
+namespace svs::sv2017::grammar
 {
 
 namespace dsl = lexy::dsl;

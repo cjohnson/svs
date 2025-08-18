@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <optional>
-#include <sstream>
 #include <string>
 
 #include <lexy/callback.hpp>
@@ -16,11 +15,11 @@
 
 #include "ast.h"
 
-namespace svs::grammar::sv2017
+namespace svs::sv2017::grammar
 {
 
 namespace dsl = lexy::dsl;
-namespace ast = svs::ast::sv2017;
+namespace ast = svs::sv2017::ast;
 
 //
 // X (Unknown) digit
@@ -532,6 +531,6 @@ struct number
     static constexpr auto value = lexy::forward<std::shared_ptr<ast::number_t>>;
 };
 
-} // namespace svs::grammar::sv2017
+} // namespace svs::sv2017::grammar
 
 #endif // SVS_COMPILER_SV2017_GRAMMAR_NUMBER_H_

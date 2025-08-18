@@ -8,8 +8,8 @@
 
 #include "../grammar_test_utils.hpp"
 
-using namespace svs::grammar::sv2017;
-namespace ast = svs::ast::sv2017;
+using namespace svs::sv2017::grammar;
+namespace ast = svs::sv2017::ast;
 
 struct z_or_x_production
 {

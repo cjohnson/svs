@@ -6,7 +6,7 @@
 #include <lexy/callback/string.hpp>
 #include <lexy/dsl.hpp>
 
-namespace svs::grammar::sv2017
+namespace svs::sv2017::grammar
 {
 
 namespace dsl = lexy::dsl;
@@ -47,6 +47,6 @@ struct string_literal
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
-} // namespace svs::grammar::sv2017
+} // namespace svs::sv2017::grammar
 
 #endif // SVS_COMPILER_SV2017_GRAMMAR_STRING_LITERAL_H_

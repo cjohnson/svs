@@ -1,6 +1,6 @@
 #include "ast.h"
 
-namespace ast = svs::ast::sv2017;
+namespace ast = svs::sv2017::ast;
 
 void ast::visitor_t::visit(const number_t &number)
 {

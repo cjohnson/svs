@@ -4,7 +4,7 @@
 #include <optional>
 #include <string>
 
-namespace svs::ast::sv2017
+namespace svs::sv2017::ast
 {
 
 //

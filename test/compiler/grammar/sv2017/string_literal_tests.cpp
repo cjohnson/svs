@@ -4,7 +4,7 @@
 
 #include "../grammar_test_utils.hpp"
 
-using namespace svs::grammar::sv2017;
+using namespace svs::sv2017::grammar;
 
 TEST(SV2017StringLiteralTests, FailsToParseEmptyString)
 {
