@@ -61,6 +61,7 @@ if (ENABLE_UNIT_TESTS)
             ./test/compiler/grammar/sv2017/identifier_tests.cpp
             ./test/compiler/grammar/sv2017/string_literal_tests.cpp
             ./test/compiler/grammar/sv2017/number_tests.cpp
+            ./test/compiler/grammar/sv2017/operator_tests.cpp
     )
     target_link_libraries(cpp_test
         PRIVATE
