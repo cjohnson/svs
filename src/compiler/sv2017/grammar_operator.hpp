@@ -13,6 +13,9 @@ namespace svs::sv2017::grammar
 
 namespace dsl = lexy::dsl;
 
+//
+// A unary operator
+//
 struct unary_operator
 {
     static constexpr auto rule =
@@ -30,6 +33,9 @@ struct unary_operator
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
+//
+// A binary operator
+//
 struct binary_operator
 {
     static constexpr auto rule =
@@ -68,6 +74,17 @@ struct binary_operator
         dsl::peek(LEXY_LIT("->")) >> dsl::capture(LEXY_LIT("->")) |
         dsl::else_ >> dsl::capture(dsl::lit_c<'+'> / dsl::lit_c<'-'> /
                                    dsl::lit_c<'/'> / dsl::lit_c<'%'>);
+    static constexpr auto value = lexy::as_string<std::string>;
+};
+
+//
+// An increment or decrement operator
+//
+struct inc_or_dec_operator
+{
+    static constexpr auto rule =
+        dsl::peek(dsl::lit_c<'-'>) >> dsl::capture(LEXY_LIT("--")) |
+        dsl::else_ >> dsl::capture(LEXY_LIT("++"));
     static constexpr auto value = lexy::as_string<std::string>;
 };
 

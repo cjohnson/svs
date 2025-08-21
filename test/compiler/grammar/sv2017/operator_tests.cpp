@@ -61,3 +61,15 @@ TEST(SV2017OperatorTests, BinaryOperatorTests)
     EXPECT_PARSE_RESULT<binary_operator>("->", "->");
     EXPECT_PARSE_RESULT<binary_operator>("<->", "<->");
 }
+
+TEST(SV2017OperatorTests, IncOrDecOperatorTests)
+{
+    EXPECT_PARSE_FAILURE<inc_or_dec_operator>("");
+    EXPECT_PARSE_FAILURE<inc_or_dec_operator>("x");
+    EXPECT_PARSE_FAILURE<inc_or_dec_operator>("&");
+    EXPECT_PARSE_FAILURE<inc_or_dec_operator>("+");
+    EXPECT_PARSE_FAILURE<inc_or_dec_operator>("-");
+
+    EXPECT_PARSE_RESULT<inc_or_dec_operator>("++", "++");
+    EXPECT_PARSE_RESULT<inc_or_dec_operator>("--", "--");
+}
