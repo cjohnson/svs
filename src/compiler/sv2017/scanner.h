@@ -1,0 +1,6 @@
+#ifndef COMPILER_SV2017_SCANNER_H_
+#define COMPILER_SV2017_SCANNER_H_
+
+int yylex(void);
+
+#endif // COMPILER_SV2017_SCANNER_H_

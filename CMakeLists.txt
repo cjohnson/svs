@@ -7,10 +7,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED 17)
 
-# set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-# set(CMAKE_CXX_FLAGS_DEBUG "-g")
-# set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
 include(FetchContent)
 
 FetchContent_Declare(
@@ -29,8 +25,21 @@ target_sources(svsc
 )
 target_link_libraries(svsc PRIVATE foonathan::lexy)
 
-#add_executable(svsc ./src/main.cpp)
-#target_link_libraries(svsc svs)
+find_package(BISON REQUIRED)
+find_package(FLEX REQUIRED)
+
+bison_target(sv2017_parser
+    ./src/compiler/sv2017/parser.y
+    ./src/compiler/sv2017/parser.cpp
+    DEFINES_FILE ${CMAKE_SOURCE_DIR}/src/compiler/sv2017/parser.h)
+flex_target(sv2017_scanner ./src/compiler/sv2017/scanner.l ./src/compiler/sv2017/scanner.cpp)
+add_flex_bison_dependency(sv2017_scanner sv2017_parser)
+
+message("${BISON_sv2017_parser_OUTPUT_HEADER}")
+
+add_library(sv2017_front_end STATIC
+    ${BISON_sv2017_parser_OUTPUTS}
+    ${FLEX_sv2017_scanner_OUTPUTS})
 
 option(ENABLE_UNIT_TESTS "Enable Unit Tests" ON)
 message(STATUS "Enable testing: ${ENABLE_UNIT_TESTS}")
