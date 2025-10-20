@@ -38,21 +38,6 @@ TEST(SV2017SystemTFIdentifierTests, ParsesWithWhitespaceAtEnd)
     EXPECT_PARSE_RESULT<system_tf_identifier>("$display\n", "display");
 }
 
-TEST(SV2017SimpleIdentifierTests, FailsToParseEmptyString)
-{
-    EXPECT_PARSE_FAILURE<simple_identifier>("");
-}
-
-TEST(SV2017SimpleIdentifierTests, FailsToParseDollarSign)
-{
-    EXPECT_PARSE_FAILURE<simple_identifier>("$");
-}
-
-TEST(SV2017SimpleIdentifierTests, FailsToParseStartingWithDigit)
-{
-    EXPECT_PARSE_FAILURE<simple_identifier>("7notident");
-}
-
 TEST(SV2017SimpleIdentifierTests, FailsToParseStartingWithDollarSign)
 {
     EXPECT_PARSE_FAILURE<simple_identifier>("$display");

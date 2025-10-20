@@ -26,26 +26,51 @@ target_sources(svsc
 target_link_libraries(svsc PRIVATE foonathan::lexy)
 
 find_package(BISON REQUIRED)
+bison_target(sv2017_parser_impl
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser.y
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser_impl.cpp
+    DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser_impl.h)
+
 find_package(FLEX REQUIRED)
+flex_target(sv2017_scanner_impl
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/scanner.l
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/scanner_impl.cpp
+    DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/scanner_impl.h)
+add_flex_bison_dependency(sv2017_scanner_impl sv2017_parser_impl)
 
-bison_target(sv2017_parser
-    ./src/compiler/sv2017/parser.y
-    ./src/compiler/sv2017/parser.cpp
-    DEFINES_FILE ${CMAKE_SOURCE_DIR}/src/compiler/sv2017/parser.h)
-flex_target(sv2017_scanner ./src/compiler/sv2017/scanner.l ./src/compiler/sv2017/scanner.cpp)
-add_flex_bison_dependency(sv2017_scanner sv2017_parser)
+message("${BISON_sv2017_parser_impl_OUTPUTS}")
 
-message("${BISON_sv2017_parser_OUTPUT_HEADER}")
+add_library(sv2017_scanner STATIC)
+target_sources(sv2017_scanner
+    PRIVATE
+        ${BISON_sv2017_parser_impl_OUTPUTS}
+        ${FLEX_sv2017_scanner_impl_OUTPUTS}
+        ./src/compiler/sv2017/scanner.cpp)
+target_include_directories(sv2017_scanner
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017)
 
-add_library(sv2017_front_end STATIC
-    ${BISON_sv2017_parser_OUTPUTS}
-    ${FLEX_sv2017_scanner_OUTPUTS})
+add_library(sv2017_parser STATIC)
+target_sources(sv2017_parser
+    PRIVATE
+        ${BISON_sv2017_parser_impl_OUTPUTS}
+        ${FLEX_sv2017_scanner_impl_OUTPUTS})
+target_include_directories(sv2017_parser PRIVATE src/compiler/sv2017)
+
+add_library(svsc2017 STATIC)
+target_sources(svsc2017
+    PRIVATE
+        ${BISON_sv2017_parser_impl_OUTPUTS}
+        ${FLEX_sv2017_scanner_impl_OUTPUTS})
+target_link_libraries(svsc2017
+    PRIVATE
+        sv2017_scanner
+        sv2017_parser)
 
 option(ENABLE_UNIT_TESTS "Enable Unit Tests" ON)
 message(STATUS "Enable testing: ${ENABLE_UNIT_TESTS}")
 
 if (ENABLE_UNIT_TESTS)
-
     FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
@@ -67,13 +92,16 @@ if (ENABLE_UNIT_TESTS)
     add_executable(cpp_test)
     target_sources(cpp_test
         PRIVATE
+            test/compiler/sv2017/identifier_tests.cpp
             ./test/compiler/grammar/sv2017/identifier_tests.cpp
             ./test/compiler/grammar/sv2017/string_literal_tests.cpp
             ./test/compiler/grammar/sv2017/number_tests.cpp
             ./test/compiler/grammar/sv2017/operator_tests.cpp
     )
+    target_include_directories(cpp_test PRIVATE src/compiler)
     target_link_libraries(cpp_test
         PRIVATE
+            svsc2017
             svsc
             foonathan::lexy
             GTest::gtest_main
@@ -81,5 +109,4 @@ if (ENABLE_UNIT_TESTS)
 
     include(GoogleTest)
     gtest_discover_tests(cpp_test)
-
 endif()
