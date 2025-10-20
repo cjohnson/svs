@@ -17,9 +17,7 @@ TEST(SV2017SimpleIdentifierTests, FailsToParseDollarSign)
     svs::sv2017::string_scanner s{"$"};
 
     yytokentype token;
-    s >> token;
-
-    EXPECT_FALSE(s);
+    EXPECT_THROW(s >> token, std::runtime_error);
 }
 
 TEST(SV2017SimpleIdentifierTests, FailsToParseStartingWithDigit)
@@ -27,11 +25,6 @@ TEST(SV2017SimpleIdentifierTests, FailsToParseStartingWithDigit)
     svs::sv2017::string_scanner s{"7notident"};
 
     yytokentype token;
-    s >> token;
-
-    ASSERT_TRUE(s);
-    EXPECT_EQ(token, yytokentype::T_Identifier);
-    EXPECT_NE(*yylval.string_val, "7notident");
-    EXPECT_EQ(*yylval.string_val, "notident");
+    EXPECT_THROW(s >> token, std::runtime_error);
 }
 

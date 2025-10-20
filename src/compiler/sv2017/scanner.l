@@ -1,6 +1,8 @@
 %{
 
 #include <iostream>
+#include <stdexcept>
+#include <sstream>
 #include <string>
 
 #include "parser_impl.h"
@@ -10,7 +12,6 @@
 %option noyywrap
 
 %%
-
 
     /* A.9.3 Identifiers */
 
@@ -27,8 +28,16 @@
 
 [ \t\n<<EOF>>] { }
 
+.* {
+    std::stringstream ss;
+    ss << "Unrecognized token: ";
+    ss << yytext;
+    throw std::runtime_error(ss.str());
+}
+
 %%
 
 void yyerror(const char *s) {
     std::printf("ERROR: %s\n", s);
 }
+
