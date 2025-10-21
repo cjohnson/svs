@@ -15,8 +15,10 @@
 
     /* A.9.3 Identifiers */
 
-\\[^ \t\n<<EOF>>] {
-    yylval.string_val = new std::string(yytext);
+[\\].+[\t\n <<EOF>>] {
+    std::string string(yytext);
+    yylval.string_val = new std::string(string.substr(1, string.length() - 2));
+
     return T_Identifier;
 }
 [a-zA-Z_][a-zA-Z0-9_$]* {
@@ -27,6 +29,8 @@
     /* A.9.4 White space */
 
 [ \t\n<<EOF>>] { }
+
+    /* Unrecognized token handling */
 
 .* {
     std::stringstream ss;

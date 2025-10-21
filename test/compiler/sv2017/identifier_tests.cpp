@@ -15,17 +15,20 @@ std::vector<token_info_t> lex_all(const std::string& input) {
     try {
         yytokentype token;
         while (scanner >> token) {
-            switch (token) {
-            case T_Identifier:
-                result.push_back(token_info_t{ token, yylval.string_val });
-                break;
-            default:
-                break;
-            }
+            result.push_back(token_info_t{ token, yylval });
         }
-    } catch(const std::runtime_error& e) {
-    }
+    } catch(const std::runtime_error& e) { }
     return result;
+}
+
+static inline void EXPECT_IDENTIFIER(const std::string& lexer_input,
+                                     const std::string& expected_value) {
+    std::vector<token_info_t> tokens = lex_all(lexer_input);
+    ASSERT_EQ(tokens.size(), 1);
+
+    const token_info_t& first = tokens.at(0);
+    EXPECT_EQ(first.token, yytokentype::T_Identifier);
+    EXPECT_EQ(*first.val.string_val, expected_value);
 }
 
 TEST(SV2017SimpleIdentifierTests, FailsToParseEmptyString) {
@@ -48,15 +51,6 @@ TEST(SV2017SimpleIdentifierTests, FailsToParseStartingWithDollarSign) {
     EXPECT_TRUE(tokens.empty());
 }
 
-void EXPECT_IDENTIFIER(const std::string& lexer_input, const std::string& expected_value) {
-    std::vector<token_info_t> tokens = lex_all(lexer_input);
-    EXPECT_EQ(tokens.size(), 1);
-
-    const token_info_t& first = tokens.at(0);
-    EXPECT_EQ(first.token, yytokentype::T_Identifier);
-    EXPECT_EQ(*first.val.string_val, expected_value);
-}
-
 TEST(SV2017SimpleIdentifierTests, ParsesTestsFromSpec) {
     EXPECT_IDENTIFIER("shiftreg_a", "shiftreg_a");
     EXPECT_IDENTIFIER("busa_index", "busa_index");
@@ -66,9 +60,26 @@ TEST(SV2017SimpleIdentifierTests, ParsesTestsFromSpec) {
     EXPECT_IDENTIFIER("n$657", "n$657");
 }
 
-TEST(SV2017SimpleIdentifierTests, ParsesAtLeast1024Characters)
-{
+TEST(SV2017SimpleIdentifierTests, ParsesAtLeast1024Characters) {
     std::string string(1024, 'a');
     EXPECT_IDENTIFIER(string, string);
+}
+
+TEST(SV2017EscapedIdentifierTests, FailsToParseEmptyString) {
+    std::vector<token_info_t> tokens = lex_all("");
+    EXPECT_TRUE(tokens.empty());
+}
+
+TEST(SV2017EscapedIdentifierTests, ParsesBasicEscapedIdentifier) {
+    EXPECT_IDENTIFIER("\\;;;;\n", ";;;;");
+}
+
+TEST(SV2017EscapedIdentifierTests, ParsesEscapedIdentifiersFromSpec) {
+    EXPECT_IDENTIFIER("\\busa+index ", "busa+index");
+    EXPECT_IDENTIFIER("\\-clock\n", "-clock");
+    EXPECT_IDENTIFIER("\\***error-condition***\n", "***error-condition***");
+    EXPECT_IDENTIFIER("\\net1/\\net2\t", "net1/\\net2");
+    EXPECT_IDENTIFIER("\\{a,b}\n", "{a,b}");
+    EXPECT_IDENTIFIER("\\a*(b+c)\n", "a*(b+c)");
 }
 
