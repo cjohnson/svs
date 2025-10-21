@@ -12,12 +12,13 @@ void yyerror(char const *);
 }
 
 %union {
-    std::string *string_val;
+    std::string *string;
 }
 
-%token <string_val> T_Identifier
+%token <string_val> identifier_k
+%token <string_val> system_tf_identifier_k
 
 %%
 
-Identifier : T_Identifier {}
+Identifier : identifier_k {}
 

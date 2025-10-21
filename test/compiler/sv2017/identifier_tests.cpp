@@ -27,28 +27,18 @@ static inline void EXPECT_IDENTIFIER(const std::string& lexer_input,
     ASSERT_EQ(tokens.size(), 1);
 
     const token_info_t& first = tokens.at(0);
-    EXPECT_EQ(first.token, yytokentype::T_Identifier);
-    EXPECT_EQ(*first.val.string_val, expected_value);
+    EXPECT_EQ(first.token, yytokentype::identifier_k);
+    EXPECT_EQ(*first.val.string, expected_value);
 }
 
-TEST(SV2017SimpleIdentifierTests, FailsToParseEmptyString) {
-    std::vector<token_info_t> tokens = lex_all("");
-    EXPECT_TRUE(tokens.empty());
-}
+static inline void EXPECT_SYSTEM_TF_IDENTIFIER(const std::string& lexer_input,
+                                               const std::string& expected_value) {
+    std::vector<token_info_t> tokens = lex_all(lexer_input);
+    ASSERT_EQ(tokens.size(), 1);
 
-TEST(SV2017SimpleIdentifierTests, FailsToParseDollarSign) {
-    std::vector<token_info_t> tokens = lex_all("$");
-    EXPECT_TRUE(tokens.empty());
-}
-
-TEST(SV2017SimpleIdentifierTests, FailsToParseStartingWithDigit) {
-    std::vector<token_info_t> tokens = lex_all("7notident");
-    EXPECT_TRUE(tokens.empty());
-}
-
-TEST(SV2017SimpleIdentifierTests, FailsToParseStartingWithDollarSign) {
-    std::vector<token_info_t> tokens = lex_all("$display");
-    EXPECT_TRUE(tokens.empty());
+    const token_info_t& first = tokens.at(0);
+    EXPECT_EQ(first.token, yytokentype::system_tf_identifier_k);
+    EXPECT_EQ(*first.val.string, expected_value);
 }
 
 TEST(SV2017SimpleIdentifierTests, ParsesTestsFromSpec) {
@@ -65,11 +55,6 @@ TEST(SV2017SimpleIdentifierTests, ParsesAtLeast1024Characters) {
     EXPECT_IDENTIFIER(string, string);
 }
 
-TEST(SV2017EscapedIdentifierTests, FailsToParseEmptyString) {
-    std::vector<token_info_t> tokens = lex_all("");
-    EXPECT_TRUE(tokens.empty());
-}
-
 TEST(SV2017EscapedIdentifierTests, ParsesBasicEscapedIdentifier) {
     EXPECT_IDENTIFIER("\\;;;;\n", ";;;;");
 }
@@ -81,5 +66,25 @@ TEST(SV2017EscapedIdentifierTests, ParsesEscapedIdentifiersFromSpec) {
     EXPECT_IDENTIFIER("\\net1/\\net2\t", "net1/\\net2");
     EXPECT_IDENTIFIER("\\{a,b}\n", "{a,b}");
     EXPECT_IDENTIFIER("\\a*(b+c)\n", "a*(b+c)");
+}
+
+TEST(SV2017SystemTFIdentifierTests, FailsToParseDollarSignFollowedByWhiteSpace) {
+    std::vector<token_info_t> tokens = lex_all("$");
+    EXPECT_TRUE(tokens.empty());
+
+    tokens = lex_all("$ ");
+    EXPECT_TRUE(tokens.empty());
+
+    tokens = lex_all("$\n");
+    EXPECT_TRUE(tokens.empty());
+
+    tokens = lex_all("$\n");
+    EXPECT_TRUE(tokens.empty());
+}
+
+TEST(SV2017SystemTFIdentifierTests, ParsesSetOfSystemVerilogDefinedTasks) {
+    EXPECT_SYSTEM_TF_IDENTIFIER("$display", "$display");
+    EXPECT_SYSTEM_TF_IDENTIFIER("$bitstoreal", "$bitstoreal");
+    EXPECT_SYSTEM_TF_IDENTIFIER("$q_remove", "$q_remove");
 }
 

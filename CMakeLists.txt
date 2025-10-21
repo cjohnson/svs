@@ -90,8 +90,7 @@ if (ENABLE_UNIT_TESTS)
     add_executable(cpp_test)
     target_sources(cpp_test
         PRIVATE
-            test/compiler/sv2017/identifier_tests.cpp
-            ./test/compiler/grammar/sv2017/identifier_tests.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/test/compiler/sv2017/identifier_tests.cpp
             ./test/compiler/grammar/sv2017/string_literal_tests.cpp
             ./test/compiler/grammar/sv2017/number_tests.cpp
             ./test/compiler/grammar/sv2017/operator_tests.cpp

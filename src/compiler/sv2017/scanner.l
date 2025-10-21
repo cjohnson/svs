@@ -15,15 +15,27 @@
 
     /* A.9.3 Identifiers */
 
+        /* escaped_identifier */
+
 [\\].+[\t\n <<EOF>>] {
     std::string string(yytext);
-    yylval.string_val = new std::string(string.substr(1, string.length() - 2));
+    yylval.string = new std::string(string.substr(1, string.length() - 2));
 
-    return T_Identifier;
+    return identifier_k;
 }
+
+        /* simple_identifier */
+
 [a-zA-Z_][a-zA-Z0-9_$]* {
-    yylval.string_val = new std::string(yytext);
-    return T_Identifier;
+    yylval.string = new std::string(yytext);
+    return identifier_k;
+}
+
+        /* system_tf_identifier */
+
+$[a-zA-Z0-9_$]+ {
+    yylval.string = new std::string(yytext);
+    return system_tf_identifier_k;
 }
 
     /* A.9.4 White space */
