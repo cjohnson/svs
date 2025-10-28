@@ -38,21 +38,12 @@ flex_target(sv2017_scanner_impl
     DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/scanner_impl.h)
 add_flex_bison_dependency(sv2017_scanner_impl sv2017_parser_impl)
 
-add_library(sv2017_scanner STATIC)
-target_sources(sv2017_scanner
-    PRIVATE
-        ${BISON_sv2017_parser_impl_OUTPUTS}
-        ${FLEX_sv2017_scanner_impl_OUTPUTS}
-        ./src/compiler/sv2017/scanner.cpp)
-target_include_directories(sv2017_scanner
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017)
-
 add_library(sv2017_parser STATIC)
 target_sources(sv2017_parser
     PRIVATE
         ${BISON_sv2017_parser_impl_OUTPUTS}
-        ${FLEX_sv2017_scanner_impl_OUTPUTS})
+        ${FLEX_sv2017_scanner_impl_OUTPUTS}
+        ./src/compiler/sv2017/parser.cpp)
 target_include_directories(sv2017_parser PRIVATE src/compiler/sv2017)
 
 add_library(svsc2017 STATIC)
@@ -62,8 +53,11 @@ target_sources(svsc2017
         ${FLEX_sv2017_scanner_impl_OUTPUTS})
 target_link_libraries(svsc2017
     PRIVATE
-        sv2017_scanner
         sv2017_parser)
+
+add_executable(svs ./src/main.cpp)
+target_link_libraries(svs PRIVATE svsc2017)
+target_include_directories(svs PRIVATE src/compiler)
 
 option(ENABLE_UNIT_TESTS "Enable Unit Tests" ON)
 message(STATUS "Enable testing: ${ENABLE_UNIT_TESTS}")
@@ -90,7 +84,6 @@ if (ENABLE_UNIT_TESTS)
     add_executable(cpp_test)
     target_sources(cpp_test
         PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/test/compiler/sv2017/identifier_tests.cpp
             ./test/compiler/grammar/sv2017/string_literal_tests.cpp
             ./test/compiler/grammar/sv2017/number_tests.cpp
             ./test/compiler/grammar/sv2017/operator_tests.cpp

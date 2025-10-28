@@ -5,13 +5,30 @@
 #include <sstream>
 #include <string>
 
-#include "parser_impl.h"
+#include "parser.h"
 
 %}
 
-%option noyywrap
+%option noyywrap nounput noinput batch debug
+
+%{
+
+#define YY_USER_ACTION loc.columns(yyleng);
+
+%}
 
 %%
+
+%{
+
+yy::location& loc = parser.location;
+loc.step();
+
+%}
+
+[ \t\r]+ loc.step();
+\n+      loc.lines(yyleng); loc.step();
+
 
     /* A.9.3 Identifiers */
 
@@ -19,41 +36,23 @@
 
 [\\].+[\t\n <<EOF>>] {
     std::string string(yytext);
-    yylval.string = new std::string(string.substr(1, string.length() - 2));
-
-    return identifier_k;
+    return yy::parser::make_identifier_k(
+        string.substr(1, string.length() - 2), loc);
 }
 
         /* simple_identifier */
 
 [a-zA-Z_][a-zA-Z0-9_$]* {
-    yylval.string = new std::string(yytext);
-    return identifier_k;
+    return yy::parser::make_identifier_k(yytext, loc);
 }
 
         /* system_tf_identifier */
 
 $[a-zA-Z0-9_$]+ {
-    yylval.string = new std::string(yytext);
-    return system_tf_identifier_k;
+    return yy::parser::make_system_tf_identifier_k(yytext, loc);
 }
 
-    /* A.9.4 White space */
-
-[ \t\n<<EOF>>] { }
-
-    /* Unrecognized token handling */
-
-.* {
-    std::stringstream ss;
-    ss << "Unrecognized token: ";
-    ss << yytext;
-    throw std::runtime_error(ss.str());
-}
+<<EOF>> return yy::parser::make_YYEOF (loc);
 
 %%
-
-void yyerror(const char *s) {
-    std::printf("ERROR: %s\n", s);
-}
 

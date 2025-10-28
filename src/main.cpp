@@ -1,18 +1,16 @@
 #include <iostream>
+#include <sv2017/parser.h>
 
-int main(int argc, char **argv)
-{
-    if (argc < 2)
-    {
-        std::cerr << "Usage: svsc <filename>\n";
+int main(void) {
+    svs::sv2017::parser parser;
+    if (parser.parse() || !parser.result) {
+        std::cerr << "Failed to parse\n";
         return 1;
     }
-    std::string file_name{argv[1]};
 
-    //std::ifstream file_stream{file_name};
-    //std::stringstream file_string_stream;
-    //file_string_stream << file_stream.rdbuf();
-    //std::string file_buffer{file_string_stream.str()};
+    for (const auto& s : *parser.result) {
+        std::cout << "Found Identifier: " << s << "\n";
+    }
 
     return 0;
 }
