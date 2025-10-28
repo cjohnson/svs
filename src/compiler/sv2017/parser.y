@@ -46,11 +46,14 @@ namespace svs::sv2017 { class parser; }
 %start description;
 
 description : identifier_list { prs.result = $1; }
+            ;
 
 identifier_list : /* empty */                { $$ = std::make_shared<std::vector<std::string>>(); }
                 | identifier_list identifier { ($$ = $1)->push_back($2); }
+                ;
 
 identifier : identifier_k { $$ = $1; }
+           ;
 
 %%
 
