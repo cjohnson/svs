@@ -2,8 +2,8 @@
 #define SVS_COMPILER_SV2017_PARSER_H_
 
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "parser_impl.h"
 
@@ -26,21 +26,42 @@ public:
 
     //
     // Run the parser on the standard input stream.
-    // Returns 0 on success.
     //
-    int parse();
+    result_t parse();
 
     //
-    // The result of parsing.
+    // Run the parser on the provided file.
     //
-    result_t result;
+    result_t parse(const std::string& file_name);
 
+private:
+    //
+    // Sets up the scanner for standard input.
+    //
+    void scan_begin();
+
+    //
+    // Sets up the scanner for a file input.
+    //
+    void scan_begin(const std::string& file_name);
+
+    //
+    // Tears down the scanner
+    //
+    void scan_end();
+
+public:
     //
     // The parsing location
     //
     yy::location location;
 
 private:
+    //
+    // The result of parsing.
+    //
+    result_t result;
+
     //
     // If true, the parser will generate parsing debug traces.
     //
@@ -50,6 +71,9 @@ private:
     // If true, the parser will generate scanning debug traces.
     //
     bool trace_scanning;
+
+public:
+    friend yy::parser;
 };
 
 }

@@ -56,3 +56,18 @@ $[a-zA-Z0-9_$]+ {
 
 %%
 
+void svs::sv2017::parser::scan_begin() {
+    yy_flex_debug = trace_scanning;
+}
+
+void svs::sv2017::parser::scan_begin(const std::string& file_name) {
+    yy_flex_debug = trace_scanning;
+    if (!(yyin = fopen(file_name.c_str(), "r"))) {
+        std::cerr << "cannot open " << file_name << ": " << strerror(errno) << '\n';
+    }
+}
+
+void svs::sv2017::parser::scan_end() {
+    fclose(yyin);
+}
+
