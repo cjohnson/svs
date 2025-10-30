@@ -11,8 +11,7 @@ parser::result_t parser::parse() {
 
     yy::parser parser(*this);
     parser.set_debug_level(trace_parsing);
-    if (parser.parse() != 0)
-        result = nullptr;
+    parser.parse();
 
     scan_end();
 
@@ -26,8 +25,7 @@ parser::result_t parser::parse(const std::string& file_name) {
 
     yy::parser parser(*this);
     parser.set_debug_level(trace_parsing);
-    if (parser.parse() != 0)
-        result = nullptr;
+    parser.parse();
 
     scan_end();
 

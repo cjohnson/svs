@@ -9,22 +9,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED 17)
 
 include(FetchContent)
 
-FetchContent_Declare(
-    lexy
-    URL https://github.com/foonathan/lexy/releases/download/v2025.05.0/lexy-src.zip
-    DOWNLOAD_EXTRACT_TIMESTAMP true
-)
-FetchContent_MakeAvailable(lexy)
-
-add_library(svsc STATIC)
-target_sources(svsc
-    PRIVATE
-        ./src/compiler/sv2017/ast_number.cpp
-        ./src/compiler/sv2017/ast_visitor.cpp
-        ./src/compiler/sv2017/grammar_identifier.hpp
-)
-target_link_libraries(svsc PRIVATE foonathan::lexy)
-
 find_package(BISON REQUIRED)
 bison_target(sv2017_parser_impl
     ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser.y
@@ -43,7 +27,8 @@ target_sources(sv2017_parser
     PRIVATE
         ${BISON_sv2017_parser_impl_OUTPUTS}
         ${FLEX_sv2017_scanner_impl_OUTPUTS}
-        ./src/compiler/sv2017/parser.cpp)
+        ./src/compiler/sv2017/parser.cpp
+        ./src/compiler/sv2017/ast_number.cpp)
 target_include_directories(sv2017_parser PRIVATE src/compiler/sv2017)
 
 add_library(svsc2017 STATIC)
@@ -81,22 +66,17 @@ if (ENABLE_UNIT_TESTS)
 
     enable_testing()
 
-    add_executable(cpp_test)
-    target_sources(cpp_test
-        PRIVATE
-            ./test/compiler/grammar/sv2017/string_literal_tests.cpp
-            ./test/compiler/grammar/sv2017/number_tests.cpp
-            ./test/compiler/grammar/sv2017/operator_tests.cpp
-    )
-    target_include_directories(cpp_test PRIVATE src/compiler)
-    target_link_libraries(cpp_test
-        PRIVATE
-            svsc2017
-            svsc
-            foonathan::lexy
-            GTest::gtest_main
-    )
+    #add_executable(cpp_test)
+    #target_sources(cpp_test
+    #    PRIVATE
+    #)
+    #target_include_directories(cpp_test PRIVATE src/compiler)
+    #target_link_libraries(cpp_test
+    #    PRIVATE
+    #        svsc2017
+    #        GTest::gtest_main
+    #)
 
     include(GoogleTest)
-    gtest_discover_tests(cpp_test)
+    #gtest_discover_tests(cpp_test)
 endif()

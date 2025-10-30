@@ -3,8 +3,8 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
+#include "ast_number.h"
 #include "parser_impl.h"
 
 #define YY_DECL \
@@ -17,7 +17,7 @@ namespace svs::sv2017 {
 //
 class parser {
 public:
-    using result_t = std::shared_ptr<std::vector<std::string>>;
+    using result_t = std::shared_ptr<ast::integral_number_t>;
 
     //
     // Constructor for the parser.

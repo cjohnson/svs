@@ -20,7 +20,10 @@
 #include <string>
 #include <vector>
 
+#include "ast_number.h"
+
 namespace svs::sv2017 { class parser; }
+namespace ast = svs::sv2017::ast;
 }
 
 %param { svs::sv2017::parser& prs }
@@ -35,24 +38,39 @@ namespace svs::sv2017 { class parser; }
 #include "parser.h"
 }
 
-%token <std::string> identifier_k
-%token <std::string> system_tf_identifier_k
+%token <std::string> INTEGRAL_NUMBER_VALUE
 
-%nterm <std::shared_ptr<std::vector<std::string>>> identifier_list
-%nterm <std::string> identifier
+%token <bool> DECIMAL_BASE
+%token <bool> BINARY_BASE
+%token <bool> OCTAL_BASE
+%token <bool> HEX_BASE
+
+%token <std::string> STRING_LITERAL
+
+%token <std::string> IDENTIFIER
+%token <std::string> SYSTEM_TF_IDENTIFIER
+
+%nterm <std::shared_ptr<ast::integral_number_t>> integral_number
+%nterm <std::shared_ptr<ast::integral_number_t>> octal_number
+%nterm <std::shared_ptr<ast::integral_number_t>> hex_number
 
 %%
 
 %start description;
 
-description : identifier_list { prs.result = $1; }
+description : integral_number { prs.result = $1; }
             ;
 
-identifier_list : /* empty */                { $$ = std::make_shared<std::vector<std::string>>(); }
-                | identifier_list identifier { ($$ = $1)->push_back($2); }
+integral_number : octal_number
+                | hex_number
                 ;
 
-identifier : identifier_k { $$ = $1; }
+octal_number : OCTAL_BASE INTEGRAL_NUMBER_VALUE               { $$ = std::make_shared<ast::integral_number_t>(ast::integral_number_t::type_t::Octal, $1, $2); }
+             | INTEGRAL_NUMBER_VALUE OCTAL_BASE INTEGRAL_NUMBER_VALUE { $$ = std::make_shared<ast::integral_number_t>($1, ast::integral_number_t::type_t::Octal, $2, $3); }
+             ;
+
+hex_number : HEX_BASE INTEGRAL_NUMBER_VALUE               { $$ = std::make_shared<ast::integral_number_t>(ast::integral_number_t::type_t::Hex, $1, $2); }
+           | INTEGRAL_NUMBER_VALUE HEX_BASE INTEGRAL_NUMBER_VALUE { $$ = std::make_shared<ast::integral_number_t>($1, ast::integral_number_t::type_t::Hex, $2, $3); }
            ;
 
 %%
