@@ -29,6 +29,11 @@ loc.step();
 [ \t\r]+ loc.step();
 \n+      loc.lines(yyleng); loc.step();
 
+    /* A.1.2 SystemVerilog source text */
+
+module      return yy::parser::make_MODULE_KEYWORD(loc);
+macromodule return yy::parser::make_MODULE_KEYWORD(loc);
+
     /* A.8.7 Numbers */
 
 [xXzZ?0-9a-fA-F][xXzZ?0-9a-fA-F_]* return yy::parser::make_INTEGRAL_NUMBER_VALUE(yytext, loc);

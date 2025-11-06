@@ -1,10 +1,9 @@
 #ifndef SVS_COMPILER_SV2017_PARSER_H_
 #define SVS_COMPILER_SV2017_PARSER_H_
 
-#include <memory>
 #include <string>
 
-#include "ast_number.h"
+#include "ast_module_declaration.h"
 #include "parser_impl.h"
 
 #define YY_DECL \
@@ -17,7 +16,7 @@ namespace svs::sv2017 {
 //
 class parser {
 public:
-    using result_t = std::shared_ptr<ast::integral_number_t>;
+    using result_t = ast::ast_t *;
 
     //
     // Constructor for the parser.
