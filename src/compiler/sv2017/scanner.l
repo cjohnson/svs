@@ -31,29 +31,10 @@ loc.step();
 
     /* A.1.2 SystemVerilog source text */
 
-module      return yy::parser::make_MODULE_KEYWORD(loc);
-macromodule return yy::parser::make_MODULE_KEYWORD(loc);
+module      return yy::parser::make_MODULE(loc);
+macromodule return yy::parser::make_MODULE(loc);
 
-    /* A.8.7 Numbers */
-
-[xXzZ?0-9a-fA-F][xXzZ?0-9a-fA-F_]* return yy::parser::make_INTEGRAL_NUMBER_VALUE(yytext, loc);
-
-'[sS][dD] return yy::parser::make_DECIMAL_BASE(true, loc);
-'[dD]     return yy::parser::make_DECIMAL_BASE(false, loc);
-'[sS][bB] return yy::parser::make_BINARY_BASE(true, loc);
-'[bB]     return yy::parser::make_BINARY_BASE(false, loc);
-'[sS][oO] return yy::parser::make_OCTAL_BASE(true, loc);
-'[oO]     return yy::parser::make_OCTAL_BASE(false, loc);
-'[sS][hH] return yy::parser::make_HEX_BASE(true, loc);
-'[hH]     return yy::parser::make_HEX_BASE(false, loc);
-
-    /* A.8.8 Strings */
-
-\".*\" {
-    std::string string(yytext);
-    string = string.substr(1, string.length() - 2);
-    return yy::parser::make_STRING_LITERAL(string, loc);
-}
+endmodule   return yy::parser::make_ENDMODULE(loc);
 
     /* A.9.3 Identifiers */
 
@@ -69,11 +50,9 @@ macromodule return yy::parser::make_MODULE_KEYWORD(loc);
 
 [a-zA-Z_][a-zA-Z0-9_$]* return yy::parser::make_IDENTIFIER(yytext, loc);
 
-        /* system_tf_identifier */
-
-$[a-zA-Z0-9_$]+ return yy::parser::make_SYSTEM_TF_IDENTIFIER(yytext, loc);
-
 <<EOF>> return yy::parser::make_YYEOF(loc);
+
+; return yy::parser::make_SEMICOLON(loc);
 
 %%
 

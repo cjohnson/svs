@@ -3,8 +3,9 @@
 
 #include <string>
 
-#include "ast_module_declaration.h"
 #include "parser_impl.h"
+
+#include "ast_source.h"
 
 #define YY_DECL \
     yy::parser::symbol_type yylex(svs::sv2017::parser& parser)
@@ -16,7 +17,7 @@ namespace svs::sv2017 {
 //
 class parser {
 public:
-    using result_t = ast::ast_t *;
+    using result_t = ast::source_t *;
 
     //
     // Constructor for the parser.

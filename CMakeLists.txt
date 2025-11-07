@@ -28,7 +28,10 @@ target_sources(sv2017_parser
         ${BISON_sv2017_parser_impl_OUTPUTS}
         ${FLEX_sv2017_scanner_impl_OUTPUTS}
         ./src/compiler/sv2017/parser.cpp
-        ./src/compiler/sv2017/ast_number.cpp)
+        ./src/compiler/sv2017/ast_number.cpp
+        ./src/compiler/sv2017/ast.cpp
+        ./src/compiler/sv2017/ast_source.cpp
+        ./src/compiler/sv2017/ast_module_declaration.cpp)
 target_include_directories(sv2017_parser PRIVATE src/compiler/sv2017)
 
 add_library(svsc2017 STATIC)

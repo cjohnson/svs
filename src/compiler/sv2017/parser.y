@@ -1,7 +1,5 @@
 %{
-
 #include <string>
-
 %}
 
 %language "c++"
@@ -20,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "ast_source.h"
 #include "ast_module_declaration.h"
 
 namespace svs::sv2017 { class parser; }
@@ -38,51 +37,38 @@ namespace ast = svs::sv2017::ast;
 #include "parser.h"
 }
 
-%token MODULE_KEYWORD
-
-%token <std::string> INTEGRAL_NUMBER_VALUE
-
-%token <bool> DECIMAL_BASE
-%token <bool> BINARY_BASE
-%token <bool> OCTAL_BASE
-%token <bool> HEX_BASE
-
-%token <std::string> STRING_LITERAL
+%token MODULE
+%token ENDMODULE
 
 %token <std::string> IDENTIFIER
-%token <std::string> SYSTEM_TF_IDENTIFIER
+
+%token SEMICOLON
+
+%nterm <ast::source_t *> source_text
 
 %nterm <ast::module_declaration_t *> description
 %nterm <ast::module_declaration_t *> module_declaration
-
-%nterm <std::shared_ptr<ast::integral_number_t>> integral_number
-%nterm <std::shared_ptr<ast::integral_number_t>> octal_number
-%nterm <std::shared_ptr<ast::integral_number_t>> hex_number
+%nterm <ast::module_declaration_t *> module_nonansi_header
 
 %%
 
-%start source_text;
+%start start;
 
-source_text : description { prs.result = new ast::ast_t{ $1 }; }
+start : source_text { prs.result = $1; }
+      ;
+
+source_text : /* empty */             { $$ = new ast::source_t; }
+            | source_text description { ($$ = $1)->add_declaration($2); }
             ;
 
 description : module_declaration { $$ = $1; }
             ;
 
-module_declaration : MODULE_KEYWORD { $$ = new ast::module_declaration_t; }
+module_declaration : module_nonansi_header ENDMODULE { $$ = $1; }
                    ;
 
-integral_number : octal_number
-                | hex_number
-                ;
-
-octal_number : OCTAL_BASE INTEGRAL_NUMBER_VALUE               { $$ = std::make_shared<ast::integral_number_t>(ast::integral_number_t::type_t::Octal, $1, $2); }
-             | INTEGRAL_NUMBER_VALUE OCTAL_BASE INTEGRAL_NUMBER_VALUE { $$ = std::make_shared<ast::integral_number_t>($1, ast::integral_number_t::type_t::Octal, $2, $3); }
-             ;
-
-hex_number : HEX_BASE INTEGRAL_NUMBER_VALUE               { $$ = std::make_shared<ast::integral_number_t>(ast::integral_number_t::type_t::Hex, $1, $2); }
-           | INTEGRAL_NUMBER_VALUE HEX_BASE INTEGRAL_NUMBER_VALUE { $$ = std::make_shared<ast::integral_number_t>($1, ast::integral_number_t::type_t::Hex, $2, $3); }
-           ;
+module_nonansi_header : MODULE IDENTIFIER SEMICOLON { $$ = new ast::module_declaration_t{ $2 }; }
+                      ;
 
 %%
 

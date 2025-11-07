@@ -4,8 +4,6 @@
 #include <sv2017/ast_number.h>
 #include <sv2017/parser.h>
 
-#include "sv2017/ast_module_declaration.h"
-
 using namespace svs::sv2017;
 
 int main(int argc, char **argv) {
@@ -16,8 +14,9 @@ int main(int argc, char **argv) {
 
     svs::sv2017::parser parser;
 
-    auto ast = std::unique_ptr<ast::ast_t>(parser.parse(argv[1]));
-    ast->print();
+    auto ast = std::unique_ptr<ast::source_t>(parser.parse(argv[1]));
+    if (ast)
+        std::cout << ast->to_json() << '\n';
 
     return 0;
 }
