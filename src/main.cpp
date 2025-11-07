@@ -1,7 +1,6 @@
 #include <iostream>
 #include <memory>
 
-#include <sv2017/ast_number.h>
 #include <sv2017/parser.h>
 
 using namespace svs::sv2017;
