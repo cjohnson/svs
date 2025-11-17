@@ -52,7 +52,11 @@ endmodule   return yy::parser::make_ENDMODULE(loc);
 
 <<EOF>> return yy::parser::make_YYEOF(loc);
 
-; return yy::parser::make_SEMICOLON(loc);
+;  return yy::parser::make_SEMICOLON(loc);
+\( return yy::parser::make_LEFT_PARENTHESIS(loc);
+\) return yy::parser::make_RIGHT_PARENTHESIS(loc);
+
+\[[0-9]:[0-9]\] return yy::parser::make_CONSTANT_SELECT(loc);
 
 %%
 

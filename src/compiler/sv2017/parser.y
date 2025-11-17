@@ -42,13 +42,25 @@ namespace ast = svs::sv2017::ast;
 
 %token <std::string> IDENTIFIER
 
+%token CONSTANT_SELECT
+
 %token SEMICOLON
+%token LEFT_PARENTHESIS
+%token RIGHT_PARENTHESIS
+
+ /* Top Level */
 
 %nterm <ast::source_t *> source_text
-
 %nterm <ast::module_declaration_t *> description
+
+ /* Module declarations */
+
 %nterm <ast::module_declaration_t *> module_declaration
+
+%nterm <ast::module_declaration_t *> module_ansi_header
 %nterm <ast::module_declaration_t *> module_nonansi_header
+
+%nterm <std::string> port_reference
 
 %%
 
@@ -64,11 +76,26 @@ source_text : /* empty */             { $$ = new ast::source_t; }
 description : module_declaration { $$ = $1; }
             ;
 
-module_declaration : module_nonansi_header ENDMODULE { $$ = $1; }
+module_declaration : module_ansi_header ENDMODULE    { $$ = $1; }
+                   | module_nonansi_header ENDMODULE { $$ = $1; }
                    ;
 
-module_nonansi_header : MODULE IDENTIFIER SEMICOLON { $$ = new ast::module_declaration_t{ $2 }; }
+module_nonansi_header : MODULE IDENTIFIER list_of_ports SEMICOLON { $$ = new ast::module_declaration_t{ $2 }; }
                       ;
+
+module_ansi_header : MODULE IDENTIFIER list_of_ports SEMICOLON { $$ = new ast::module_declaration_t{ $2 }; }
+                   ;
+
+list_of_ports : LEFT_PARENTHESIS RIGHT_PARENTHESIS
+              | LEFT_PARENTHESIS port_reference port_cs RIGHT_PARENTHESIS
+              ;
+
+port_cs : /* empty */ 
+        | port_cs port_reference
+        ;
+
+port_reference : IDENTIFIER CONSTANT_SELECT
+               ;
 
 %%
 
