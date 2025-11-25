@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
 
     svs::sv2017::parser parser;
 
-    auto ast = parser.parse(argv[1]);
+    std::unique_ptr<ast::source_t> ast = parser.parse(argv[1]);
     if (ast)
         std::cout << ast->to_json() << '\n';
 

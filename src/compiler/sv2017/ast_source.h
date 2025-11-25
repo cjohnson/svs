@@ -8,8 +8,6 @@
 #include "ast.h"
 #include "ast_module_declaration.h"
 
-namespace yy { class parser; }
-
 namespace svs::sv2017::ast {
 
 //

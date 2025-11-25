@@ -3,6 +3,10 @@
 
 #include <string>
 
+// Forward declaration of the implementation parsing class.
+// Allows AST nodes to declare the parser as a friend.
+namespace yy { class parser; }
+
 namespace svs::sv2017::ast {
 
 //
