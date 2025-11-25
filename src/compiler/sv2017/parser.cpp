@@ -15,7 +15,7 @@ parser::result_t parser::parse() {
 
     scan_end();
 
-    return result;
+    return std::move(result);
 }
 
 parser::result_t parser::parse(const std::string& file_name) {
@@ -29,6 +29,6 @@ parser::result_t parser::parse(const std::string& file_name) {
 
     scan_end();
 
-    return result;
+    return std::move(result);
 }
 

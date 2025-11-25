@@ -1,6 +1,7 @@
 #ifndef SVS_COMPILER_SV2017_PARSER_H_
 #define SVS_COMPILER_SV2017_PARSER_H_
 
+#include <memory>
 #include <string>
 
 #include "parser_impl.h"
@@ -17,7 +18,7 @@ namespace svs::sv2017 {
 //
 class parser {
 public:
-    using result_t = ast::source_t *;
+    using result_t = std::unique_ptr<ast::source_t>;
 
     //
     // Constructor for the parser.

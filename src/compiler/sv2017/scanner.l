@@ -29,34 +29,29 @@ loc.step();
 [ \t\r]+ loc.step();
 \n+      loc.lines(yyleng); loc.step();
 
-    /* A.1.2 SystemVerilog source text */
+    /* Keywords */
 
-module      return yy::parser::make_MODULE(loc);
-macromodule return yy::parser::make_MODULE(loc);
+endmodule   return yy::parser::make_endmodule(loc);
+macromodule return yy::parser::make_macromodule(loc);
+module      return yy::parser::make_module(loc);
 
-endmodule   return yy::parser::make_ENDMODULE(loc);
-
-    /* A.9.3 Identifiers */
-
-        /* escaped_identifier */
+    /* Identifiers */
 
 [\\].+[\t\n <<EOF>>] {
     std::string string(yytext);
     string = string.substr(1, string.length() - 2);
-    return yy::parser::make_IDENTIFIER(string, loc);
+    return yy::parser::make_identifier(string, loc);
 }
 
-        /* simple_identifier */
+[a-zA-Z_][a-zA-Z0-9_$]* return yy::parser::make_identifier(yytext, loc);
 
-[a-zA-Z_][a-zA-Z0-9_$]* return yy::parser::make_IDENTIFIER(yytext, loc);
+    /* Operators */
+
+;  return yy::parser::make_semicolon(loc);
+\( return yy::parser::make_left_parenthesis(loc);
+\) return yy::parser::make_right_parenthesis(loc);
 
 <<EOF>> return yy::parser::make_YYEOF(loc);
-
-;  return yy::parser::make_SEMICOLON(loc);
-\( return yy::parser::make_LEFT_PARENTHESIS(loc);
-\) return yy::parser::make_RIGHT_PARENTHESIS(loc);
-
-\[[0-9]:[0-9]\] return yy::parser::make_CONSTANT_SELECT(loc);
 
 %%
 
