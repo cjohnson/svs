@@ -77,7 +77,7 @@ module_declaration : module_ansi_header endmodule
                      { $$ = std::make_unique<ast::module_declaration_t>(std::move($1)); }
                    ;
 
-module_ansi_header : module identifier semicolon
+module_ansi_header : module_keyword identifier semicolon
                      { $$ = std::make_unique<ast::module_ansi_header_t>($2); }
                    ;
 
