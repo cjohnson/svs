@@ -1,9 +1,9 @@
+// Copyright (c) 2025 Collin Johnson. All rights reserved.
+
 #include <iostream>
 #include <memory>
 
-#include <sv2017/parser.h>
-
-using namespace svs::sv2017;
+#include "sv2017/parser.h"
 
 int main(int argc, char **argv) {
     if (argc < 2) {
