@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "ast/source_text.h"
+#include "ast/module_ansi_header.h"
 #include "ast/module_declaration.h"
 
 namespace svs::sv2017 { class Parser; }

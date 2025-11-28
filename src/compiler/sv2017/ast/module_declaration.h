@@ -6,33 +6,10 @@
 #include <memory>
 #include <string>
 
-#include "ast.h"
+#include "module_header.h"
 #include "node.h"
 
 namespace svs::sv2017::ast {
-
-// A module header. Defines the public interface for the module.
-class ModuleHeader : public Node {
- public:
-  // Constructs a module header.
-  // Client passes the module identifier.
-  explicit ModuleHeader(const std::string& identifier);
-
- protected:
-  // The identifier for the module.
-  std::string identifier_;
-};
-
-// An ANSI-style module header.
-class ModuleAnsiHeader : public ModuleHeader {
- public:
-  // Constructs an ANSI-style module header.
-  // Client passes the module identifier.
-  explicit ModuleAnsiHeader(const std::string& identifier);
-
-  // Returns a json representation of the tree.
-  std::string to_json(size_t indent_level = 0) override;
-};
 
 // A SystemVerilog module declaration.
 class ModuleDeclaration : public Node {
@@ -47,8 +24,6 @@ class ModuleDeclaration : public Node {
  private:
     // The module header
     std::unique_ptr<ModuleHeader> header_;
-
-    friend yy::parser;
 };
 
 }  // namespace svs::sv2017::ast

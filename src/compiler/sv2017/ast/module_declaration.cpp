@@ -9,23 +9,6 @@
 
 namespace ast = svs::sv2017::ast;
 
-ast::ModuleHeader::ModuleHeader(const std::string& identifier)
-  : identifier_(identifier) { }
-
-ast::ModuleAnsiHeader::ModuleAnsiHeader(const std::string& identifier)
-  : ast::ModuleHeader(identifier) { }
-
-std::string ast::ModuleAnsiHeader::to_json(size_t indent_level) {
-  std::stringstream ss;
-
-  ss << "{\n";
-  with_indent(ss, indent_level) << "\"identifier\": \""
-    << identifier_ << "\"\n";
-  with_indent(ss, --indent_level) << "}";
-
-  return ss.str();
-}
-
 ast::ModuleDeclaration::ModuleDeclaration(
     std::unique_ptr<ModuleHeader> header)
   : header_(std::move(header)) { }
