@@ -1,84 +1,58 @@
-#ifndef SVS_COMPILER_SV2017_PARSER_H_
-#define SVS_COMPILER_SV2017_PARSER_H_
+// Copyright (c) 2025 Collin Johnson
+
+#ifndef SRC_COMPILER_SV2017_PARSER_H_
+#define SRC_COMPILER_SV2017_PARSER_H_
 
 #include <memory>
 #include <string>
 
 #include "parser_impl.h"
 
-#include "ast_source.h"
+#include "ast/source_text.h"
 
 #define YY_DECL \
-    yy::parser::symbol_type yylex(svs::sv2017::parser& parser)
+    yy::parser::symbol_type yylex(svs::sv2017::Parser& parser)
 
 namespace svs::sv2017 {
 
+// Parser class for SystemVerilog 2017.
 //
-// Parser for SystemVerilog 2017.
-//
-class parser {
-public:
-    using result_t = std::unique_ptr<ast::source_t>;
+// Bison generates a class, yy::parser, that performs the parsing
+// for the context-free-grammar defined in parser.y. This class
+// provides a C++ interface that returns the tree pointer when
+// calling Parse.
+class Parser {
+ public:
+  // Runs the parser on a source file.
+  // Client provides the file name for the file.
+  std::unique_ptr<ast::SourceText> Parse(const std::string& file_name);
 
-    //
-    // Constructor for the parser.
-    //
-    parser();
+  // The location variable that yy::parser will use while parsing.
+  yy::location location_;
 
-    //
-    // Run the parser on the standard input stream.
-    //
-    result_t parse();
+ private:
+  // Sets up the scanner to scan a source file.
+  // Caller provides the name of the source file.
+  void BeginScan(const std::string& file_name);
 
-    //
-    // Run the parser on the provided file.
-    //
-    result_t parse(const std::string& file_name);
+  // Ends the scan.
+  void EndScan();
 
-private:
-    //
-    // Sets up the scanner for standard input.
-    //
-    void scan_begin();
+  // The location where the parsing implementation class will place
+  // the final result.
+  std::unique_ptr<ast::SourceText> result_ = nullptr;
 
-    //
-    // Sets up the scanner for a file input.
-    //
-    void scan_begin(const std::string& file_name);
+  // If true, the parser will generate parsing debug traces.
+  bool parsing_debug_traces_enabled_ = false;
 
-    //
-    // Tears down the scanner
-    //
-    void scan_end();
+  // If true, the parser will generate scanning debug traces.
+  bool scanning_debug_traces_enabled_ = false;
 
-public:
-    //
-    // The parsing location
-    //
-    yy::location location;
-
-private:
-    //
-    // The result of parsing.
-    //
-    result_t result;
-
-    //
-    // If true, the parser will generate parsing debug traces.
-    //
-    bool trace_parsing;
-
-    //
-    // If true, the parser will generate scanning debug traces.
-    //
-    bool trace_scanning;
-
-public:
-    friend yy::parser;
+  friend yy::parser;
 };
 
-}
+}  // namespace svs::sv2017
 
 YY_DECL;
 
-#endif // SVS_COMPILER_SV2017_PARSER_H_
+#endif  // SRC_COMPILER_SV2017_PARSER_H_

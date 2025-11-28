@@ -11,9 +11,9 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    svs::sv2017::parser parser;
+    svs::sv2017::Parser parser;
 
-    std::unique_ptr<ast::source_t> ast = parser.parse(argv[1]);
+    std::unique_ptr<ast::SourceText> ast = parser.Parse(argv[1]);
     if (ast)
         std::cout << ast->to_json() << '\n';
 

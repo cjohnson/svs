@@ -27,10 +27,10 @@ target_sources(sv2017_parser
     PRIVATE
         ${BISON_sv2017_parser_impl_OUTPUTS}
         ${FLEX_sv2017_scanner_impl_OUTPUTS}
-        ./src/compiler/sv2017/parser.cpp
-        ./src/compiler/sv2017/ast.cpp
-        ./src/compiler/sv2017/ast_source.cpp
-        ./src/compiler/sv2017/ast_module_declaration.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/node.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/source_text.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/module_declaration.cpp)
 target_include_directories(sv2017_parser PRIVATE src/compiler/sv2017)
 
 add_library(svsc2017 STATIC)
@@ -42,7 +42,7 @@ target_link_libraries(svsc2017
     PRIVATE
         sv2017_parser)
 
-add_executable(svs ./src/main.cpp)
+add_executable(svs ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 target_link_libraries(svs PRIVATE svsc2017)
 target_include_directories(svs PRIVATE src/compiler)
 

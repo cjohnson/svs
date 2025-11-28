@@ -1,34 +1,24 @@
+// Copyright (c) 2025 Collin Johnson
+
 #include "parser.h"
 
-using namespace svs::sv2017;
+#include <memory>
+#include <string>
+#include <utility>
 
-parser::parser() : trace_parsing(false), trace_scanning(false) { }
+using Parser = svs::sv2017::Parser;
 
-parser::result_t parser::parse() {
-    location.initialize();
+std::unique_ptr<ast::SourceText> Parser::Parse(const std::string& file_name) {
+  location_.initialize(&file_name);
 
-    scan_begin();
+  BeginScan(file_name);
 
-    yy::parser parser(*this);
-    parser.set_debug_level(trace_parsing);
-    parser.parse();
+  yy::parser parser(*this);
+  parser.set_debug_level(parsing_debug_traces_enabled_);
+  parser.parse();
 
-    scan_end();
+  EndScan();
 
-    return std::move(result);
-}
-
-parser::result_t parser::parse(const std::string& file_name) {
-    location.initialize(&file_name);
-
-    scan_begin(file_name);
-
-    yy::parser parser(*this);
-    parser.set_debug_level(trace_parsing);
-    parser.parse();
-
-    scan_end();
-
-    return std::move(result);
+  return std::move(result_);
 }
 

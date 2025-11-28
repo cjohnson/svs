@@ -21,7 +21,7 @@
 
 %{
 
-yy::location& loc = parser.location;
+yy::location& loc = parser.location_;
 loc.step();
 
 %}
@@ -55,19 +55,15 @@ module      return yy::parser::make_module(loc);
 
 %%
 
-void svs::sv2017::parser::scan_begin() {
-    yy_flex_debug = trace_scanning;
+void svs::sv2017::Parser::BeginScan(const std::string& file_name) {
+  yy_flex_debug = scanning_debug_traces_enabled_;
+  if (!(yyin = fopen(file_name.c_str(), "r"))) {
+    std::cerr << "cannot open " << file_name << ": "
+              << strerror(errno) << '\n';
+  }
 }
 
-void svs::sv2017::parser::scan_begin(const std::string& file_name) {
-    yy_flex_debug = trace_scanning;
-    if (!(yyin = fopen(file_name.c_str(), "r"))) {
-        std::cerr << "cannot open " << file_name << ": "
-                  << strerror(errno) << '\n';
-    }
-}
-
-void svs::sv2017::parser::scan_end() {
+void svs::sv2017::Parser::EndScan() {
     fclose(yyin);
 }
 

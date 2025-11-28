@@ -18,14 +18,14 @@
 #include <string>
 #include <vector>
 
-#include "ast_source.h"
-#include "ast_module_declaration.h"
+#include "ast/source_text.h"
+#include "ast/module_declaration.h"
 
-namespace svs::sv2017 { class parser; }
+namespace svs::sv2017 { class Parser; }
 namespace ast = svs::sv2017::ast;
 }
 
-%param { svs::sv2017::parser& prs }
+%param { svs::sv2017::Parser& prs }
 
 %locations
 
@@ -47,25 +47,25 @@ namespace ast = svs::sv2017::ast;
 %token left_parenthesis
 %token right_parenthesis
 
-%nterm <std::unique_ptr<ast::source_t>> source_text
-%nterm <std::unique_ptr<ast::module_declaration_t>> description
+%nterm <std::unique_ptr<ast::SourceText>> source_text
+%nterm <std::unique_ptr<ast::ModuleDeclaration>> description
 
-%nterm <std::unique_ptr<ast::module_declaration_t>> module_declaration
-%nterm <std::unique_ptr<ast::module_ansi_header_t>> module_ansi_header
+%nterm <std::unique_ptr<ast::ModuleDeclaration>> module_declaration
+%nterm <std::unique_ptr<ast::ModuleAnsiHeader>> module_ansi_header
 
 %%
 
 %start start;
 
-start : source_text { prs.result = std::move($1); }
+start : source_text { prs.result_ = std::move($1); }
       ;
 
 source_text : /* empty */
-              { $$ = std::make_unique<ast::source_t>(); }
+              { $$ = std::make_unique<ast::SourceText>(); }
             | source_text description
               {
                 $$ = std::move($1);
-                $$->_descriptions.push_back(std::move($2));
+                $$->descriptions_.push_back(std::move($2));
               }
             ;
 
@@ -74,11 +74,11 @@ description : module_declaration
             ;
 
 module_declaration : module_ansi_header endmodule
-                     { $$ = std::make_unique<ast::module_declaration_t>(std::move($1)); }
+                     { $$ = std::make_unique<ast::ModuleDeclaration>(std::move($1)); }
                    ;
 
 module_ansi_header : module_keyword identifier semicolon
-                     { $$ = std::make_unique<ast::module_ansi_header_t>($2); }
+                     { $$ = std::make_unique<ast::ModuleAnsiHeader>($2); }
                    ;
 
 module_keyword : module
@@ -90,3 +90,4 @@ module_keyword : module
 void yy::parser::error (const location_type& l, const std::string& m) {
     std::cerr << l << ": " << m << '\n';
 }
+
