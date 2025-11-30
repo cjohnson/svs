@@ -1,0 +1,40 @@
+// Copyright (c) 2025 Collin Johnson
+
+#ifndef SRC_COMPILER_SV2017_AST_VARIABLE_PORT_HEADER_H_
+#define SRC_COMPILER_SV2017_AST_VARIABLE_PORT_HEADER_H_
+
+#include <optional>
+#include <memory>
+
+#include "data_type.h"
+#include "node.h"
+#include "port_direction.h"
+
+namespace svs::sv2017::ast {
+
+// Header for a variable port.
+class VariablePortHeader : public Node {
+ public:
+  // Constructs a variable port header.
+  //
+  // Caller provides the port direction (if applicable)
+  // and the port type.
+  VariablePortHeader(
+    std::optional<PortDirection> port_direction,
+    std::unique_ptr<DataType> variable_port_type);
+
+  // Returns a json representation of the tree.
+  std::string to_json(size_t indent_level = 0) override;
+
+ private:
+  // The port direction.
+  // Has a value if the designer provided a direction.
+  std::optional<PortDirection> port_direction_;
+
+  // The port type.
+  std::unique_ptr<DataType> variable_port_type_;
+};
+
+}  // namespace svs::sv2017::ast
+
+#endif  // SRC_COMPILER_SV2017_AST_VARIABLE_PORT_HEADER_H_

@@ -14,16 +14,16 @@ namespace svs::sv2017::ast {
 // A SystemVerilog module declaration.
 class ModuleDeclaration : public Node {
  public:
-    // Constructs a module declaration.
-    // Client passes the module header.
-    explicit ModuleDeclaration(std::unique_ptr<ModuleHeader> header);
+  // Constructs a module declaration.
+  // Client passes the module header.
+  explicit ModuleDeclaration(std::unique_ptr<ModuleHeader> header);
 
-    // Returns a json representation of the tree.
-    std::string to_json(size_t indent_level = 0) override;
+  // Returns a json representation of the tree.
+  std::string to_json(size_t indent_level = 0) override;
 
  private:
-    // The module header
-    std::unique_ptr<ModuleHeader> header_;
+  // The module header
+  std::unique_ptr<ModuleHeader> header_;
 };
 
 }  // namespace svs::sv2017::ast
