@@ -2,9 +2,12 @@
 
 #include <iostream>
 #include <memory>
+
 #include <nlohmann/json.hpp>
 
 #include "compiler/sv2017/parser.h"
+
+using Parser = svs::sv2017::Parser;
 
 int main(int argc, char **argv) {
   if (argc < 2) {
@@ -12,10 +15,10 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  svs::sv2017::Parser parser;
+  std::unique_ptr<ast::SourceText> ast = Parser{}.Parse(argv[1]);
+  assert(ast);
 
-  std::unique_ptr<ast::SourceText> ast = parser.Parse(argv[1]);
-  if (ast) std::cout << ast->MarshallJson().dump(2) << '\n';
+  std::cout << ast->MarshallJson().dump(2) << '\n';
 
   return 0;
 }
