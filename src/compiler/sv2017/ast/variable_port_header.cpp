@@ -7,6 +7,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "compiler/sv2017/ast/port_direction.h"
+
 using json = nlohmann::json;
 using VariablePortHeader = svs::sv2017::ast::VariablePortHeader;
 
@@ -19,23 +21,8 @@ VariablePortHeader::VariablePortHeader(
 json VariablePortHeader::MarshallJson() {
   json j;
 
-  if (port_direction_.has_value()) {
-    switch (port_direction_.value()) {
-      case PortDirection::kInput:
-        j["port_direction"] = "input";
-        break;
-      case PortDirection::kOutput:
-        j["port_direction"] = "output";
-        break;
-      case PortDirection::kInout:
-        j["port_direction"] = "inout";
-        break;
-      case PortDirection::kRef:
-        j["port_direction"] = "ref";
-        break;
-    }
-  }
-
+  if (port_direction_.has_value())
+    j["port_direction"] = SerializePortDirection(port_direction_.value());
   j["variable_port_type"] = variable_port_type_->MarshallJson();
 
   return j;

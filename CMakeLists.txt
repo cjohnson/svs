@@ -17,9 +17,11 @@ target_sources(sv2017_ast
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/ansi_port_declaration.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/integer_vector_data_type.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/integer_vector_type.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/module_ansi_header.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/module_declaration.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/module_header.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/port_direction.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/source_text.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/variable_port_header.cpp)
 target_link_libraries(sv2017_ast PRIVATE nlohmann_json::nlohmann_json)
