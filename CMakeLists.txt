@@ -28,23 +28,23 @@ target_link_libraries(sv2017_ast PRIVATE nlohmann_json::nlohmann_json)
 target_include_directories(sv2017_ast PRIVATE src)
 
 find_package(BISON REQUIRED)
-bison_target(sv2017_parser_impl
+bison_target(sv2017_bison
     ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser.y
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser_impl.cpp
-    DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser_impl.h)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser.generated.cpp
+    DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser.generated.h)
 
 find_package(FLEX REQUIRED)
-flex_target(sv2017_scanner_impl
+flex_target(sv2017_flex
     ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/scanner.l
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/scanner_impl.cpp
-    DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/scanner_impl.h)
-add_flex_bison_dependency(sv2017_scanner_impl sv2017_parser_impl)
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/scanner.generated.cpp
+    DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/scanner.generated.h)
+add_flex_bison_dependency(sv2017_flex sv2017_bison)
 
 add_library(svsc2017 STATIC)
 target_sources(svsc2017
     PRIVATE
-        ${BISON_sv2017_parser_impl_OUTPUTS}
-        ${FLEX_sv2017_scanner_impl_OUTPUTS}
+        ${BISON_sv2017_bison_OUTPUTS}
+        ${FLEX_sv2017_flex_OUTPUTS}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser.cpp)
 target_link_libraries(svsc2017 PRIVATE sv2017_ast nlohmann_json::nlohmann_json)
 target_include_directories(svsc2017 PRIVATE src)

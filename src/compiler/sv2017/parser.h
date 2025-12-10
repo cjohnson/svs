@@ -7,7 +7,7 @@
 #include <string>
 
 #include "compiler/sv2017/ast/source_text.h"
-#include "compiler/sv2017/parser_impl.h"
+#include "compiler/sv2017/parser.generated.h"
 
 #define YY_DECL yy::parser::symbol_type yylex(svs::sv2017::Parser& parser)
 

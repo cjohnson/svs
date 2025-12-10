@@ -1,5 +1,5 @@
-parser_impl.cpp
-parser_impl.h
-scanner_impl.cpp
-scanner_impl.h
+parser.generated.cpp
+parser.generated.h
+scanner.generated.cpp
+scanner.generated.h
 location.hh
