@@ -13,8 +13,5 @@ IntegerVectorDataType::IntegerVectorDataType(const IntegerVectorType& type)
     : type_(type) {}
 
 json IntegerVectorDataType::MarshallJson() {
-  json j;
-  j["type"] = SerializeIntegerVectorType(type_);
-
-  return j;
+  return SerializeIntegerVectorType(type_);
 }
