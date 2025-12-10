@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Collin Johnson
+
 #include "compiler/sv2017/ast/integer_vector_type.h"
 
 #include <cassert>

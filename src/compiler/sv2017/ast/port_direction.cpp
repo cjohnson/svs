@@ -1,3 +1,5 @@
+// Copyright (c) 2025 Collin Johnson
+
 #include "compiler/sv2017/ast/port_direction.h"
 
 #include <cassert>
