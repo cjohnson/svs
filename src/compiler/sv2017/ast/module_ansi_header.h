@@ -7,8 +7,10 @@
 #include <string>
 #include <vector>
 
-#include "ansi_port_declaration.h"
-#include "module_header.h"
+#include <nlohmann/json_fwd.hpp>
+
+#include "compiler/sv2017/ast/ansi_port_declaration.h"
+#include "compiler/sv2017/ast/module_header.h"
 
 namespace svs::sv2017::ast {
 
@@ -17,12 +19,11 @@ class ModuleAnsiHeader : public ModuleHeader {
  public:
   // Constructs an ANSI-style module header.
   // Client passes the module identifier and module ports.
-  ModuleAnsiHeader(
-    const std::string& identifier,
-    std::vector<std::unique_ptr<AnsiPortDeclaration>> ports);
+  ModuleAnsiHeader(const std::string& identifier,
+                   std::vector<std::unique_ptr<AnsiPortDeclaration>> ports);
 
-  // Returns a json representation of the tree.
-  std::string to_json(size_t indent_level = 0) override;
+  // Returns the JSON representation of the tree.
+  json MarshallJson() override;
 
  private:
   // The module ports

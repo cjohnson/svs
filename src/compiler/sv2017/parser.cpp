@@ -1,6 +1,6 @@
 // Copyright (c) 2025 Collin Johnson
 
-#include "parser.h"
+#include "compiler/sv2017/parser.h"
 
 #include <memory>
 #include <string>
@@ -21,4 +21,3 @@ std::unique_ptr<ast::SourceText> Parser::Parse(const std::string& file_name) {
 
   return std::move(result_);
 }
-

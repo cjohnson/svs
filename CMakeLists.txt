@@ -9,6 +9,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED 17)
 
 include(FetchContent)
 
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
 add_library(sv2017_ast STATIC)
 target_sources(sv2017_ast
     PRIVATE
@@ -17,9 +20,10 @@ target_sources(sv2017_ast
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/module_ansi_header.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/module_declaration.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/module_header.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/node.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/source_text.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/variable_port_header.cpp)
+target_link_libraries(sv2017_ast PRIVATE nlohmann_json::nlohmann_json)
+target_include_directories(sv2017_ast PRIVATE src)
 
 find_package(BISON REQUIRED)
 bison_target(sv2017_parser_impl
@@ -34,27 +38,18 @@ flex_target(sv2017_scanner_impl
     DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/scanner_impl.h)
 add_flex_bison_dependency(sv2017_scanner_impl sv2017_parser_impl)
 
-add_library(sv2017_parser STATIC)
-target_sources(sv2017_parser
-    PRIVATE
-        ${BISON_sv2017_parser_impl_OUTPUTS}
-        ${FLEX_sv2017_scanner_impl_OUTPUTS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser.cpp)
-target_link_libraries(sv2017_parser PRIVATE sv2017_ast)
-target_include_directories(sv2017_parser PRIVATE src/compiler/sv2017)
-
 add_library(svsc2017 STATIC)
 target_sources(svsc2017
     PRIVATE
         ${BISON_sv2017_parser_impl_OUTPUTS}
-        ${FLEX_sv2017_scanner_impl_OUTPUTS})
-target_link_libraries(svsc2017
-    PRIVATE
-        sv2017_parser)
+        ${FLEX_sv2017_scanner_impl_OUTPUTS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser.cpp)
+target_link_libraries(svsc2017 PRIVATE sv2017_ast nlohmann_json::nlohmann_json)
+target_include_directories(svsc2017 PRIVATE src)
 
 add_executable(svs ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-target_link_libraries(svs PRIVATE svsc2017)
-target_include_directories(svs PRIVATE src/compiler)
+target_link_libraries(svs PRIVATE svsc2017 nlohmann_json::nlohmann_json)
+target_include_directories(svs PRIVATE src)
 
 option(ENABLE_UNIT_TESTS "Enable Unit Tests" ON)
 message(STATUS "Enable testing: ${ENABLE_UNIT_TESTS}")

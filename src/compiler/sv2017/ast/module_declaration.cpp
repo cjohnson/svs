@@ -1,27 +1,22 @@
 // Copyright (c) 2025 Collin Johnson
 
-#include "module_declaration.h"
+#include "compiler/sv2017/ast/module_declaration.h"
 
 #include <memory>
-#include <sstream>
-#include <string>
 #include <utility>
 
-namespace ast = svs::sv2017::ast;
+#include <nlohmann/json.hpp>
 
-ast::ModuleDeclaration::ModuleDeclaration(
-    std::unique_ptr<ModuleHeader> header)
-  : header_(std::move(header)) { }
+using json = nlohmann::json;
+using ModuleDeclaration = svs::sv2017::ast::ModuleDeclaration;
 
-std::string ast::ModuleDeclaration::to_json(size_t indent_level) {
-  std::stringstream ss;
+ModuleDeclaration::ModuleDeclaration(std::unique_ptr<ModuleHeader> header)
+    : header_(std::move(header)) {}
 
-  with_indent(ss, indent_level++) << "{\n";
-  with_indent(ss, indent_level) << "\"declaration_type\": \"module\",\n";
-  with_indent(ss, indent_level) << "\"header\": "
-    << header_->to_json(indent_level + 1) << "\n";
-  with_indent(ss, --indent_level) << "}";
+json ModuleDeclaration::MarshallJson() {
+  json j;
+  j["declaration_type"] = "module";
+  j["header"] = header_->MarshallJson();
 
-  return ss.str();
+  return j;
 }
-

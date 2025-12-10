@@ -4,24 +4,27 @@
 #define SRC_COMPILER_SV2017_AST_SOURCE_TEXT_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
-#include "ast.h"
-#include "module_declaration.h"
+#include <nlohmann/json_fwd.hpp>
+
+#include "compiler/sv2017/ast/module_declaration.h"
 
 namespace svs::sv2017::ast {
 
 // SystemVerilog 2017 source text AST node
 class SourceText : public Node {
  public:
-  // Returns a json representation of the tree.
-  std::string to_json(size_t indent_level = 0) override;
+  // Constructs a source text with the provided descriptions
+  explicit SourceText(
+      std::vector<std::unique_ptr<ModuleDeclaration>> descriptions);
+
+  // Returns the JSON representation of the tree.
+  virtual json MarshallJson();
 
  private:
+  // The list of descriptions
   std::vector<std::unique_ptr<ModuleDeclaration>> descriptions_;
-
-  friend yy::parser;
 };
 
 }  // namespace svs::sv2017::ast

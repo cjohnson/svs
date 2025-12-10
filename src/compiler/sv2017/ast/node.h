@@ -3,19 +3,18 @@
 #ifndef SRC_COMPILER_SV2017_AST_NODE_H_
 #define SRC_COMPILER_SV2017_AST_NODE_H_
 
-#include <string>
+#include <nlohmann/json_fwd.hpp>
 
 namespace svs::sv2017::ast {
 
 // SystemVerilog 2017 AST node
 class Node {
  public:
-  // Returns a json representation of the tree.
-  virtual std::string to_json(size_t indent_level = 0) = 0;
+  // JSON type defined for convenience
+  using json = nlohmann::json;
 
- protected:
-  // Appends indentation and returns the ostream.
-  std::ostream& with_indent(std::ostream& os, size_t indent_level);
+  // Returns the JSON representation of the tree.
+  virtual json MarshallJson() = 0;
 };
 
 }  // namespace svs::sv2017::ast

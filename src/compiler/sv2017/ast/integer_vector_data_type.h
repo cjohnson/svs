@@ -3,8 +3,10 @@
 #ifndef SRC_COMPILER_SV2017_AST_INTEGER_VECTOR_DATA_TYPE_H_
 #define SRC_COMPILER_SV2017_AST_INTEGER_VECTOR_DATA_TYPE_H_
 
-#include "data_type.h"
-#include "integer_vector_type.h"
+#include <nlohmann/json_fwd.hpp>
+
+#include "compiler/sv2017/ast/data_type.h"
+#include "compiler/sv2017/ast/integer_vector_type.h"
 
 namespace svs::sv2017::ast {
 
@@ -13,10 +15,10 @@ class IntegerVectorDataType : public DataType {
  public:
   // Constructs an integer vector data type.
   // Caller provides the type of integer vector.
-  IntegerVectorDataType(const IntegerVectorType& type);
+  explicit IntegerVectorDataType(const IntegerVectorType& type);
 
-  // Returns a json representation of the tree.
-  std::string to_json(size_t indent_level = 0) override;
+  // Returns the JSON representation of the tree.
+  json MarshallJson() override;
 
  private:
   // The type of integer vector.

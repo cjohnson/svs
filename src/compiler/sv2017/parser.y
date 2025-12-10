@@ -66,6 +66,7 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::unique_ptr<ast::SourceText>> source_text
 
 %nterm <std::unique_ptr<ast::ModuleDeclaration>> description
+%nterm <std::vector<std::unique_ptr<ast::ModuleDeclaration>>> descriptions
 %nterm <std::unique_ptr<ast::ModuleDeclaration>> module_declaration
 
 %nterm <std::unique_ptr<ast::ModuleAnsiHeader>> module_ansi_header
@@ -96,15 +97,14 @@ namespace ast = svs::sv2017::ast;
 start : source_text { prs.result_ = std::move($1); }
       ;
 
-source_text : /* empty */ { $$ = std::make_unique<ast::SourceText>(); }
-            | source_text description
-              {
-                $$ = std::move($1);
-                $$->descriptions_.push_back(std::move($2));
-              }
-            ;
+source_text : descriptions { $$ = std::make_unique<ast::SourceText>(std::move($1)); } ;
 
 description : module_declaration { $$ = std::move($1); } ;
+
+descriptions : /* empty */
+               { $$ = std::vector<std::unique_ptr<ast::ModuleDeclaration>>(); }
+             | descriptions description
+               { ($$ = std::move($1)).push_back(std::move($2)); }
 
 module_declaration : module_ansi_header endmodule
                      { $$ = std::make_unique<ast::ModuleDeclaration>(std::move($1)); }

@@ -3,12 +3,14 @@
 #ifndef SRC_COMPILER_SV2017_AST_VARIABLE_PORT_HEADER_H_
 #define SRC_COMPILER_SV2017_AST_VARIABLE_PORT_HEADER_H_
 
-#include <optional>
 #include <memory>
+#include <optional>
 
-#include "data_type.h"
-#include "node.h"
-#include "port_direction.h"
+#include <nlohmann/json_fwd.hpp>
+
+#include "compiler/sv2017/ast/data_type.h"
+#include "compiler/sv2017/ast/node.h"
+#include "compiler/sv2017/ast/port_direction.h"
 
 namespace svs::sv2017::ast {
 
@@ -19,12 +21,11 @@ class VariablePortHeader : public Node {
   //
   // Caller provides the port direction (if applicable)
   // and the port type.
-  VariablePortHeader(
-    std::optional<PortDirection> port_direction,
-    std::unique_ptr<DataType> variable_port_type);
+  VariablePortHeader(std::optional<PortDirection> port_direction,
+                     std::unique_ptr<DataType> variable_port_type);
 
-  // Returns a json representation of the tree.
-  std::string to_json(size_t indent_level = 0) override;
+  // Returns the JSON representation of the tree.
+  json MarshallJson() override;
 
  private:
   // The port direction.

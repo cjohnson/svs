@@ -6,19 +6,17 @@
 #include <memory>
 #include <string>
 
-#include "parser_impl.h"
+#include "compiler/sv2017/ast/source_text.h"
+#include "compiler/sv2017/parser_impl.h"
 
-#include "ast/source_text.h"
-
-#define YY_DECL \
-    yy::parser::symbol_type yylex(svs::sv2017::Parser& parser)
+#define YY_DECL yy::parser::symbol_type yylex(svs::sv2017::Parser& parser)
 
 namespace svs::sv2017 {
 
 // Parser class for SystemVerilog 2017.
 //
 // Bison generates a class, yy::parser, that performs the parsing
-// for the context-free-grammar defined in parser.y. This class
+// for the context-free grammar defined in parser.y. This class
 // provides a C++ interface that returns the tree pointer when
 // calling Parse.
 class Parser {

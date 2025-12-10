@@ -3,12 +3,12 @@
 #ifndef SRC_COMPILER_SV2017_AST_DATA_TYPE_H_
 #define SRC_COMPILER_SV2017_AST_DATA_TYPE_H_
 
-#include "node.h"
+#include "compiler/sv2017/ast/node.h"
 
 namespace svs::sv2017::ast {
 
 // Data type
-class DataType : public Node { };
+class DataType : public Node {};
 
 }  // namespace svs::sv2017::ast
 

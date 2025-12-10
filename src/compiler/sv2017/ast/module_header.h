@@ -5,7 +5,9 @@
 
 #include <string>
 
-#include "node.h"
+#include <nlohmann/json_fwd.hpp>
+
+#include "compiler/sv2017/ast/node.h"
 
 namespace svs::sv2017::ast {
 
@@ -15,6 +17,9 @@ class ModuleHeader : public Node {
   // Constructs a module header.
   // Client passes the module identifier.
   explicit ModuleHeader(const std::string& identifier);
+
+  // Returns the JSON representation of the tree.
+  json MarshallJson() override;
 
  protected:
   // The identifier for the module.

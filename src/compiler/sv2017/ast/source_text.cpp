@@ -1,21 +1,31 @@
 // Copyright (c) 2025 Collin Johnson
 
-#include "source_text.h"
+#include "compiler/sv2017/ast/source_text.h"
 
-#include <string>
-#include <sstream>
+#include <memory>
+#include <utility>
+#include <vector>
 
-std::string svs::sv2017::ast::SourceText::to_json(size_t indent_level) {
-    std::stringstream ss;
+#include <nlohmann/json.hpp>
 
-    with_indent(ss, indent_level++) << "{\n";
-    with_indent(ss, indent_level) << "\"version\": \"2017\",\n";
-    with_indent(ss, indent_level++) << "\"declarations\": [\n";
-    for (const auto& description : descriptions_)
-        ss << description->to_json(indent_level) << ",\n";
-    with_indent(ss, --indent_level) << "]\n";
-    with_indent(ss, --indent_level) << "}";
+#include "compiler/sv2017/ast/module_declaration.h"
 
-    return ss.str();
+using json = nlohmann::json;
+using SourceText = svs::sv2017::ast::SourceText;
+
+SourceText::SourceText(
+    std::vector<std::unique_ptr<ModuleDeclaration>> descriptions)
+    : descriptions_(std::move(descriptions)) {}
+
+json SourceText::MarshallJson() {
+  json j;
+  j["version"] = 2017;
+
+  std::vector<json> descriptions_json;
+  descriptions_json.reserve(descriptions_.size());
+  for (const std::unique_ptr<ModuleDeclaration>& description : descriptions_)
+    descriptions_json.emplace_back(description->MarshallJson());
+  j["descriptions"] = descriptions_json;
+
+  return j;
 }
-

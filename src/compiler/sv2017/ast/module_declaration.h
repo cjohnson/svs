@@ -4,10 +4,11 @@
 #define SRC_COMPILER_SV2017_AST_MODULE_DECLARATION_H_
 
 #include <memory>
-#include <string>
 
-#include "module_header.h"
-#include "node.h"
+#include <nlohmann/json_fwd.hpp>
+
+#include "compiler/sv2017/ast/module_header.h"
+#include "compiler/sv2017/ast/node.h"
 
 namespace svs::sv2017::ast {
 
@@ -18,8 +19,8 @@ class ModuleDeclaration : public Node {
   // Client passes the module header.
   explicit ModuleDeclaration(std::unique_ptr<ModuleHeader> header);
 
-  // Returns a json representation of the tree.
-  std::string to_json(size_t indent_level = 0) override;
+  // Returns the JSON representation of the tree.
+  json MarshallJson() override;
 
  private:
   // The module header
