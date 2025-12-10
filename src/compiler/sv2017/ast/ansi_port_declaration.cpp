@@ -17,8 +17,7 @@ AnsiPortDeclaration::AnsiPortDeclaration(
     : header_(std::move(header)), identifier_(std::move(identifier)) {}
 
 json AnsiPortDeclaration::MarshallJson() {
-  json j;
-  j["header"] = header_->MarshallJson();
+  json j = header_->MarshallJson();
   j["identifier"] = identifier_;
 
   return j;

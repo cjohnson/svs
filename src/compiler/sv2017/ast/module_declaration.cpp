@@ -14,9 +14,8 @@ ModuleDeclaration::ModuleDeclaration(std::unique_ptr<ModuleHeader> header)
     : header_(std::move(header)) {}
 
 json ModuleDeclaration::MarshallJson() {
-  json j;
+  json j = header_->MarshallJson();
   j["declaration_type"] = "module";
-  j["header"] = header_->MarshallJson();
 
   return j;
 }
