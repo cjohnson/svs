@@ -10,15 +10,17 @@
 
 #include "compiler/sv2017/ast/node.h"
 #include "compiler/sv2017/ast/variable_port_header.h"
+#include "compiler/sv2017/location.hh"
 
 namespace svs::sv2017::ast {
 
 // An ANSI-style port declaration.
 class AnsiPortDeclaration : public Node {
  public:
-  // Constructs an ANSI-style port declaration with the provided header
-  // and identifier.
-  AnsiPortDeclaration(std::unique_ptr<VariablePortHeader> header,
+  // Constructs an ANSI-style port declaration with the provided location,
+  // header and identifier.
+  AnsiPortDeclaration(const yy::location& location,
+                      std::unique_ptr<VariablePortHeader> header,
                       std::string identifier);
 
   // Returns the JSON representation of the tree.

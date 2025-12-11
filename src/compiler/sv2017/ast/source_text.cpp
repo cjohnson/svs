@@ -13,13 +13,15 @@
 using json = nlohmann::json;
 using SourceText = svs::sv2017::ast::SourceText;
 
-SourceText::SourceText(
-    std::vector<std::unique_ptr<Description>> descriptions)
-    : descriptions_(std::move(descriptions)) {}
+SourceText::SourceText(const yy::location& location,
+                       std::vector<std::unique_ptr<Description>> descriptions)
+    : Node(location), descriptions_(std::move(descriptions)) {}
 
 json SourceText::MarshallJson() {
-  json j;
-  j["version"] = 2017;
+  json j = Node::MarshallJson();
+
+  j["_type"] = "source_text";
+  j["_version"] = 2017;
 
   std::vector<json> descriptions_json;
   descriptions_json.reserve(descriptions_.size());

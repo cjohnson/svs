@@ -48,6 +48,8 @@ namespace ast = svs::sv2017::ast;
 
 /* Annex A: Formal syntax */
 
+/* A.1 Source text */
+
 /* A.1.2 SystemVerilog source text */
 
 %nterm <std::unique_ptr<ast::SourceText>>               source_text
@@ -110,21 +112,37 @@ namespace ast = svs::sv2017::ast;
 start : source_text { prs.result_ = std::move($1); }
       ;
 
-source_text : descriptions { $$ = std::make_unique<ast::SourceText>(std::move($1)); } ;
+source_text : descriptions
+              {
+                const yy::location location = $1.empty()
+                  ? @1
+                  : yy::location{ $1.front()->location().begin, $1.back()->location().end };
+                $$ = std::make_unique<ast::SourceText>(location, std::move($1));
+              }
+            ;
 
 description : module_declaration { $$ = std::move($1); } ;
 
 descriptions : /* empty */
                { $$ = std::vector<std::unique_ptr<ast::Description>>(); }
              | descriptions description
-               { ($$ = std::move($1)).push_back(std::move($2)); }
+               {
+                 $1.push_back(std::move($2));
+                 $$ = std::move($1);
+               }
 
 module_declaration : module_ansi_header endmodule
-                     { $$ = std::make_unique<ast::ModuleDeclaration>(std::move($1)); }
+                     {
+                       const yy::location location{ @1.begin, @2.end };
+                       $$ = std::make_unique<ast::ModuleDeclaration>(location, std::move($1));
+                     }
                    ;
 
 module_ansi_header : module_keyword module_identifier list_of_port_declarations_opt semicolon
-                     { $$ = std::make_unique<ast::ModuleAnsiHeader>(std::move($2), std::move($3)); }
+                     {
+                       const yy::location location{ @1.begin, @4.end };
+                       $$ = std::make_unique<ast::ModuleAnsiHeader>(location, std::move($2), std::move($3));
+                     }
                    ;
 
 list_of_port_declarations_opt : /* empty */
@@ -144,17 +162,29 @@ ansi_port_declaration_cs_opt : /* empty */
                              ;
 
 ansi_port_declaration_cs : ansi_port_declaration
-                           { ($$ = std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>()).push_back(std::move($1)); }
+                           {
+                             $$ = std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>();
+                             $$.push_back(std::move($1));
+                           }
                          | ansi_port_declaration_cs comma ansi_port_declaration
-                           { ($$ = std::move($1)).push_back(std::move($3)); }
+                           {
+                             $1.push_back(std::move($3));
+                             $$ = std::move($1);
+                           }
                          ;
 
 ansi_port_declaration : variable_port_header port_identifier
-                        { $$ = std::make_unique<ast::AnsiPortDeclaration>(std::move($1), std::move($2)); }
+                        {
+                          const yy::location location{ @1.begin, @2.end };
+                          $$ = std::make_unique<ast::AnsiPortDeclaration>(location, std::move($1), std::move($2));
+                        }
                       ;
 
 variable_port_header : port_direction_opt variable_port_type
-                       { $$ = std::make_unique<ast::VariablePortHeader>(std::move($1), std::move($2)); }
+                       {
+                         const yy::location location{ @1.begin, @2.end };
+                         $$ = std::make_unique<ast::VariablePortHeader>(location, std::move($1), std::move($2));
+                       }
                      ;
 
 variable_port_type : var_data_type { $$ = std::move($1); }
@@ -164,7 +194,7 @@ var_data_type : data_type { $$ = std::move($1); }
               ;
 
 data_type : integer_vector_type
-            { $$ = std::make_unique<ast::IntegerVectorDataType>(std::move($1)); }
+            { $$ = std::make_unique<ast::IntegerVectorDataType>(@1, std::move($1)); }
           ;
 
 integer_vector_type : bit   { $$ = ast::IntegerVectorType::kBit; }

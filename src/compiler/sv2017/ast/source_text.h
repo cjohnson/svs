@@ -9,18 +9,19 @@
 #include <nlohmann/json_fwd.hpp>
 
 #include "compiler/sv2017/ast/description.h"
+#include "compiler/sv2017/location.hh"
 
 namespace svs::sv2017::ast {
 
 // SystemVerilog 2017 source text AST node
 class SourceText : public Node {
  public:
-  // Constructs a source text with the provided descriptions
-  explicit SourceText(
-      std::vector<std::unique_ptr<Description>> descriptions);
+  // Constructs a source text with the provided location and descriptions
+  SourceText(const yy::location& location,
+             std::vector<std::unique_ptr<Description>> descriptions);
 
   // Returns the JSON representation of the tree.
-  virtual json MarshallJson();
+  json MarshallJson() override;
 
  private:
   // The list of descriptions

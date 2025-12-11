@@ -15,14 +15,15 @@ class IntegerVectorDataType : public DataType {
  public:
   // Constructs an integer vector data type.
   // Caller provides the type of integer vector.
-  explicit IntegerVectorDataType(const IntegerVectorType& type);
+  IntegerVectorDataType(const yy::location& location,
+                        const IntegerVectorType& integer_vector_type);
 
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
 
  private:
   // The type of integer vector.
-  IntegerVectorType type_;
+  IntegerVectorType integer_vector_type_;
 };
 
 }  // namespace svs::sv2017::ast

@@ -7,8 +7,9 @@
 
 #include <nlohmann/json_fwd.hpp>
 
-#include "compiler/sv2017/ast/module_header.h"
 #include "compiler/sv2017/ast/description.h"
+#include "compiler/sv2017/ast/module_header.h"
+#include "compiler/sv2017/location.hh"
 
 namespace svs::sv2017::ast {
 
@@ -17,7 +18,8 @@ class ModuleDeclaration : public Description {
  public:
   // Constructs a module declaration.
   // Client passes the module header.
-  explicit ModuleDeclaration(std::unique_ptr<ModuleHeader> header);
+  ModuleDeclaration(const yy::location& location,
+                    std::unique_ptr<ModuleHeader> header);
 
   // Returns the JSON representation of the tree.
   json MarshallJson() override;

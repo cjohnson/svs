@@ -13,13 +13,15 @@ using json = nlohmann::json;
 using VariablePortHeader = svs::sv2017::ast::VariablePortHeader;
 
 VariablePortHeader::VariablePortHeader(
-    std::optional<PortDirection> port_direction,
+    const yy::location& location, std::optional<PortDirection> port_direction,
     std::unique_ptr<ast::DataType> variable_port_type)
-    : port_direction_(port_direction),
+    : Node(location),
+      port_direction_(port_direction),
       variable_port_type_(std::move(variable_port_type)) {}
 
 json VariablePortHeader::MarshallJson() {
-  json j;
+  json j = Node::MarshallJson();
+  j["_type"] = "variable_port_header";
 
   if (port_direction_.has_value())
     j["port_direction"] = SerializePortDirection(port_direction_.value());

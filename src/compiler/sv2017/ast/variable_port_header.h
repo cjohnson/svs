@@ -11,6 +11,7 @@
 #include "compiler/sv2017/ast/data_type.h"
 #include "compiler/sv2017/ast/node.h"
 #include "compiler/sv2017/ast/port_direction.h"
+#include "compiler/sv2017/location.hh"
 
 namespace svs::sv2017::ast {
 
@@ -21,7 +22,8 @@ class VariablePortHeader : public Node {
   //
   // Caller provides the port direction (if applicable)
   // and the port type.
-  VariablePortHeader(std::optional<PortDirection> port_direction,
+  VariablePortHeader(const yy::location& location,
+                     std::optional<PortDirection> port_direction,
                      std::unique_ptr<DataType> variable_port_type);
 
   // Returns the JSON representation of the tree.

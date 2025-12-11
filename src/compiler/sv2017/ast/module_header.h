@@ -8,6 +8,7 @@
 #include <nlohmann/json_fwd.hpp>
 
 #include "compiler/sv2017/ast/node.h"
+#include "compiler/sv2017/location.hh"
 
 namespace svs::sv2017::ast {
 
@@ -16,7 +17,7 @@ class ModuleHeader : public Node {
  public:
   // Constructs a module header.
   // Client passes the module identifier.
-  explicit ModuleHeader(const std::string& identifier);
+  ModuleHeader(const yy::location& location, const std::string& identifier);
 
   // Returns the JSON representation of the tree.
   json MarshallJson() override;

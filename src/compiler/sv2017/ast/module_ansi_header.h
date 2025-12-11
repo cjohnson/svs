@@ -11,6 +11,7 @@
 
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
 #include "compiler/sv2017/ast/module_header.h"
+#include "compiler/sv2017/location.hh"
 
 namespace svs::sv2017::ast {
 
@@ -19,7 +20,7 @@ class ModuleAnsiHeader : public ModuleHeader {
  public:
   // Constructs an ANSI-style module header.
   // Client passes the module identifier and module ports.
-  ModuleAnsiHeader(const std::string& identifier,
+  ModuleAnsiHeader(const yy::location& location, const std::string& identifier,
                    std::vector<std::unique_ptr<AnsiPortDeclaration>> ports);
 
   // Returns the JSON representation of the tree.
