@@ -21,6 +21,7 @@
 
 #include "ast/ansi_port_declaration.h"
 #include "ast/data_type.h"
+#include "ast/description.h"
 #include "ast/integer_vector_data_type.h"
 #include "ast/integer_vector_type.h"
 #include "ast/module_ansi_header.h"
@@ -45,6 +46,45 @@ namespace ast = svs::sv2017::ast;
 #include "parser.h"
 }
 
+/* Annex A: Formal syntax */
+
+/* A.1.2 SystemVerilog source text */
+
+%nterm <std::unique_ptr<ast::SourceText>>               source_text
+%nterm <std::unique_ptr<ast::Description>>              description
+%nterm <std::vector<std::unique_ptr<ast::Description>>> descriptions
+%nterm <std::unique_ptr<ast::ModuleAnsiHeader>>         module_ansi_header
+%nterm <std::unique_ptr<ast::ModuleDeclaration>>        module_declaration
+%nterm                                                  module_keyword
+
+/* A.1.3 Module parameters and ports */
+
+%nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> list_of_port_declarations
+%nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> list_of_port_declarations_opt
+%nterm <ast::PortDirection>                                     port_direction
+%nterm <std::optional<ast::PortDirection>>                      port_direction_opt
+%nterm <std::unique_ptr<ast::VariablePortHeader>>               variable_port_header
+%nterm <std::unique_ptr<ast::AnsiPortDeclaration>>              ansi_port_declaration
+%nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> ansi_port_declaration_cs
+%nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> ansi_port_declaration_cs_opt
+
+/* A.2.2 Declaration data types */
+
+/* A.2.2.1 Net and variable types */
+
+%nterm <std::unique_ptr<ast::DataType>> data_type
+%nterm <ast::IntegerVectorType>         integer_vector_type
+%nterm <std::unique_ptr<ast::DataType>> variable_port_type
+%nterm <std::unique_ptr<ast::DataType>> var_data_type
+
+/* A.9.3 Identifiers */
+
+%token <std::string> identifier
+%nterm <std::string> module_identifier
+%nterm <std::string> port_identifier
+
+/* Annex B: Keywords */
+
 %token bit
 %token endmodule
 %token inout
@@ -56,40 +96,13 @@ namespace ast = svs::sv2017::ast;
 %token ref
 %token reg
 
-%token <std::string> identifier
+/* Additional operator tokens */
 
 %token comma
 %token left_parenthesis
 %token right_parenthesis
 %token semicolon
 
-%nterm <std::unique_ptr<ast::SourceText>> source_text
-
-%nterm <std::unique_ptr<ast::ModuleDeclaration>> description
-%nterm <std::vector<std::unique_ptr<ast::ModuleDeclaration>>> descriptions
-%nterm <std::unique_ptr<ast::ModuleDeclaration>> module_declaration
-
-%nterm <std::unique_ptr<ast::ModuleAnsiHeader>> module_ansi_header
-
-%nterm <std::string> module_identifier
-%nterm <std::string> port_identifier
-%nterm <std::optional<ast::PortDirection>> port_direction_opt
-%nterm <ast::PortDirection> port_direction
-
-%nterm <ast::IntegerVectorType> integer_vector_type
-
-%nterm <std::unique_ptr<ast::DataType>> data_type
-%nterm <std::unique_ptr<ast::DataType>> var_data_type
-%nterm <std::unique_ptr<ast::DataType>> variable_port_type
-
-%nterm <std::unique_ptr<ast::VariablePortHeader>> variable_port_header
-
-%nterm <std::unique_ptr<ast::AnsiPortDeclaration>> ansi_port_declaration
-
-%nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> ansi_port_declaration_cs
-%nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> ansi_port_declaration_cs_opt
-%nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> list_of_port_declarations
-%nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> list_of_port_declarations_opt
 %%
 
 %start start;
@@ -102,7 +115,7 @@ source_text : descriptions { $$ = std::make_unique<ast::SourceText>(std::move($1
 description : module_declaration { $$ = std::move($1); } ;
 
 descriptions : /* empty */
-               { $$ = std::vector<std::unique_ptr<ast::ModuleDeclaration>>(); }
+               { $$ = std::vector<std::unique_ptr<ast::Description>>(); }
              | descriptions description
                { ($$ = std::move($1)).push_back(std::move($2)); }
 
@@ -172,6 +185,7 @@ port_direction : input  { $$ = ast::PortDirection::kInput; }
 module_keyword : module | macromodule ;
 
 module_identifier : identifier ;
+
 port_identifier : identifier ;
 
 %%

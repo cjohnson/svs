@@ -8,13 +8,13 @@
 
 #include <nlohmann/json.hpp>
 
-#include "compiler/sv2017/ast/module_declaration.h"
+#include "compiler/sv2017/ast/description.h"
 
 using json = nlohmann::json;
 using SourceText = svs::sv2017::ast::SourceText;
 
 SourceText::SourceText(
-    std::vector<std::unique_ptr<ModuleDeclaration>> descriptions)
+    std::vector<std::unique_ptr<Description>> descriptions)
     : descriptions_(std::move(descriptions)) {}
 
 json SourceText::MarshallJson() {
@@ -23,7 +23,7 @@ json SourceText::MarshallJson() {
 
   std::vector<json> descriptions_json;
   descriptions_json.reserve(descriptions_.size());
-  for (const std::unique_ptr<ModuleDeclaration>& description : descriptions_)
+  for (const std::unique_ptr<Description>& description : descriptions_)
     descriptions_json.emplace_back(description->MarshallJson());
   j["descriptions"] = descriptions_json;
 

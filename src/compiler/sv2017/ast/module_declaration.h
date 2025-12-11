@@ -8,12 +8,12 @@
 #include <nlohmann/json_fwd.hpp>
 
 #include "compiler/sv2017/ast/module_header.h"
-#include "compiler/sv2017/ast/node.h"
+#include "compiler/sv2017/ast/description.h"
 
 namespace svs::sv2017::ast {
 
 // A SystemVerilog module declaration.
-class ModuleDeclaration : public Node {
+class ModuleDeclaration : public Description {
  public:
   // Constructs a module declaration.
   // Client passes the module header.

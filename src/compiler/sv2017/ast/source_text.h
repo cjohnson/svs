@@ -8,7 +8,7 @@
 
 #include <nlohmann/json_fwd.hpp>
 
-#include "compiler/sv2017/ast/module_declaration.h"
+#include "compiler/sv2017/ast/description.h"
 
 namespace svs::sv2017::ast {
 
@@ -17,14 +17,14 @@ class SourceText : public Node {
  public:
   // Constructs a source text with the provided descriptions
   explicit SourceText(
-      std::vector<std::unique_ptr<ModuleDeclaration>> descriptions);
+      std::vector<std::unique_ptr<Description>> descriptions);
 
   // Returns the JSON representation of the tree.
   virtual json MarshallJson();
 
  private:
   // The list of descriptions
-  std::vector<std::unique_ptr<ModuleDeclaration>> descriptions_;
+  std::vector<std::unique_ptr<Description>> descriptions_;
 };
 
 }  // namespace svs::sv2017::ast
