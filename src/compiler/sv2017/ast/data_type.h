@@ -12,7 +12,7 @@ namespace svs::sv2017::ast {
 class DataType : public Node {
  public:
   // Constructs a data type with the provided location.
-  DataType(const yy::location& location);
+  explicit DataType(const yy::location& location);
 };
 
 }  // namespace svs::sv2017::ast

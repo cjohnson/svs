@@ -12,7 +12,7 @@ namespace svs::sv2017::ast {
 class Description : public Node {
  public:
   // Constructs a description element with the provided location.
-  Description(const yy::location& location);
+  explicit Description(const yy::location& location);
 };
 
 }  // namespace svs::sv2017::ast

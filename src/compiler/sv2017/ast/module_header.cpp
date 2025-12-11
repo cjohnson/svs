@@ -2,8 +2,9 @@
 
 #include "compiler/sv2017/ast/module_header.h"
 
-#include <nlohmann/json.hpp>
 #include <string>
+
+#include <nlohmann/json.hpp>
 
 #include "compiler/sv2017/location.hh"
 
