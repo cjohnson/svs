@@ -9,6 +9,7 @@
 
 #include "compiler/sv2017/ast/description.h"
 #include "compiler/sv2017/ast/module_header.h"
+#include "compiler/sv2017/ast/timeunits_declaration.h"
 #include "compiler/sv2017/location.hh"
 
 namespace svs::sv2017::ast {
@@ -16,10 +17,11 @@ namespace svs::sv2017::ast {
 // A SystemVerilog module declaration.
 class ModuleDeclaration : public Description {
  public:
-  // Constructs a module declaration.
-  // Client passes the module header.
-  ModuleDeclaration(const yy::location& location,
-                    std::unique_ptr<ModuleHeader> header);
+  // Constructs a module declaration with the provided location, header, and
+  // optional timeunits declaration.
+  ModuleDeclaration(
+      const yy::location& location, std::unique_ptr<ModuleHeader> header,
+      std::unique_ptr<TimeunitsDeclaration> timeunits_declaration);
 
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
@@ -27,6 +29,9 @@ class ModuleDeclaration : public Description {
  private:
   // The module header
   std::unique_ptr<ModuleHeader> header_;
+
+  // The timeunits declaration (if provided)
+  std::unique_ptr<TimeunitsDeclaration> timeunits_declaration_;
 };
 
 }  // namespace svs::sv2017::ast

@@ -142,10 +142,10 @@ descriptions : /* empty */
                  $$ = std::move($1);
                }
 
-module_declaration : module_ansi_header endmodule
+module_declaration : module_ansi_header timeunits_declaration_opt endmodule
                      {
-                       const yy::location location{ @1.begin, @2.end };
-                       $$ = std::make_unique<ast::ModuleDeclaration>(location, std::move($1));
+                       const yy::location location{ @1.begin, @3.end };
+                       $$ = std::make_unique<ast::ModuleDeclaration>(location, std::move($1), std::move($2));
                      }
                    ;
 
@@ -156,9 +156,14 @@ module_ansi_header : module_keyword module_identifier list_of_port_declarations_
                      }
                    ;
 
-timeunits_declaration : timeunit time_literal time_precision_suffix
+timeunits_declaration : timeunit time_literal semicolon
                         {
                           const yy::location location{ @1.begin, @3.end };
+                          $$ = std::make_unique<ast::TimeunitsDeclaration>(location, std::move($2), nullptr);
+                        }
+                      | timeunit time_literal time_precision_suffix semicolon
+                        {
+                          const yy::location location{ @1.begin, @4.end };
                           $$ = std::make_unique<ast::TimeunitsDeclaration>(location, std::move($2), std::move($3));
                         }
                       | timeprecision time_literal time_unit_suffix
@@ -172,9 +177,8 @@ time_unit_suffix : semicolon                                 { $$ = nullptr; }
                  | semicolon timeunit time_literal semicolon { $$ = std::move($3); }
                  ;
 
-time_precision_suffix : semicolon                            { $$ = nullptr; }
-                      | forward_slash time_literal semicolon { $$ = std::move($2); }
-                      | timeprecision time_literal semicolon { $$ = std::move($2); }
+time_precision_suffix : forward_slash time_literal { $$ = std::move($2); }
+                      | timeprecision time_literal { $$ = std::move($2); }
                       ;
 
 
