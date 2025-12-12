@@ -28,6 +28,8 @@
 #include "ast/module_declaration.h"
 #include "ast/port_direction.h"
 #include "ast/source_text.h"
+#include "ast/time_literal.h"
+#include "ast/timeunits_declaration.h"
 #include "ast/variable_port_header.h"
 
 namespace svs::sv2017 { class Parser; }
@@ -58,6 +60,10 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::unique_ptr<ast::ModuleAnsiHeader>>         module_ansi_header
 %nterm <std::unique_ptr<ast::ModuleDeclaration>>        module_declaration
 %nterm                                                  module_keyword
+%nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunits_declaration
+%nterm <std::unique_ptr<ast::TimeLiteral>>              time_precision_continuation
+%nterm <std::unique_ptr<ast::TimeLiteral>>              time_precision_continuation_opt
+%nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunits_declaration_opt
 
 /* A.1.3 Module parameters and ports */
 
@@ -79,6 +85,10 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::unique_ptr<ast::DataType>> variable_port_type
 %nterm <std::unique_ptr<ast::DataType>> var_data_type
 
+/* A.8.4 Primaries */
+
+%token <std::unique_ptr<ast::TimeLiteral>> time_literal
+
 /* A.9.3 Identifiers */
 
 %token <std::string> identifier
@@ -97,10 +107,13 @@ namespace ast = svs::sv2017::ast;
 %token output
 %token ref
 %token reg
+%token timeprecision
+%token timeunit
 
 /* Additional operator tokens */
 
 %token comma
+%token forward_slash
 %token left_parenthesis
 %token right_parenthesis
 %token semicolon
@@ -112,12 +125,10 @@ namespace ast = svs::sv2017::ast;
 start : source_text { prs.result_ = std::move($1); }
       ;
 
-source_text : descriptions
+source_text : timeunits_declaration_opt descriptions
               {
-                const yy::location location = $1.empty()
-                  ? @1
-                  : yy::location{ $1.front()->location().begin, $1.back()->location().end };
-                $$ = std::make_unique<ast::SourceText>(location, std::move($1));
+                const yy::location location{ @1.begin, @2.end }; 
+                $$ = std::make_unique<ast::SourceText>(location, std::move($1), std::move($2));
               }
             ;
 
@@ -144,6 +155,33 @@ module_ansi_header : module_keyword module_identifier list_of_port_declarations_
                        $$ = std::make_unique<ast::ModuleAnsiHeader>(location, std::move($2), std::move($3));
                      }
                    ;
+
+timeunits_declaration : timeunit time_literal time_precision_continuation_opt semicolon
+                        {
+                          const yy::location location{ @1.begin, @4.end };
+                          $$ = std::make_unique<ast::TimeunitsDeclaration>(location, std::move($2), std::move($3));
+                        }
+                      | timeprecision time_literal semicolon
+                        {
+                          const yy::location location{ @1.begin, @3.end };
+                          $$ = std::make_unique<ast::TimeunitsDeclaration>(location, nullptr, std::move($2));
+                        }
+                      ;
+
+time_precision_continuation : forward_slash time_literal
+                              { $$ = std::move($2); }
+                            ;
+
+time_precision_continuation_opt : /* empty */
+                                  { $$ = nullptr; }
+                                | time_precision_continuation
+                                  { $$ = std::move($1); }
+
+timeunits_declaration_opt : /* empty */
+                            { $$ = nullptr; }
+                          | timeunits_declaration
+                            { $$ = std::move($1); }
+                          ;
 
 list_of_port_declarations_opt : /* empty */
                                 { $$ = std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>(); }
