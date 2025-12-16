@@ -17,7 +17,6 @@ json Node::MarshallJson() {
 
   std::ostringstream serialized_location;
   serialized_location << location_;
-
   j["_location"] = serialized_location.str();
 
   return j;

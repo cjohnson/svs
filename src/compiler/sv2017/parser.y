@@ -61,9 +61,9 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::unique_ptr<ast::ModuleDeclaration>>        module_declaration
 %nterm                                                  module_keyword
 %nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunits_declaration
-%nterm <std::unique_ptr<ast::TimeLiteral>>              time_unit_suffix
-%nterm <std::unique_ptr<ast::TimeLiteral>>              time_precision_suffix
 %nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunits_declaration_opt
+%nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunit_declaration
+%nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeprecision_declaration
 
 /* A.1.3 Module parameters and ports */
 
@@ -156,31 +156,38 @@ module_ansi_header : module_keyword module_identifier list_of_port_declarations_
                      }
                    ;
 
-timeunits_declaration : timeunit time_literal semicolon
-                        {
-                          const yy::location location{ @1.begin, @3.end };
-                          $$ = std::make_unique<ast::TimeunitsDeclaration>(location, std::move($2), nullptr);
-                        }
-                      | timeunit time_literal time_precision_suffix semicolon
-                        {
-                          const yy::location location{ @1.begin, @4.end };
-                          $$ = std::make_unique<ast::TimeunitsDeclaration>(location, std::move($2), std::move($3));
-                        }
-                      | timeprecision time_literal time_unit_suffix
-                        {
-                          const yy::location location{ @1.begin, @3.end };
-                          $$ = std::make_unique<ast::TimeunitsDeclaration>(location, std::move($3), std::move($2));
-                        }
+timeunits_declaration : timeunit_declaration      { $$ = std::move($1); }
+                      | timeprecision_declaration { $$ = std::move($1); }
                       ;
 
-time_unit_suffix : semicolon                                 { $$ = nullptr; }
-                 | semicolon timeunit time_literal semicolon { $$ = std::move($3); }
-                 ;
+timeunit_declaration : timeunit time_literal semicolon
+                       {
+                         const yy::location location{ @1.begin, @3.end };
+                         $$ = std::make_unique<ast::TimeunitsDeclaration>(location, std::move($2), nullptr);
+                       }
+                     | timeunit time_literal forward_slash time_literal semicolon
+                       {
+                         const yy::location location{ @1.begin, @5.end };
+                         $$ = std::make_unique<ast::TimeunitsDeclaration>(location, std::move($2), std::move($4));
+                       }
+                     | timeunit time_literal semicolon timeprecision time_literal semicolon
+                       {
+                         const yy::location location{ @1.begin, @6.end };
+                         $$ = std::make_unique<ast::TimeunitsDeclaration>(location, std::move($2), std::move($5));
+                       }
+                     ;
 
-time_precision_suffix : forward_slash time_literal { $$ = std::move($2); }
-                      | timeprecision time_literal { $$ = std::move($2); }
-                      ;
-
+timeprecision_declaration : timeprecision time_literal semicolon
+                            {
+                              const yy::location location{ @1.begin, @3.end };
+                              $$ = std::make_unique<ast::TimeunitsDeclaration>(location, nullptr, std::move($2));
+                            }
+                          | timeprecision time_literal semicolon timeunit time_literal semicolon
+                            {
+                              const yy::location location{ @1.begin, @6.end };
+                              $$ = std::make_unique<ast::TimeunitsDeclaration>(location, std::move($5), std::move($2));
+                            }
+                          ;
 
 timeunits_declaration_opt : /* empty */
                             { $$ = nullptr; }
