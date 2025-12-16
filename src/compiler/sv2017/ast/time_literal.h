@@ -3,6 +3,8 @@
 #ifndef SRC_COMPILER_SV2017_AST_TIME_LITERAL_H_
 #define SRC_COMPILER_SV2017_AST_TIME_LITERAL_H_
 
+#include <string>
+
 #include <nlohmann/json_fwd.hpp>
 
 #include "compiler/sv2017/ast/node.h"

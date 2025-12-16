@@ -10,6 +10,7 @@
 #include <nlohmann/json_fwd.hpp>
 
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
+#include "compiler/sv2017/ast/lifetime.h"
 #include "compiler/sv2017/ast/module_header.h"
 #include "compiler/sv2017/location.hh"
 
@@ -20,13 +21,18 @@ class ModuleAnsiHeader : public ModuleHeader {
  public:
   // Constructs an ANSI-style module header.
   // Client passes the module identifier and module ports.
-  ModuleAnsiHeader(const yy::location& location, const std::string& identifier,
+  ModuleAnsiHeader(const yy::location& location,
+                   const std::optional<Lifetime>& lifetime,
+                   const std::string& identifier,
                    std::vector<std::unique_ptr<AnsiPortDeclaration>> ports);
 
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
 
  private:
+  // The lifetime of the module
+  std::optional<Lifetime> lifetime_;
+
   // The module ports
   std::vector<std::unique_ptr<AnsiPortDeclaration>> ports_;
 };

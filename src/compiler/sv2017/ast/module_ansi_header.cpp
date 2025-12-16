@@ -19,13 +19,19 @@ using ModuleAnsiHeader = svs::sv2017::ast::ModuleAnsiHeader;
 using ModuleHeader = svs::sv2017::ast::ModuleHeader;
 
 ModuleAnsiHeader::ModuleAnsiHeader(
-    const yy::location& location, const std::string& identifier,
+    const yy::location& location, const std::optional<Lifetime>& lifetime,
+    const std::string& identifier,
     std::vector<std::unique_ptr<AnsiPortDeclaration>> ports)
-    : ModuleHeader(location, identifier), ports_(std::move(ports)) {}
+    : ModuleHeader(location, identifier),
+      lifetime_(lifetime),
+      ports_(std::move(ports)) {}
 
 json ModuleAnsiHeader::MarshallJson() {
   json j = ModuleHeader::MarshallJson();
   j["_type"] = "module_ansi_header";
+
+  if (lifetime_.has_value())
+    j["lifetime"] = SerializeLifetime(lifetime_.value());
 
   std::vector<json> ports_json;
   ports_json.reserve(ports_.size());

@@ -2,6 +2,8 @@
 
 #include "compiler/sv2017/ast/time_literal.h"
 
+#include <string>
+
 #include <nlohmann/json.hpp>
 
 #include "compiler/sv2017/ast/time_unit.h"

@@ -38,18 +38,20 @@ loc.step();
 
     /* Annex B: Keywords */
 
+"automatic"     return yy::parser::make_automatic(loc);
 "bit"           return yy::parser::make_bit(loc);
+"endmodule"     return yy::parser::make_endmodule(loc);
 "inout"         return yy::parser::make_inout(loc);
 "input"         return yy::parser::make_input(loc);
-"endmodule"     return yy::parser::make_endmodule(loc);
 "logic"         return yy::parser::make_logic(loc);
 "macromodule"   return yy::parser::make_macromodule(loc);
 "module"        return yy::parser::make_module(loc);
 "output"        return yy::parser::make_output(loc);
 "ref"           return yy::parser::make_ref(loc);
 "reg"           return yy::parser::make_reg(loc);
-"timeunit"      return yy::parser::make_timeunit(loc);
+"static"        return yy::parser::make_static_(loc);
 "timeprecision" return yy::parser::make_timeprecision(loc);
+"timeunit"      return yy::parser::make_timeunit(loc);
 
     /* Time literals */
 

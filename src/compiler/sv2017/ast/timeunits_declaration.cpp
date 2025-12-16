@@ -3,8 +3,9 @@
 #include "compiler/sv2017/ast/timeunits_declaration.h"
 
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <utility>
+
+#include <nlohmann/json.hpp>
 
 #include "compiler/sv2017/ast/time_literal.h"
 

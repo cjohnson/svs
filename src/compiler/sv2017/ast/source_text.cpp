@@ -3,9 +3,10 @@
 #include "compiler/sv2017/ast/source_text.h"
 
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <utility>
 #include <vector>
+
+#include <nlohmann/json.hpp>
 
 #include "compiler/sv2017/ast/description.h"
 

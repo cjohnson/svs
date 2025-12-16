@@ -24,6 +24,7 @@
 #include "ast/description.h"
 #include "ast/integer_vector_data_type.h"
 #include "ast/integer_vector_type.h"
+#include "ast/lifetime.h"
 #include "ast/module_ansi_header.h"
 #include "ast/module_declaration.h"
 #include "ast/port_direction.h"
@@ -61,9 +62,9 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::unique_ptr<ast::ModuleDeclaration>>        module_declaration
 %nterm                                                  module_keyword
 %nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunits_declaration
-%nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunits_declaration_opt
 %nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunit_declaration
 %nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeprecision_declaration
+%nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunits_declaration_opt
 
 /* A.1.3 Module parameters and ports */
 
@@ -75,6 +76,13 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::unique_ptr<ast::AnsiPortDeclaration>>              ansi_port_declaration
 %nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> ansi_port_declaration_cs
 %nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> ansi_port_declaration_cs_opt
+
+/* A.2 Declarations */
+
+/* A.2.1.3 Type declarations */
+
+%nterm <ast::Lifetime>                lifetime
+%nterm <std::optional<ast::Lifetime>> lifetime_opt
 
 /* A.2.2 Declaration data types */
 
@@ -97,6 +105,7 @@ namespace ast = svs::sv2017::ast;
 
 /* Annex B: Keywords */
 
+%token automatic
 %token bit
 %token endmodule
 %token inout
@@ -107,6 +116,7 @@ namespace ast = svs::sv2017::ast;
 %token output
 %token ref
 %token reg
+%token static_
 %token timeprecision
 %token timeunit
 
@@ -149,10 +159,10 @@ module_declaration : module_ansi_header timeunits_declaration_opt endmodule
                      }
                    ;
 
-module_ansi_header : module_keyword module_identifier list_of_port_declarations_opt semicolon
+module_ansi_header : module_keyword lifetime_opt module_identifier list_of_port_declarations_opt semicolon
                      {
-                       const yy::location location{ @1.begin, @4.end };
-                       $$ = std::make_unique<ast::ModuleAnsiHeader>(location, std::move($2), std::move($3));
+                       const yy::location location{ @1.begin, @5.end };
+                       $$ = std::make_unique<ast::ModuleAnsiHeader>(location, $2, std::move($3), std::move($4));
                      }
                    ;
 
@@ -210,6 +220,14 @@ ansi_port_declaration_cs_opt : /* empty */
                              | ansi_port_declaration_cs
                                { $$ = std::move($1); }
                              ;
+
+lifetime : static_   { $$ = ast::Lifetime::kStatic; }
+         | automatic { $$ = ast::Lifetime::kAutomatic; }
+         ;
+
+lifetime_opt : /* empty */ { $$ = std::nullopt; }
+             | lifetime    { $$ = $1; }
+             ;
 
 ansi_port_declaration_cs : ansi_port_declaration
                            {

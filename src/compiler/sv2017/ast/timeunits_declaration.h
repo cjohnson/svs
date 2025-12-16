@@ -16,7 +16,8 @@ namespace svs::sv2017::ast {
 // A timeunits declaration
 class TimeunitsDeclaration : public Node {
  public:
-  // Constructs a timeunits declaration with the provided time unit and time precision
+  // Constructs a timeunits declaration with the provided time unit and time
+  // precision
   TimeunitsDeclaration(const yy::location& location,
                        std::unique_ptr<TimeLiteral> time_unit,
                        std::unique_ptr<TimeLiteral> time_precision);
