@@ -6,8 +6,6 @@
 #include <memory>
 #include <string>
 
-#include <nlohmann/json_fwd.hpp>
-
 #include "compiler/sv2017/ast/node.h"
 #include "compiler/sv2017/ast/variable_port_header.h"
 #include "compiler/sv2017/location.hh"
@@ -26,14 +24,14 @@ class AnsiPortDeclaration : public Node {
   // Accept the provided visitor.
   void Accept(Visitor& visitor) override;
 
-  // Returns the JSON representation of the tree.
-  json MarshallJson() override;
-
- private:
   // The port header
-  std::unique_ptr<VariablePortHeader> header_;
+  const std::unique_ptr<VariablePortHeader>& header();
 
   // The port identifier
+  const std::string& identifier();
+
+ private:
+  std::unique_ptr<VariablePortHeader> header_;
   std::string identifier_;
 };
 

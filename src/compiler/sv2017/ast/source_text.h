@@ -6,8 +6,6 @@
 #include <memory>
 #include <vector>
 
-#include <nlohmann/json_fwd.hpp>
-
 #include "compiler/sv2017/ast/description.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
 #include "compiler/sv2017/location.hh"
@@ -26,15 +24,15 @@ class SourceText : public Node {
   // Accept the provided visitor.
   void Accept(Visitor& visitor) override;
 
-  // Returns the JSON representation of the tree.
-  json MarshallJson() override;
-
- private:
   // The timeunits declaration. Can be nullptr if the designer did not provide a
   // timeunits declaration.
-  std::unique_ptr<TimeunitsDeclaration> timeunits_declaration_;
+  const std::unique_ptr<TimeunitsDeclaration>& timeunits_declaration();
 
   // The list of descriptions
+  const std::vector<std::unique_ptr<Description>>& descriptions();
+
+ private:
+  std::unique_ptr<TimeunitsDeclaration> timeunits_declaration_;
   std::vector<std::unique_ptr<Description>> descriptions_;
 };
 

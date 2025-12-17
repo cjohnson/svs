@@ -7,8 +7,6 @@
 #include <string>
 #include <vector>
 
-#include <nlohmann/json_fwd.hpp>
-
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
 #include "compiler/sv2017/ast/lifetime.h"
 #include "compiler/sv2017/ast/module_header.h"
@@ -29,14 +27,14 @@ class ModuleAnsiHeader : public ModuleHeader {
   // Accept the provided visitor.
   void Accept(Visitor& visitor) override;
 
-  // Returns the JSON representation of the tree.
-  json MarshallJson() override;
-
- private:
   // The lifetime of the module
-  std::optional<Lifetime> lifetime_;
+  const std::optional<Lifetime>& lifetime();
 
   // The module ports
+  const std::vector<std::unique_ptr<AnsiPortDeclaration>>& ports();
+
+ private:
+  std::optional<Lifetime> lifetime_;
   std::vector<std::unique_ptr<AnsiPortDeclaration>> ports_;
 };
 

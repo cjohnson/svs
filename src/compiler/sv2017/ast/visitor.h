@@ -7,7 +7,6 @@
 #include "compiler/sv2017/ast/integer_vector_data_type.h"
 #include "compiler/sv2017/ast/module_ansi_header.h"
 #include "compiler/sv2017/ast/module_declaration.h"
-#include "compiler/sv2017/ast/module_header.h"
 #include "compiler/sv2017/ast/source_text.h"
 #include "compiler/sv2017/ast/time_literal.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
@@ -22,7 +21,6 @@ class Visitor {
   virtual void Visit(IntegerVectorDataType& integer_vector_data_type);
   virtual void Visit(ModuleAnsiHeader& module_ansi_header);
   virtual void Visit(ModuleDeclaration& module_declaration);
-  virtual void Visit(ModuleHeader& module_header);
   virtual void Visit(SourceText& source_text);
   virtual void Visit(TimeLiteral& time_literal);
   virtual void Visit(TimeunitsDeclaration& timeunits_declaration);

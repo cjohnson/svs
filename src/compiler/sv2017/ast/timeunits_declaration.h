@@ -5,8 +5,6 @@
 
 #include <memory>
 
-#include <nlohmann/json_fwd.hpp>
-
 #include "compiler/sv2017/ast/node.h"
 #include "compiler/sv2017/ast/time_literal.h"
 #include "compiler/sv2017/location.hh"
@@ -25,15 +23,15 @@ class TimeunitsDeclaration : public Node {
   // Accept the provided visitor.
   void Accept(Visitor& visitor) override;
 
-  // Returns the JSON representation of the tree.
-  json MarshallJson() override;
+  // The time precision - specifies the degree of accuracy for delays.
+  const std::unique_ptr<TimeLiteral>& time_precision();
+
+  // The time unit - the unit of measurement for times and delays.
+  const std::unique_ptr<TimeLiteral>& time_unit();
 
  private:
-  // The time unit - the unit of measurement for times and delays.
-  std::unique_ptr<TimeLiteral> time_unit_;
-
-  // The time precision - specifies the degree of accuracy for delays.
   std::unique_ptr<TimeLiteral> time_precision_;
+  std::unique_ptr<TimeLiteral> time_unit_;
 };
 
 }  // namespace svs::sv2017::ast

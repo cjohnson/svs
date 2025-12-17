@@ -6,8 +6,6 @@
 #include <memory>
 #include <optional>
 
-#include <nlohmann/json_fwd.hpp>
-
 #include "compiler/sv2017/ast/data_type.h"
 #include "compiler/sv2017/ast/node.h"
 #include "compiler/sv2017/ast/port_direction.h"
@@ -29,15 +27,15 @@ class VariablePortHeader : public Node {
   // Accept the provided visitor.
   void Accept(Visitor& visitor) override;
 
-  // Returns the JSON representation of the tree.
-  json MarshallJson() override;
-
- private:
   // The port direction.
   // Has a value if the designer provided a direction.
-  std::optional<PortDirection> port_direction_;
+  const std::optional<PortDirection>& port_direction();
 
   // The port type.
+  const std::unique_ptr<DataType>& variable_port_type();
+
+ private:
+  std::optional<PortDirection> port_direction_;
   std::unique_ptr<DataType> variable_port_type_;
 };
 

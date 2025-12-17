@@ -3,13 +3,14 @@
 #include "compiler/sv2017/ast/variable_port_header.h"
 
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <utility>
 
+#include "compiler/sv2017/ast/data_type.h"
 #include "compiler/sv2017/ast/port_direction.h"
 #include "compiler/sv2017/ast/visitor.h"
 
-using json = nlohmann::json;
+using DataType = svs::sv2017::ast::DataType;
+using PortDirection = svs::sv2017::ast::PortDirection;
 using VariablePortHeader = svs::sv2017::ast::VariablePortHeader;
 
 VariablePortHeader::VariablePortHeader(
@@ -21,13 +22,10 @@ VariablePortHeader::VariablePortHeader(
 
 void VariablePortHeader::Accept(Visitor& visitor) { visitor.Visit(*this); }
 
-json VariablePortHeader::MarshallJson() {
-  json j = Node::MarshallJson();
-  j["_type"] = "variable_port_header";
+const std::optional<PortDirection>& VariablePortHeader::port_direction() {
+  return port_direction_;
+}
 
-  if (port_direction_.has_value())
-    j["port_direction"] = SerializePortDirection(port_direction_.value());
-  j["variable_port_type"] = variable_port_type_->MarshallJson();
-
-  return j;
+const std::unique_ptr<DataType>& VariablePortHeader::variable_port_type() {
+  return variable_port_type_;
 }

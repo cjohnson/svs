@@ -7,15 +7,13 @@
 #include <utility>
 #include <vector>
 
-#include <nlohmann/json.hpp>
-
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
 #include "compiler/sv2017/ast/module_header.h"
 #include "compiler/sv2017/ast/visitor.h"
 #include "compiler/sv2017/location.hh"
 
-using json = nlohmann::json;
-
+using AnsiPortDeclaration = svs::sv2017::ast::AnsiPortDeclaration;
+using Lifetime = svs::sv2017::ast::Lifetime;
 using ModuleAnsiHeader = svs::sv2017::ast::ModuleAnsiHeader;
 using ModuleHeader = svs::sv2017::ast::ModuleHeader;
 
@@ -29,18 +27,11 @@ ModuleAnsiHeader::ModuleAnsiHeader(
 
 void ModuleAnsiHeader::Accept(Visitor& visitor) { visitor.Visit(*this); }
 
-json ModuleAnsiHeader::MarshallJson() {
-  json j = ModuleHeader::MarshallJson();
-  j["_type"] = "module_ansi_header";
+const std::optional<Lifetime>& ModuleAnsiHeader::lifetime() {
+  return lifetime_;
+}
 
-  if (lifetime_.has_value())
-    j["lifetime"] = SerializeLifetime(lifetime_.value());
-
-  std::vector<json> ports_json;
-  ports_json.reserve(ports_.size());
-  for (const std::unique_ptr<AnsiPortDeclaration>& port : ports_)
-    ports_json.emplace_back(port->MarshallJson());
-  j["ports"] = ports_json;
-
-  return j;
+const std::vector<std::unique_ptr<AnsiPortDeclaration>>&
+ModuleAnsiHeader::ports() {
+  return ports_;
 }

@@ -3,11 +3,10 @@
 #include <iostream>
 #include <memory>
 
-#include <nlohmann/json.hpp>
-
+#include "compiler/sv2017/ast/json_visitor.h"
 #include "compiler/sv2017/parser.h"
 
-using Parser = svs::sv2017::Parser;
+namespace sv2017 = svs::sv2017;
 
 int main(int argc, char **argv) {
   if (argc < 2) {
@@ -15,10 +14,13 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  std::unique_ptr<ast::SourceText> ast = Parser{}.Parse(argv[1]);
+  sv2017::Parser parser;
+  std::unique_ptr<ast::SourceText> ast = parser.Parse(argv[1]);
   assert(ast);
 
-  std::cout << ast->MarshallJson().dump(2) << '\n';
+  sv2017::ast::JsonVisitor json_visitor;
+  ast->Accept(json_visitor);
+  std::cout << json_visitor.result() << '\n';
 
   return 0;
 }

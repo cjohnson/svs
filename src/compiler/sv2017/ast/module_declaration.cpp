@@ -3,16 +3,17 @@
 #include "compiler/sv2017/ast/module_declaration.h"
 
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <utility>
 
 #include "compiler/sv2017/ast/description.h"
+#include "compiler/sv2017/ast/module_header.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
 #include "compiler/sv2017/ast/visitor.h"
 #include "compiler/sv2017/location.hh"
 
-using json = nlohmann::json;
 using ModuleDeclaration = svs::sv2017::ast::ModuleDeclaration;
+using ModuleHeader = svs::sv2017::ast::ModuleHeader;
+using TimeunitsDeclaration = svs::sv2017::ast::TimeunitsDeclaration;
 
 ModuleDeclaration::ModuleDeclaration(
     const yy::location& location, std::unique_ptr<ModuleHeader> header,
@@ -23,13 +24,11 @@ ModuleDeclaration::ModuleDeclaration(
 
 void ModuleDeclaration::Accept(Visitor& visitor) { visitor.Visit(*this); }
 
-json ModuleDeclaration::MarshallJson() {
-  json j = Description::MarshallJson();
-  j["_type"] = "module_declaration";
+const std::unique_ptr<ModuleHeader>& ModuleDeclaration::header() {
+  return header_;
+}
 
-  j["header"] = header_->MarshallJson();
-  if (timeunits_declaration_)
-    j["timeunits_declaration"] = timeunits_declaration_->MarshallJson();
-
-  return j;
+const std::unique_ptr<TimeunitsDeclaration>&
+ModuleDeclaration::timeunits_declaration() {
+  return timeunits_declaration_;
 }

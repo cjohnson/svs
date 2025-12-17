@@ -5,8 +5,6 @@
 
 #include <string>
 
-#include <nlohmann/json_fwd.hpp>
-
 #include "compiler/sv2017/ast/node.h"
 #include "compiler/sv2017/ast/time_unit.h"
 #include "compiler/sv2017/location.hh"
@@ -23,15 +21,15 @@ class TimeLiteral : public Node {
   // Accept the provided visitor.
   void Accept(Visitor& visitor) override;
 
-  // Returns the JSON representation of the tree.
-  json MarshallJson() override;
+  // The time unit of the time literal
+  const TimeUnit& time_unit();
+
+  // The value of the time literal
+  const std::string& value();
 
  private:
-  // The value of the time literal
-  std::string value_;
-
-  // The time unit of the time literal
   TimeUnit time_unit_;
+  std::string value_;
 };
 
 }  // namespace svs::sv2017::ast

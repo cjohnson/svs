@@ -2,13 +2,11 @@
 
 #include "compiler/sv2017/ast/integer_vector_data_type.h"
 
-#include <nlohmann/json.hpp>
-
 #include "compiler/sv2017/ast/integer_vector_type.h"
 #include "compiler/sv2017/ast/visitor.h"
 #include "compiler/sv2017/location.hh"
 
-using json = nlohmann::json;
+using IntegerVectorType = svs::sv2017::ast::IntegerVectorType;
 using IntegerVectorDataType = svs::sv2017::ast::IntegerVectorDataType;
 
 IntegerVectorDataType::IntegerVectorDataType(
@@ -17,11 +15,6 @@ IntegerVectorDataType::IntegerVectorDataType(
 
 void IntegerVectorDataType::Accept(Visitor& visitor) { visitor.Visit(*this); }
 
-json IntegerVectorDataType::MarshallJson() {
-  json j = DataType::MarshallJson();
-  j["_type"] = "integer_vector_data_type";
-
-  j["integer_vector_type"] = SerializeIntegerVectorType(integer_vector_type_);
-
-  return j;
+const IntegerVectorType& IntegerVectorDataType::integer_vector_type() {
+  return integer_vector_type_;
 }

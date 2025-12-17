@@ -5,8 +5,6 @@
 
 #include <string>
 
-#include <nlohmann/json_fwd.hpp>
-
 #include "compiler/sv2017/ast/node.h"
 #include "compiler/sv2017/location.hh"
 
@@ -19,14 +17,10 @@ class ModuleHeader : public Node {
   // Client passes the module identifier.
   ModuleHeader(const yy::location& location, const std::string& identifier);
 
-  // Accept the provided visitor.
-  void Accept(Visitor& visitor) override;
-
-  // Returns the JSON representation of the tree.
-  json MarshallJson() override;
+  // The identifier for the module.
+  const std::string& identifier();
 
  protected:
-  // The identifier for the module.
   std::string identifier_;
 };
 

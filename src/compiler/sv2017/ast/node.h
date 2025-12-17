@@ -3,8 +3,6 @@
 #ifndef SRC_COMPILER_SV2017_AST_NODE_H_
 #define SRC_COMPILER_SV2017_AST_NODE_H_
 
-#include <nlohmann/json_fwd.hpp>
-
 #include "compiler/sv2017/location.hh"
 
 namespace svs::sv2017::ast {
@@ -15,9 +13,6 @@ class Visitor;
 // SystemVerilog 2017 AST node
 class Node {
  public:
-  // JSON type defined for convenience
-  using json = nlohmann::json;
-
   // Constructs a node with the provided location
   explicit Node(const yy::location& location);
 
@@ -26,9 +21,6 @@ class Node {
 
   // Accept the provided visitor.
   virtual void Accept(Visitor& visitor) = 0;
-
-  // Returns the JSON representation of the tree.
-  virtual json MarshallJson();
 
   // Returns the location of the node in the source text.
   const yy::location& location();

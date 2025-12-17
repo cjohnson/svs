@@ -3,15 +3,15 @@
 #include "compiler/sv2017/ast/source_text.h"
 
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <utility>
 #include <vector>
 
 #include "compiler/sv2017/ast/description.h"
 #include "compiler/sv2017/ast/visitor.h"
 
-using json = nlohmann::json;
+using Description = svs::sv2017::ast::Description;
 using SourceText = svs::sv2017::ast::SourceText;
+using TimeunitsDeclaration = svs::sv2017::ast::TimeunitsDeclaration;
 
 SourceText::SourceText(
     const yy::location& location,
@@ -23,20 +23,11 @@ SourceText::SourceText(
 
 void SourceText::Accept(Visitor& visitor) { visitor.Visit(*this); }
 
-json SourceText::MarshallJson() {
-  json j = Node::MarshallJson();
+const std::unique_ptr<TimeunitsDeclaration>&
+SourceText::timeunits_declaration() {
+  return timeunits_declaration_;
+}
 
-  j["_type"] = "source_text";
-  j["_version"] = 2017;
-
-  std::vector<json> descriptions_json;
-  descriptions_json.reserve(descriptions_.size());
-  for (const std::unique_ptr<Description>& description : descriptions_)
-    descriptions_json.emplace_back(description->MarshallJson());
-  j["descriptions"] = descriptions_json;
-
-  if (timeunits_declaration_)
-    j["timeunits_declaration"] = timeunits_declaration_->MarshallJson();
-
-  return j;
+const std::vector<std::unique_ptr<Description>>& SourceText::descriptions() {
+  return descriptions_;
 }
