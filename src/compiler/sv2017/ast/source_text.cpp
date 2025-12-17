@@ -3,12 +3,12 @@
 #include "compiler/sv2017/ast/source_text.h"
 
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <utility>
 #include <vector>
 
-#include <nlohmann/json.hpp>
-
 #include "compiler/sv2017/ast/description.h"
+#include "compiler/sv2017/ast/visitor.h"
 
 using json = nlohmann::json;
 using SourceText = svs::sv2017::ast::SourceText;
@@ -20,6 +20,8 @@ SourceText::SourceText(
     : Node(location),
       timeunits_declaration_(std::move(timeunits_declaration)),
       descriptions_(std::move(descriptions)) {}
+
+void SourceText::Accept(Visitor& visitor) { visitor.Visit(*this); }
 
 json SourceText::MarshallJson() {
   json j = Node::MarshallJson();

@@ -3,11 +3,11 @@
 #include "compiler/sv2017/ast/timeunits_declaration.h"
 
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <utility>
 
-#include <nlohmann/json.hpp>
-
 #include "compiler/sv2017/ast/time_literal.h"
+#include "compiler/sv2017/ast/visitor.h"
 
 using json = nlohmann::json;
 using TimeunitsDeclaration = svs::sv2017::ast::TimeunitsDeclaration;
@@ -20,14 +20,14 @@ TimeunitsDeclaration::TimeunitsDeclaration(
       time_unit_(std::move(time_unit)),
       time_precision_(std::move(time_precision)) {}
 
+void TimeunitsDeclaration::Accept(Visitor& visitor) { visitor.Visit(*this); }
+
 json TimeunitsDeclaration::MarshallJson() {
   json j = Node::MarshallJson();
   j["_type"] = "timeunits_declaration";
 
-  if (time_unit_)
-    j["time_unit"] = time_unit_->MarshallJson();
-  if (time_precision_)
-    j["time_precision"] = time_precision_->MarshallJson();
+  if (time_unit_) j["time_unit"] = time_unit_->MarshallJson();
+  if (time_precision_) j["time_precision"] = time_precision_->MarshallJson();
 
   return j;
 }

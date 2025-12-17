@@ -3,11 +3,11 @@
 #include "compiler/sv2017/ast/variable_port_header.h"
 
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <utility>
 
-#include <nlohmann/json.hpp>
-
 #include "compiler/sv2017/ast/port_direction.h"
+#include "compiler/sv2017/ast/visitor.h"
 
 using json = nlohmann::json;
 using VariablePortHeader = svs::sv2017::ast::VariablePortHeader;
@@ -18,6 +18,8 @@ VariablePortHeader::VariablePortHeader(
     : Node(location),
       port_direction_(port_direction),
       variable_port_type_(std::move(variable_port_type)) {}
+
+void VariablePortHeader::Accept(Visitor& visitor) { visitor.Visit(*this); }
 
 json VariablePortHeader::MarshallJson() {
   json j = Node::MarshallJson();

@@ -23,6 +23,9 @@ class ModuleDeclaration : public Description {
       const yy::location& location, std::unique_ptr<ModuleHeader> header,
       std::unique_ptr<TimeunitsDeclaration> timeunits_declaration);
 
+  // Accept the provided visitor.
+  void Accept(Visitor& visitor) override;
+
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
 

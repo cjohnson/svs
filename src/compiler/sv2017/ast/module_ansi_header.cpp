@@ -11,6 +11,7 @@
 
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
 #include "compiler/sv2017/ast/module_header.h"
+#include "compiler/sv2017/ast/visitor.h"
 #include "compiler/sv2017/location.hh"
 
 using json = nlohmann::json;
@@ -25,6 +26,8 @@ ModuleAnsiHeader::ModuleAnsiHeader(
     : ModuleHeader(location, identifier),
       lifetime_(lifetime),
       ports_(std::move(ports)) {}
+
+void ModuleAnsiHeader::Accept(Visitor& visitor) { visitor.Visit(*this); }
 
 json ModuleAnsiHeader::MarshallJson() {
   json j = ModuleHeader::MarshallJson();

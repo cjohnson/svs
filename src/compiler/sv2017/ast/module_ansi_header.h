@@ -26,6 +26,9 @@ class ModuleAnsiHeader : public ModuleHeader {
                    const std::string& identifier,
                    std::vector<std::unique_ptr<AnsiPortDeclaration>> ports);
 
+  // Accept the provided visitor.
+  void Accept(Visitor& visitor) override;
+
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
 

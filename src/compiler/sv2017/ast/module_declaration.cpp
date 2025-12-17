@@ -3,12 +3,12 @@
 #include "compiler/sv2017/ast/module_declaration.h"
 
 #include <memory>
-#include <utility>
-
 #include <nlohmann/json.hpp>
+#include <utility>
 
 #include "compiler/sv2017/ast/description.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
+#include "compiler/sv2017/ast/visitor.h"
 #include "compiler/sv2017/location.hh"
 
 using json = nlohmann::json;
@@ -20,6 +20,8 @@ ModuleDeclaration::ModuleDeclaration(
     : Description(location),
       header_(std::move(header)),
       timeunits_declaration_(std::move(timeunits_declaration)) {}
+
+void ModuleDeclaration::Accept(Visitor& visitor) { visitor.Visit(*this); }
 
 json ModuleDeclaration::MarshallJson() {
   json j = Description::MarshallJson();

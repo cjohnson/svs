@@ -20,6 +20,9 @@ class TimeLiteral : public Node {
   TimeLiteral(const yy::location& location, const std::string& value,
               const TimeUnit& time_unit);
 
+  // Accept the provided visitor.
+  void Accept(Visitor& visitor) override;
+
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
 

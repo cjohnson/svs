@@ -23,6 +23,9 @@ class AnsiPortDeclaration : public Node {
                       std::unique_ptr<VariablePortHeader> header,
                       std::string identifier);
 
+  // Accept the provided visitor.
+  void Accept(Visitor& visitor) override;
+
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
 

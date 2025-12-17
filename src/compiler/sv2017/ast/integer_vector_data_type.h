@@ -18,6 +18,9 @@ class IntegerVectorDataType : public DataType {
   IntegerVectorDataType(const yy::location& location,
                         const IntegerVectorType& integer_vector_type);
 
+  // Accept the provided visitor.
+  void Accept(Visitor& visitor) override;
+
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
 

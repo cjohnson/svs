@@ -22,6 +22,9 @@ class TimeunitsDeclaration : public Node {
                        std::unique_ptr<TimeLiteral> time_unit,
                        std::unique_ptr<TimeLiteral> time_precision);
 
+  // Accept the provided visitor.
+  void Accept(Visitor& visitor) override;
+
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
 

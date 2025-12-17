@@ -23,6 +23,9 @@ class SourceText : public Node {
              std::unique_ptr<TimeunitsDeclaration> timeunits_declaration,
              std::vector<std::unique_ptr<Description>> descriptions);
 
+  // Accept the provided visitor.
+  void Accept(Visitor& visitor) override;
+
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
 

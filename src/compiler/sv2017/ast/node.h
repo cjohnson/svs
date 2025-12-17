@@ -9,6 +9,9 @@
 
 namespace svs::sv2017::ast {
 
+// Forward declaration of AST visitor
+class Visitor;
+
 // SystemVerilog 2017 AST node
 class Node {
  public:
@@ -17,6 +20,12 @@ class Node {
 
   // Constructs a node with the provided location
   explicit Node(const yy::location& location);
+
+  // Virtual destructor declaration
+  virtual ~Node() = default;
+
+  // Accept the provided visitor.
+  virtual void Accept(Visitor& visitor) = 0;
 
   // Returns the JSON representation of the tree.
   virtual json MarshallJson();

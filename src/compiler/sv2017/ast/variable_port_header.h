@@ -26,6 +26,9 @@ class VariablePortHeader : public Node {
                      std::optional<PortDirection> port_direction,
                      std::unique_ptr<DataType> variable_port_type);
 
+  // Accept the provided visitor.
+  void Accept(Visitor& visitor) override;
+
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
 

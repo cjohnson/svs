@@ -8,6 +8,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "compiler/sv2017/ast/visitor.h"
+
 using json = nlohmann::json;
 using AnsiPortDeclaration = svs::sv2017::ast::AnsiPortDeclaration;
 using VariablePortHeader = svs::sv2017::ast::VariablePortHeader;
@@ -18,6 +20,8 @@ AnsiPortDeclaration::AnsiPortDeclaration(
     : Node(location),
       header_(std::move(header)),
       identifier_(std::move(identifier)) {}
+
+void AnsiPortDeclaration::Accept(Visitor& visitor) { visitor.Visit(*this); }
 
 json AnsiPortDeclaration::MarshallJson() {
   json j = Node::MarshallJson();

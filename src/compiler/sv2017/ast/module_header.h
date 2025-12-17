@@ -19,6 +19,9 @@ class ModuleHeader : public Node {
   // Client passes the module identifier.
   ModuleHeader(const yy::location& location, const std::string& identifier);
 
+  // Accept the provided visitor.
+  void Accept(Visitor& visitor) override;
+
   // Returns the JSON representation of the tree.
   json MarshallJson() override;
 
