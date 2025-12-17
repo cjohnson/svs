@@ -9,8 +9,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED 20)
 
 include(FetchContent)
 
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG        v3.12.0
+)
 FetchContent_MakeAvailable(json)
+
+add_library(sv2017_json STATIC)
+target_sources(sv2017_json
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/json/serializer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/json/visitor.cpp)
+target_link_libraries(sv2017_json PRIVATE nlohmann_json::nlohmann_json)
+target_include_directories(sv2017_json PRIVATE src)
 
 add_library(sv2017_ast STATIC)
 target_sources(sv2017_ast
@@ -20,7 +32,6 @@ target_sources(sv2017_ast
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/description.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/integer_vector_data_type.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/integer_vector_type.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/json_visitor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/lifetime.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/module_ansi_header.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/module_declaration.cpp
@@ -33,7 +44,6 @@ target_sources(sv2017_ast
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/timeunits_declaration.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/variable_port_header.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/visitor.cpp)
-target_link_libraries(sv2017_ast PRIVATE nlohmann_json::nlohmann_json)
 target_include_directories(sv2017_ast PRIVATE src)
 
 find_package(BISON REQUIRED)
@@ -55,11 +65,11 @@ target_sources(svsc2017
         ${BISON_sv2017_bison_OUTPUTS}
         ${FLEX_sv2017_flex_OUTPUTS}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser.cpp)
-target_link_libraries(svsc2017 PRIVATE sv2017_ast nlohmann_json::nlohmann_json)
+target_link_libraries(svsc2017 PRIVATE sv2017_ast)
 target_include_directories(svsc2017 PRIVATE src)
 
 add_executable(svs ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-target_link_libraries(svs PRIVATE svsc2017 nlohmann_json::nlohmann_json)
+target_link_libraries(svs PRIVATE svsc2017 sv2017_json)
 target_include_directories(svs PRIVATE src)
 
 option(ENABLE_UNIT_TESTS "Enable Unit Tests" ON)

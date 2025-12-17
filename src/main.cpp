@@ -3,10 +3,8 @@
 #include <iostream>
 #include <memory>
 
-#include "compiler/sv2017/ast/json_visitor.h"
+#include "compiler/sv2017/json/serializer.h"
 #include "compiler/sv2017/parser.h"
-
-namespace sv2017 = svs::sv2017;
 
 int main(int argc, char **argv) {
   if (argc < 2) {
@@ -14,13 +12,12 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  sv2017::Parser parser;
+  svs::sv2017::Parser parser;
   std::unique_ptr<ast::SourceText> ast = parser.Parse(argv[1]);
   assert(ast);
 
-  sv2017::ast::JsonVisitor json_visitor;
-  ast->Accept(json_visitor);
-  std::cout << json_visitor.result() << '\n';
+  svs::sv2017::json::Serializer json_serializer;
+  std::cout << json_serializer.Serialize(*ast) << '\n';
 
   return 0;
 }
