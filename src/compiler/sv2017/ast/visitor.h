@@ -4,6 +4,7 @@
 #define SRC_COMPILER_SV2017_AST_VISITOR_H_
 
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
+#include "compiler/sv2017/ast/hex_number.h"
 #include "compiler/sv2017/ast/integer_vector_data_type.h"
 #include "compiler/sv2017/ast/module_ansi_header.h"
 #include "compiler/sv2017/ast/module_declaration.h"
@@ -18,6 +19,7 @@ namespace svs::sv2017::ast {
 class Visitor {
  public:
   virtual void Visit(AnsiPortDeclaration& ansi_port_declaration);
+  virtual void Visit(HexNumber& hex_number);
   virtual void Visit(IntegerVectorDataType& integer_vector_data_type);
   virtual void Visit(ModuleAnsiHeader& module_ansi_header);
   virtual void Visit(ModuleDeclaration& module_declaration);

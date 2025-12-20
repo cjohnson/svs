@@ -22,6 +22,7 @@
 #include "ast/ansi_port_declaration.h"
 #include "ast/data_type.h"
 #include "ast/description.h"
+#include "ast/hex_number.h"
 #include "ast/integer_vector_data_type.h"
 #include "ast/integer_vector_type.h"
 #include "ast/lifetime.h"
@@ -96,6 +97,10 @@ namespace ast = svs::sv2017::ast;
 /* A.8.4 Primaries */
 
 %token <std::unique_ptr<ast::TimeLiteral>> time_literal
+
+/* A.8.7 Numbers */
+
+%token <std::unique_ptr<ast::HexNumber>> hex_number
 
 /* A.9.3 Identifiers */
 

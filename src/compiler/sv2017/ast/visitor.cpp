@@ -5,6 +5,7 @@
 using Visitor = svs::sv2017::ast::Visitor;
 
 void Visitor::Visit(AnsiPortDeclaration& ansi_port_declaration) {}
+void Visitor::Visit(HexNumber& hex_number) {}
 void Visitor::Visit(IntegerVectorDataType& integer_vector_data_type) {}
 void Visitor::Visit(ModuleAnsiHeader& module_ansi_header) {}
 void Visitor::Visit(ModuleDeclaration& module_declaration) {}
