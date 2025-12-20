@@ -14,15 +14,25 @@ namespace ast = svs::sv2017::ast;
 // Returns yytext as a string
 std::string text() { return yytext; }
 
+#define YY_USER_ACTION loc.columns(yyleng);
+
 %}
 
 %option noyywrap nounput noinput batch debug
 
-%{
+    /* A.8.7 Numbers */
 
-#define YY_USER_ACTION loc.columns(yyleng);
+fixed_point_number ({unsigned_number}\.{unsigned_number})
+unsigned_number    ({decimal_digit}({decimal_digit}|_)*)
+hex_value          ({hex_digit}({hex_digit}|_)*)
+decimal_digit      ([0-9])
+hex_digit          ({x_digit}|{z_digit}|[0-9a-fA-F])
+x_digit            ([xX])
+z_digit            ([zZ?])
 
-%}
+    /* A.9.4 White space */
+
+white_space ([ \t\r\n<<EOF>>])
 
 %%
 
@@ -55,59 +65,42 @@ loc.step();
 
     /* Time literals */
 
-[0-9][0-9_]*s {
+({unsigned_number}|{fixed_point_number})s {
   std::string value = text().substr(0, text().length() - 1);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kSeconds), loc);
+  auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kSeconds);
+  return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
-[0-9][0-9_]*\.[0-9][0-9_]*s {
-  std::string value = text().substr(0, text().length() - 1);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kSeconds), loc);
-}
-[0-9][0-9_]*ms {
+({unsigned_number}|{fixed_point_number})ms {
   std::string value = text().substr(0, text().length() - 2);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kMilliseconds), loc);
+  auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kMilliseconds);
+  return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
-[0-9][0-9_]*\.[0-9][0-9_]*ms {
+({unsigned_number}|{fixed_point_number})us {
   std::string value = text().substr(0, text().length() - 2);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kMilliseconds), loc);
+  auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kMicroseconds);
+  return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
-[0-9][0-9_]*us {
+({unsigned_number}|{fixed_point_number})ns {
   std::string value = text().substr(0, text().length() - 2);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kMicroseconds), loc);
+  auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kNanoseconds);
+  return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
-[0-9][0-9_]*\.[0-9][0-9_]*us {
+({unsigned_number}|{fixed_point_number})ps {
   std::string value = text().substr(0, text().length() - 2);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kMicroseconds), loc);
+  auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kPicoseconds);
+  return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
-[0-9][0-9_]*ns {
+({unsigned_number}|{fixed_point_number})fs {
   std::string value = text().substr(0, text().length() - 2);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kNanoseconds), loc);
-}
-[0-9][0-9_]*\.[0-9][0-9_]*ns {
-  std::string value = text().substr(0, text().length() - 2);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kNanoseconds), loc);
-}
-[0-9][0-9_]*ps {
-  std::string value = text().substr(0, text().length() - 2);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kPicoseconds), loc);
-}
-[0-9][0-9_]*\.[0-9][0-9_]*ps {
-  std::string value = text().substr(0, text().length() - 2);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kPicoseconds), loc);
-}
-[0-9][0-9_]*fs {
-  std::string value = text().substr(0, text().length() - 2);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kFemtoseconds), loc);
-}
-[0-9][0-9_]*\.[0-9][0-9_]*fs {
-  std::string value = text().substr(0, text().length() - 2);
-  return yy::parser::make_time_literal(std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kFemtoseconds), loc);
+  auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kFemtoseconds);
+  return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
 
     /* Numbers */
 
-\'[hH] {
-  return yy::parser::make_hex_number(std::make_unique<ast::HexNumber>(loc, ast::Signedness::kUnsigned), loc);
+\'[hH]{white_space}*{hex_value} {
+  auto hex_number = std::make_unique<ast::HexNumber>(loc, ast::Signedness::kUnsigned);
+  return yy::parser::make_hex_number(std::move(hex_number), loc);
 }
 
     /* Identifiers */
