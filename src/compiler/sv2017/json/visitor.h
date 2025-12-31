@@ -7,6 +7,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "compiler/sv2017/ast/hex_number.h"
 #include "compiler/sv2017/ast/visitor.h"
 #include "compiler/sv2017/location.hh"
 
@@ -18,6 +19,8 @@ class Visitor : public ast::Visitor {
   nlohmann::json Serialize(ast::Node& node);
 
   void Visit(ast::AnsiPortDeclaration& ansi_port_declaration) override;
+  void Visit(ast::Attribute& attribute) override;
+  void Visit(ast::HexNumber& hex_number) override;
   void Visit(ast::IntegerVectorDataType& integer_vector_data_type) override;
   void Visit(ast::ModuleAnsiHeader& module_ansi_header) override;
   void Visit(ast::ModuleDeclaration& module_declaration) override;

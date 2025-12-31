@@ -10,6 +10,7 @@
 #include "compiler/sv2017/ast/integer_vector_type.h"
 #include "compiler/sv2017/ast/lifetime.h"
 #include "compiler/sv2017/ast/port_direction.h"
+#include "compiler/sv2017/ast/signedness.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
 
 using Visitor = svs::sv2017::json::Visitor;
@@ -32,6 +33,34 @@ void Visitor::Visit(ast::AnsiPortDeclaration& ansi_port_declaration) {
   result_ = json;
 }
 
+void Visitor::Visit(ast::Attribute& attribute) {
+  nlohmann::json json;
+  AssignMetaTags(json, "attr_spec", attribute.location());
+
+  json["name"] = attribute.name();
+  if (attribute.value()) json["value"] = Serialize(*attribute.value());
+
+  result_ = json;
+}
+
+void Visitor::Visit(ast::HexNumber& hex_number) {
+  nlohmann::json json;
+  AssignMetaTags(json, "hex_number", hex_number.location());
+
+  if (hex_number.size().has_value()) json["size"] = hex_number.size().value();
+
+  switch (hex_number.signedness()) {
+    case ast::Signedness::kSigned:
+      json["signedness"] = "signed";
+    case ast::Signedness::kUnsigned:
+      json["signedness"] = "unsigned";
+  }
+
+  json["value"] = hex_number.value();
+
+  result_ = json;
+}
+
 void Visitor::Visit(ast::IntegerVectorDataType& integer_vector_data_type) {
   nlohmann::json json;
   AssignMetaTags(json, "integer_vector_data_type",
@@ -48,6 +77,14 @@ void Visitor::Visit(ast::ModuleAnsiHeader& module_ansi_header) {
   AssignMetaTags(json, "module_ansi_header", module_ansi_header.location());
 
   json["identifier"] = module_ansi_header.identifier();
+
+  const std::vector<std::unique_ptr<ast::Attribute>>& attributes =
+      module_ansi_header.attributes();
+  std::vector<nlohmann::json> attributes_json;
+  attributes_json.reserve(attributes.size());
+  for (const std::unique_ptr<ast::Attribute>& attribute : attributes)
+    attributes_json.push_back(Serialize(*attribute));
+  json["attributes"] = attributes_json;
 
   const std::optional<ast::Lifetime>& lifetime = module_ansi_header.lifetime();
   if (lifetime.has_value())

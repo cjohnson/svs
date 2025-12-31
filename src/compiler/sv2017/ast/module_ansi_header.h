@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
+#include "compiler/sv2017/ast/attribute.h"
 #include "compiler/sv2017/ast/lifetime.h"
 #include "compiler/sv2017/ast/module_header.h"
 #include "compiler/sv2017/location.hh"
@@ -20,12 +21,16 @@ class ModuleAnsiHeader : public ModuleHeader {
   // Constructs an ANSI-style module header.
   // Client passes the module identifier and module ports.
   ModuleAnsiHeader(const yy::location& location,
+                   std::vector<std::unique_ptr<Attribute>> attributes,
                    const std::optional<Lifetime>& lifetime,
                    const std::string& identifier,
                    std::vector<std::unique_ptr<AnsiPortDeclaration>> ports);
 
   // Accept the provided visitor.
   void Accept(Visitor& visitor) override;
+
+  // The attributes for the module.
+  const std::vector<std::unique_ptr<Attribute>>& attributes();
 
   // The lifetime of the module
   const std::optional<Lifetime>& lifetime();
@@ -34,6 +39,7 @@ class ModuleAnsiHeader : public ModuleHeader {
   const std::vector<std::unique_ptr<AnsiPortDeclaration>>& ports();
 
  private:
+  std::vector<std::unique_ptr<Attribute>> attributes_;
   std::optional<Lifetime> lifetime_;
   std::vector<std::unique_ptr<AnsiPortDeclaration>> ports_;
 };

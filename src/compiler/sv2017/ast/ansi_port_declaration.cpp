@@ -12,8 +12,8 @@ using AnsiPortDeclaration = svs::sv2017::ast::AnsiPortDeclaration;
 using VariablePortHeader = svs::sv2017::ast::VariablePortHeader;
 
 AnsiPortDeclaration::AnsiPortDeclaration(
-    const yy::location& location, std::unique_ptr<VariablePortHeader> header,
-    std::string identifier)
+    const yy::location& location,
+    std::unique_ptr<VariablePortHeader> header, std::string identifier)
     : Node(location),
       header_(std::move(header)),
       identifier_(std::move(identifier)) {}

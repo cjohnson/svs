@@ -115,11 +115,14 @@ loc.step();
 
     /* Additional operator tokens */
 
-,  return yy::parser::make_comma(loc);
-;  return yy::parser::make_semicolon(loc);
-\( return yy::parser::make_left_parenthesis(loc);
-\) return yy::parser::make_right_parenthesis(loc);
-\/ return yy::parser::make_forward_slash(loc);
+"(*" return yy::parser::make_attribute_instance_begin(loc);
+"*)" return yy::parser::make_attribute_instance_end(loc);
+,    return yy::parser::make_comma(loc);
+=    return yy::parser::make_equals(loc);
+;    return yy::parser::make_semicolon(loc);
+\(   return yy::parser::make_left_parenthesis(loc);
+\)   return yy::parser::make_right_parenthesis(loc);
+\/   return yy::parser::make_forward_slash(loc);
 
 <<EOF>> return yy::parser::make_YYEOF(loc);
 

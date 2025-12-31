@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "ast/ansi_port_declaration.h"
+#include "ast/attribute.h"
 #include "ast/data_type.h"
 #include "ast/description.h"
 #include "ast/hex_number.h"
@@ -113,6 +114,14 @@ namespace ast = svs::sv2017::ast;
 %token <std::string>                          hex_value
 %token <ast::Signedness>                      hex_base
 
+/* A.9.1 Attributes */
+
+%nterm <std::vector<std::unique_ptr<ast::Attribute>>> attribute_instance
+%nterm <std::vector<std::unique_ptr<ast::Attribute>>> attribute_instances
+%nterm <std::unique_ptr<ast::Attribute>>              attr_spec
+%nterm <std::vector<std::unique_ptr<ast::Attribute>>> attr_spec_cs
+%nterm <std::string>                                  attr_name
+
 /* A.9.3 Identifiers */
 
 %token <std::string> identifier
@@ -138,7 +147,10 @@ namespace ast = svs::sv2017::ast;
 
 /* Additional operator tokens */
 
+%token attribute_instance_begin
+%token attribute_instance_end
 %token comma
+%token equals
 %token forward_slash
 %token left_parenthesis
 %token right_parenthesis
@@ -175,10 +187,10 @@ module_declaration : module_ansi_header timeunits_declaration_opt endmodule
                      }
                    ;
 
-module_ansi_header : module_keyword lifetime_opt module_identifier list_of_port_declarations_opt semicolon
+module_ansi_header : attribute_instances module_keyword lifetime_opt module_identifier list_of_port_declarations_opt semicolon
                      {
-                       const yy::location location{ @1.begin, @5.end };
-                       $$ = std::make_unique<ast::ModuleAnsiHeader>(location, $2, std::move($3), std::move($4));
+                       const yy::location location{ @1.begin, @6.end };
+                       $$ = std::make_unique<ast::ModuleAnsiHeader>(location, std::move($1), $3, std::move($4), std::move($5));
                      }
                    ;
 
@@ -298,14 +310,20 @@ port_direction : input  { $$ = ast::PortDirection::kInput; }
 
 module_keyword : module | macromodule ;
 
+/* A.8.3 Expressions */
+
 constant_expression : constant_primary { $$ = std::move($1); }
                     ;
+
+/* A.8.4 Primaries */
 
 constant_primary : primary_literal { $$ = std::move($1); }
                  ;
 
 primary_literal : number { $$ = std::move($1); }
                 ;
+
+/* A.8.7 Numbers */
 
 number : integral_number { $$ = std::move($1); }
        ;
@@ -344,6 +362,46 @@ hex_number : hex_base hex_value
                $$ = std::make_unique<ast::HexNumber>(location, std::move($1), std::move($2), std::move($3));
              }
            ;
+
+/* A.9.1 Attributes */
+
+attribute_instance : attribute_instance_begin attr_spec_cs attribute_instance_end { $$ = std::move($2); }
+                   ;
+
+attribute_instances : /* empty */
+                      { $$ = std::vector<std::unique_ptr<ast::Attribute>>(); }
+                    | attribute_instances attribute_instance
+                      {
+                        for (std::unique_ptr<ast::Attribute>& attribute : $2)
+                          $1.push_back(std::move(attribute));
+                        $$ = std::move($1);
+                      }
+                    ;
+
+attr_spec : attr_name
+            { $$ = std::make_unique<ast::Attribute>(@1, std::move($1), nullptr); }
+          | attr_name equals constant_expression
+            {
+              const yy::location location{ @1.begin, @3.end };
+              $$ = std::make_unique<ast::Attribute>(location, std::move($1), std::move($3));
+            }
+          ;
+
+attr_spec_cs : attr_spec
+               {
+                 $$ = std::vector<std::unique_ptr<ast::Attribute>>();
+                 $$.push_back(std::move($1));
+               }
+             | attr_spec_cs comma attr_spec
+               {
+                 $1.push_back(std::move($3));
+                 $$ = std::move($1);
+               }
+             ;
+
+attr_name : identifier ;
+
+/* A.9.3 Identifiers */
 
 module_identifier : identifier ;
 
