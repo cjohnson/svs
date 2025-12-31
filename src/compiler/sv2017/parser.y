@@ -100,7 +100,11 @@ namespace ast = svs::sv2017::ast;
 
 /* A.8.7 Numbers */
 
-%token <std::unique_ptr<ast::HexNumber>> hex_number
+%nterm <std::unique_ptr<ast::IntegralNumber>> integral_number
+%nterm <std::unique_ptr<ast::HexNumber>>      hex_number
+%token <std::string>                          unsigned_number
+%token <std::string>                          hex_value
+%token <ast::Signedness>                      hex_base
 
 /* A.9.3 Identifiers */
 
@@ -286,6 +290,41 @@ port_direction : input  { $$ = ast::PortDirection::kInput; }
                ;
 
 module_keyword : module | macromodule ;
+
+integral_number : hex_number { $$ = std::move($1); }
+                ;
+
+hex_number : hex_base hex_value
+             {
+               const yy::location location{ @1.begin, @2.end };
+               $$ = std::make_unique<ast::HexNumber>(location, std::nullopt, std::move($1), std::move($2));
+             }
+           | unsigned_number hex_base hex_value
+             {
+               const yy::location location{ @1.begin, @3.end };
+               $$ = std::make_unique<ast::HexNumber>(location, std::move($1), std::move($2), std::move($3));
+             }
+           | hex_base unsigned_number
+             {
+               const yy::location location{ @1.begin, @2.end };
+               $$ = std::make_unique<ast::HexNumber>(location, std::nullopt, std::move($1), std::move($2));
+             }
+           | unsigned_number hex_base unsigned_number
+             {
+               const yy::location location{ @1.begin, @3.end };
+               $$ = std::make_unique<ast::HexNumber>(location, std::move($1), std::move($2), std::move($3));
+             }
+           | hex_base identifier
+             {
+               const yy::location location{ @1.begin, @2.end };
+               $$ = std::make_unique<ast::HexNumber>(location, std::nullopt, std::move($1), std::move($2));
+             }
+           | unsigned_number hex_base identifier
+             {
+               const yy::location location{ @1.begin, @3.end };
+               $$ = std::make_unique<ast::HexNumber>(location, std::move($1), std::move($2), std::move($3));
+             }
+           ;
 
 module_identifier : identifier ;
 

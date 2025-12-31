@@ -22,13 +22,13 @@ std::string text() { return yytext; }
 
     /* A.8.7 Numbers */
 
-fixed_point_number ({unsigned_number}\.{unsigned_number})
-unsigned_number    ({decimal_digit}({decimal_digit}|_)*)
-hex_value          ({hex_digit}({hex_digit}|_)*)
-decimal_digit      ([0-9])
-hex_digit          ({x_digit}|{z_digit}|[0-9a-fA-F])
-x_digit            ([xX])
-z_digit            ([zZ?])
+fixed_point_number       ({unsigned_number}\.{unsigned_number})
+unsigned_number          ({decimal_digit}({decimal_digit}|_)*)
+hex_value                ({decimal_digit}({hex_digit}|_)*)
+decimal_digit            ([0-9])
+hex_digit                ({x_digit}|{z_digit}|[0-9a-fA-F])
+x_digit                  ([xX])
+z_digit                  ([zZ?])
 
     /* A.9.4 White space */
 
@@ -66,46 +66,46 @@ loc.step();
     /* Time literals */
 
 ({unsigned_number}|{fixed_point_number})s {
-  std::string value = text().substr(0, text().length() - 1);
+  std::string value = text().substr(0, yyleng - 1);
   auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kSeconds);
   return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
 ({unsigned_number}|{fixed_point_number})ms {
-  std::string value = text().substr(0, text().length() - 2);
+  std::string value = text().substr(0, yyleng - 2);
   auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kMilliseconds);
   return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
 ({unsigned_number}|{fixed_point_number})us {
-  std::string value = text().substr(0, text().length() - 2);
+  std::string value = text().substr(0, yyleng - 2);
   auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kMicroseconds);
   return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
 ({unsigned_number}|{fixed_point_number})ns {
-  std::string value = text().substr(0, text().length() - 2);
+  std::string value = text().substr(0, yyleng - 2);
   auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kNanoseconds);
   return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
 ({unsigned_number}|{fixed_point_number})ps {
-  std::string value = text().substr(0, text().length() - 2);
+  std::string value = text().substr(0, yyleng - 2);
   auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kPicoseconds);
   return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
 ({unsigned_number}|{fixed_point_number})fs {
-  std::string value = text().substr(0, text().length() - 2);
+  std::string value = text().substr(0, yyleng - 2);
   auto time_literal = std::make_unique<ast::TimeLiteral>(loc, value, ast::TimeUnit::kFemtoseconds);
   return yy::parser::make_time_literal(std::move(time_literal), loc);
 }
 
     /* Numbers */
 
-\'[hH]{white_space}*{hex_value} {
-  auto hex_number = std::make_unique<ast::HexNumber>(loc, ast::Signedness::kUnsigned);
-  return yy::parser::make_hex_number(std::move(hex_number), loc);
-}
+{unsigned_number} return yy::parser::make_unsigned_number(text(), loc);
+{hex_value}       return yy::parser::make_hex_value(text(), loc);
+\'[hH]            return yy::parser::make_hex_base(ast::Signedness::kUnsigned, loc);
+\'[sS][hH]        return yy::parser::make_hex_base(ast::Signedness::kSigned, loc);
 
     /* Identifiers */
 
-[\\].+[\t\n <<EOF>>] {
+[\\].+{white_space} {
   std::string string(yytext);
   string = string.substr(1, string.length() - 2);
   return yy::parser::make_identifier(string, loc);
