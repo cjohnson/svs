@@ -94,12 +94,19 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::unique_ptr<ast::DataType>> variable_port_type
 %nterm <std::unique_ptr<ast::DataType>> var_data_type
 
+/* A.8.3 Expressions */
+
+%nterm <std::unique_ptr<ast::Expression>> constant_expression
+
 /* A.8.4 Primaries */
 
+%nterm <std::unique_ptr<ast::Expression>>  constant_primary
+%nterm <std::unique_ptr<ast::Expression>>  primary_literal
 %token <std::unique_ptr<ast::TimeLiteral>> time_literal
 
 /* A.8.7 Numbers */
 
+%nterm <std::unique_ptr<ast::Expression>>     number
 %nterm <std::unique_ptr<ast::IntegralNumber>> integral_number
 %nterm <std::unique_ptr<ast::HexNumber>>      hex_number
 %token <std::string>                          unsigned_number
@@ -290,6 +297,18 @@ port_direction : input  { $$ = ast::PortDirection::kInput; }
                ;
 
 module_keyword : module | macromodule ;
+
+constant_expression : constant_primary { $$ = std::move($1); }
+                    ;
+
+constant_primary : primary_literal { $$ = std::move($1); }
+                 ;
+
+primary_literal : number { $$ = std::move($1); }
+                ;
+
+number : integral_number { $$ = std::move($1); }
+       ;
 
 integral_number : hex_number { $$ = std::move($1); }
                 ;

@@ -13,4 +13,7 @@ IntegralNumber::IntegralNumber(const yy::location& location,
                                const std::optional<std::string>& size,
                                const Signedness signedness,
                                const std::string& value)
-    : Node(location), size_(size), signedness_(signedness), value_(value) {}
+    : Expression(location),
+      size_(size),
+      signedness_(signedness),
+      value_(value) {}

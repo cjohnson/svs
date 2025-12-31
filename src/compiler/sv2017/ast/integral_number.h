@@ -6,14 +6,14 @@
 #include <optional>
 #include <string>
 
-#include "compiler/sv2017/ast/node.h"
+#include "compiler/sv2017/ast/expression.h"
 #include "compiler/sv2017/ast/signedness.h"
 #include "compiler/sv2017/location.hh"
 
 namespace svs::sv2017::ast {
 
 // An integral number.
-class IntegralNumber : public Node {
+class IntegralNumber : public Expression {
  public:
   // Constructs a hex number with the provided location, optional size,
   // signedness, and value.
