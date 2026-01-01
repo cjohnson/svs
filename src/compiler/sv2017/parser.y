@@ -79,6 +79,13 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> ansi_port_declaration_cs
 %nterm <std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>> ansi_port_declaration_cs_opt
 
+/* A.1.4 Module items */
+
+%nterm module_common_item
+%nterm module_or_generate_item
+%nterm non_port_module_item
+%nterm non_port_module_items
+
 /* A.2 Declarations */
 
 /* A.2.1.3 Type declarations */
@@ -95,15 +102,29 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::unique_ptr<ast::DataType>> variable_port_type
 %nterm <std::unique_ptr<ast::DataType>> var_data_type
 
+/* A.6 Behavioral statements */
+
+/* A.6.1 Continuous assignment and net alias statements */
+
+%nterm continuous_assign
+%nterm list_of_net_assignments
+%nterm net_assignment
+
 /* A.8.3 Expressions */
 
 %nterm <std::unique_ptr<ast::Expression>> constant_expression
+%nterm <std::unique_ptr<ast::Expression>> expression
 
 /* A.8.4 Primaries */
 
 %nterm <std::unique_ptr<ast::Expression>>  constant_primary
+%nterm <std::unique_ptr<ast::Expression>>  primary
 %nterm <std::unique_ptr<ast::Expression>>  primary_literal
 %token <std::unique_ptr<ast::TimeLiteral>> time_literal
+
+/* A.8.5 Expression left-side values */
+
+%nterm <std::string> net_lvalue
 
 /* A.8.7 Numbers */
 
@@ -126,10 +147,13 @@ namespace ast = svs::sv2017::ast;
 
 %token <std::string> identifier
 %nterm <std::string> module_identifier
+%nterm <std::string> net_identifier
 %nterm <std::string> port_identifier
+%nterm <std::string> ps_or_hierarchical_net_identifier
 
 /* Annex B: Keywords */
 
+%token assign
 %token automatic
 %token bit
 %token endmodule
@@ -180,7 +204,7 @@ descriptions : /* empty */
                  $$ = std::move($1);
                }
 
-module_declaration : module_ansi_header timeunits_declaration_opt endmodule
+module_declaration : module_ansi_header timeunits_declaration_opt non_port_module_items endmodule
                      {
                        const yy::location location{ @1.begin, @3.end };
                        $$ = std::make_unique<ast::ModuleDeclaration>(location, std::move($1), std::move($2));
@@ -310,18 +334,56 @@ port_direction : input  { $$ = ast::PortDirection::kInput; }
 
 module_keyword : module | macromodule ;
 
+/* A.1.4 Module items */
+
+module_common_item : continuous_assign
+                   ;
+
+module_or_generate_item : attribute_instances module_common_item
+                        ;
+
+non_port_module_item : module_or_generate_item
+                     ;
+
+non_port_module_items : /* empty */
+                      | non_port_module_items non_port_module_item
+                      ;
+
+/* A.6.1 Continuous assignment and net alias statements */
+
+continuous_assign : assign list_of_net_assignments semicolon
+                  ;
+
+list_of_net_assignments : net_assignment
+                        | list_of_net_assignments comma net_assignment
+                        ;
+
+net_assignment : net_lvalue equals expression
+               ;
+
 /* A.8.3 Expressions */
 
 constant_expression : constant_primary { $$ = std::move($1); }
                     ;
+
+expression : primary { $$ = std::move($1); }
+           ;
 
 /* A.8.4 Primaries */
 
 constant_primary : primary_literal { $$ = std::move($1); }
                  ;
 
+primary : primary_literal { $$ = std::move($1); }
+        ;
+
 primary_literal : number { $$ = std::move($1); }
                 ;
+
+/* A.8.5 Expression left-side values */
+
+net_lvalue : ps_or_hierarchical_net_identifier { $$ = std::move($1); }
+           ;
 
 /* A.8.7 Numbers */
 
@@ -405,7 +467,11 @@ attr_name : identifier ;
 
 module_identifier : identifier ;
 
+net_identifier : identifier ;
+
 port_identifier : identifier ;
+
+ps_or_hierarchical_net_identifier : net_identifier ;
 
 %%
 

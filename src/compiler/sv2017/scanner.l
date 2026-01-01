@@ -48,6 +48,7 @@ loc.step();
 
     /* Annex B: Keywords */
 
+"assign"        return yy::parser::make_assign(loc);
 "automatic"     return yy::parser::make_automatic(loc);
 "bit"           return yy::parser::make_bit(loc);
 "endmodule"     return yy::parser::make_endmodule(loc);
