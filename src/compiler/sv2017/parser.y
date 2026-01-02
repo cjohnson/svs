@@ -21,6 +21,7 @@
 
 #include "ast/ansi_port_declaration.h"
 #include "ast/attribute.h"
+#include "ast/continuous_assign.h"
 #include "ast/data_type.h"
 #include "ast/description.h"
 #include "ast/hex_number.h"
@@ -82,10 +83,10 @@ namespace ast = svs::sv2017::ast;
 
 /* A.1.4 Module items */
 
-%nterm module_common_item
-%nterm module_or_generate_item
-%nterm non_port_module_item
-%nterm non_port_module_items
+%nterm <std::unique_ptr<ast::ContinuousAssign>>              module_common_item
+%nterm <std::unique_ptr<ast::ContinuousAssign>>              module_or_generate_item
+%nterm <std::unique_ptr<ast::ContinuousAssign>>              non_port_module_item
+%nterm <std::vector<std::unique_ptr<ast::ContinuousAssign>>> non_port_module_items
 
 /* A.2 Declarations */
 
@@ -107,9 +108,9 @@ namespace ast = svs::sv2017::ast;
 
 /* A.6.1 Continuous assignment and net alias statements */
 
-%nterm                                       continuous_assign
-%nterm                                       list_of_net_assignments
-%nterm <std::unique_ptr<ast::NetAssignment>> net_assignment
+%nterm <std::unique_ptr<ast::ContinuousAssign>>           continuous_assign
+%nterm <std::vector<std::unique_ptr<ast::NetAssignment>>> list_of_net_assignments
+%nterm <std::unique_ptr<ast::NetAssignment>>              net_assignment
 
 /* A.8.3 Expressions */
 
@@ -208,7 +209,8 @@ descriptions : /* empty */
 module_declaration : module_ansi_header timeunits_declaration_opt non_port_module_items endmodule
                      {
                        const yy::location location{ @1.begin, @3.end };
-                       $$ = std::make_unique<ast::ModuleDeclaration>(location, std::move($1), std::move($2));
+                       $$ = std::make_unique<ast::ModuleDeclaration>(
+                         location, std::move($1), std::move($2), std::move($3));
                      }
                    ;
 
@@ -337,26 +339,43 @@ module_keyword : module | macromodule ;
 
 /* A.1.4 Module items */
 
-module_common_item : continuous_assign
+module_common_item : continuous_assign { $$ = std::move($1); }
                    ;
 
-module_or_generate_item : attribute_instances module_common_item
+module_or_generate_item : attribute_instances module_common_item { $$ = std::move($2); }
                         ;
 
-non_port_module_item : module_or_generate_item
+non_port_module_item : module_or_generate_item { $$ = std::move($1); }
                      ;
 
 non_port_module_items : /* empty */
+                        { $$ = std::vector<std::unique_ptr<ast::ContinuousAssign>>(); }
                       | non_port_module_items non_port_module_item
+                        {
+                          $1.push_back(std::move($2));
+                          $$ = std::move($1);
+                        }
                       ;
 
 /* A.6.1 Continuous assignment and net alias statements */
 
 continuous_assign : assign list_of_net_assignments semicolon
+                    {
+                      const yy::location& location{ @1.begin, @3.end };
+                      $$ = std::make_unique<ast::ContinuousAssign>(location, std::move($2));
+                    }
                   ;
 
 list_of_net_assignments : net_assignment
+                          {
+                            $$ = std::vector<std::unique_ptr<ast::NetAssignment>>();
+                            $$.push_back(std::move($1));
+                          }
                         | list_of_net_assignments comma net_assignment
+                          {
+                            $1.push_back(std::move($3));
+                            $$ = std::move($1);
+                          }
                         ;
 
 net_assignment : net_lvalue equals expression

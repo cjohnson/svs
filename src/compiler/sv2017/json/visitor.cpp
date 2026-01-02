@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
+#include "compiler/sv2017/ast/continuous_assign.h"
 #include "compiler/sv2017/ast/integer_vector_type.h"
 #include "compiler/sv2017/ast/lifetime.h"
 #include "compiler/sv2017/ast/net_assignment.h"
@@ -40,6 +41,21 @@ void Visitor::Visit(ast::Attribute& attribute) {
 
   json["name"] = attribute.name();
   if (attribute.value()) json["value"] = Serialize(*attribute.value());
+
+  result_ = json;
+}
+
+void Visitor::Visit(ast::ContinuousAssign& continuous_assign) {
+  nlohmann::json json;
+  AssignMetaTags(json, "continuous_assign", continuous_assign.location());
+
+  std::vector<nlohmann::json> net_assignments_json;
+  net_assignments_json.reserve(continuous_assign.net_assignments().size());
+  for (const std::unique_ptr<ast::NetAssignment>& net_assignment :
+       continuous_assign.net_assignments())
+    net_assignments_json.push_back(Serialize(*net_assignment));
+
+  json["net_assignments"] = net_assignments_json;
 
   result_ = json;
 }
@@ -112,6 +128,13 @@ void Visitor::Visit(ast::ModuleDeclaration& module_declaration) {
       module_declaration.timeunits_declaration();
   if (timeunits_declaration)
     json["timeunits_declaration"] = Serialize(*timeunits_declaration);
+
+  std::vector<nlohmann::json> items_json;
+  items_json.reserve(module_declaration.items().size());
+  for (const std::unique_ptr<ast::ContinuousAssign>& continuous_assign :
+       module_declaration.items())
+    items_json.push_back(Serialize(*continuous_assign));
+  json["items"] = items_json;
 
   result_ = json;
 }

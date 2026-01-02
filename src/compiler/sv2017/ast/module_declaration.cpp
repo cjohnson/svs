@@ -4,7 +4,9 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
+#include "compiler/sv2017/ast/continuous_assign.h"
 #include "compiler/sv2017/ast/description.h"
 #include "compiler/sv2017/ast/module_header.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
@@ -14,13 +16,16 @@
 using ModuleDeclaration = svs::sv2017::ast::ModuleDeclaration;
 using ModuleHeader = svs::sv2017::ast::ModuleHeader;
 using TimeunitsDeclaration = svs::sv2017::ast::TimeunitsDeclaration;
+using ContinuousAssign = svs::sv2017::ast::ContinuousAssign;
 
 ModuleDeclaration::ModuleDeclaration(
     const yy::location& location, std::unique_ptr<ModuleHeader> header,
-    std::unique_ptr<TimeunitsDeclaration> timeunits_declaration)
+    std::unique_ptr<TimeunitsDeclaration> timeunits_declaration,
+    std::vector<std::unique_ptr<ContinuousAssign>> items)
     : Description(location),
       header_(std::move(header)),
-      timeunits_declaration_(std::move(timeunits_declaration)) {}
+      timeunits_declaration_(std::move(timeunits_declaration)),
+      items_(std::move(items)) {}
 
 void ModuleDeclaration::Accept(Visitor& visitor) { visitor.Visit(*this); }
 
