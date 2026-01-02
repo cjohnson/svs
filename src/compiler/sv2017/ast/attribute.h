@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Collin Johnson
 
-#ifndef SRC_COMPILER_SV2017_ATTRIBUTE_H_
-#define SRC_COMPILER_SV2017_ATTRIBUTE_H_
+#ifndef SRC_COMPILER_SV2017_AST_ATTRIBUTE_H_
+#define SRC_COMPILER_SV2017_AST_ATTRIBUTE_H_
 
 #include <memory>
 #include <string>
@@ -33,4 +33,4 @@ class Attribute : public Node {
 
 }  // namespace svs::sv2017::ast
 
-#endif  // SRC_COMPILER_SV2017_ATTRIBUTE_H_
+#endif  // SRC_COMPILER_SV2017_AST_ATTRIBUTE_H_

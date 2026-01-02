@@ -8,6 +8,7 @@
 #include <nlohmann/json.hpp>
 
 #include "compiler/sv2017/ast/hex_number.h"
+#include "compiler/sv2017/ast/net_assignment.h"
 #include "compiler/sv2017/ast/visitor.h"
 #include "compiler/sv2017/location.hh"
 
@@ -24,6 +25,7 @@ class Visitor : public ast::Visitor {
   void Visit(ast::IntegerVectorDataType& integer_vector_data_type) override;
   void Visit(ast::ModuleAnsiHeader& module_ansi_header) override;
   void Visit(ast::ModuleDeclaration& module_declaration) override;
+  void Visit(ast::NetAssignment& net_assignment) override;
   void Visit(ast::SourceText& source_text) override;
   void Visit(ast::TimeLiteral& time_literal) override;
   void Visit(ast::TimeunitsDeclaration& timeunits_declaration) override;

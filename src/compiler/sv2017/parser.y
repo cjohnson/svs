@@ -29,6 +29,7 @@
 #include "ast/lifetime.h"
 #include "ast/module_ansi_header.h"
 #include "ast/module_declaration.h"
+#include "ast/net_assignment.h"
 #include "ast/port_direction.h"
 #include "ast/source_text.h"
 #include "ast/time_literal.h"
@@ -106,9 +107,9 @@ namespace ast = svs::sv2017::ast;
 
 /* A.6.1 Continuous assignment and net alias statements */
 
-%nterm continuous_assign
-%nterm list_of_net_assignments
-%nterm net_assignment
+%nterm                                       continuous_assign
+%nterm                                       list_of_net_assignments
+%nterm <std::unique_ptr<ast::NetAssignment>> net_assignment
 
 /* A.8.3 Expressions */
 
@@ -359,6 +360,10 @@ list_of_net_assignments : net_assignment
                         ;
 
 net_assignment : net_lvalue equals expression
+                 {
+                   const yy::location location{ @1.begin, @3.end };
+                   $$ = std::make_unique<ast::NetAssignment>(location, std::move($1), std::move($3));
+                 }
                ;
 
 /* A.8.3 Expressions */

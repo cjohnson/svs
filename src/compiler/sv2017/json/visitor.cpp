@@ -9,6 +9,7 @@
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
 #include "compiler/sv2017/ast/integer_vector_type.h"
 #include "compiler/sv2017/ast/lifetime.h"
+#include "compiler/sv2017/ast/net_assignment.h"
 #include "compiler/sv2017/ast/port_direction.h"
 #include "compiler/sv2017/ast/signedness.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
@@ -111,6 +112,16 @@ void Visitor::Visit(ast::ModuleDeclaration& module_declaration) {
       module_declaration.timeunits_declaration();
   if (timeunits_declaration)
     json["timeunits_declaration"] = Serialize(*timeunits_declaration);
+
+  result_ = json;
+}
+
+void Visitor::Visit(ast::NetAssignment& net_assignment) {
+  nlohmann::json json;
+  AssignMetaTags(json, "net_assignment", net_assignment.location());
+
+  json["net_lvalue"] = net_assignment.net_lvalue();
+  json["expression"] = Serialize(*net_assignment.expression());
 
   result_ = json;
 }

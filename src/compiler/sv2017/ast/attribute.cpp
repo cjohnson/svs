@@ -2,6 +2,10 @@
 
 #include "compiler/sv2017/ast/attribute.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "compiler/sv2017/ast/node.h"
 #include "compiler/sv2017/ast/visitor.h"
 
