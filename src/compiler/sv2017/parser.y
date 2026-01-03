@@ -67,9 +67,9 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::unique_ptr<ast::ModuleDeclaration>>        module_declaration
 %nterm                                                  module_keyword
 %nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunits_declaration
+%nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunits_declaration_opt
 %nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunit_declaration
 %nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeprecision_declaration
-%nterm <std::unique_ptr<ast::TimeunitsDeclaration>>     timeunits_declaration_opt
 
 /* A.1.3 Module parameters and ports */
 
@@ -191,6 +191,10 @@ namespace ast = svs::sv2017::ast;
 start : source_text { prs.result_ = std::move($1); }
       ;
 
+/* A.1 Source text */
+
+/* A.1.2 SystemVerilog source text */
+
 source_text : timeunits_declaration_opt descriptions
               {
                 const yy::location location{ @1.begin, @2.end }; 
@@ -208,6 +212,14 @@ descriptions : /* empty */
                  $$ = std::move($1);
                }
 
+module_ansi_header : attribute_instances module_keyword lifetime_opt module_identifier
+                     list_of_port_declarations_opt semicolon
+                     {
+                       const yy::location location{ @1.begin, @6.end };
+                       $$ = std::make_unique<ast::ModuleAnsiHeader>(location, std::move($1), $3, std::move($4), std::move($5));
+                     }
+                   ;
+
 module_declaration : module_ansi_header timeunits_declaration_opt non_port_module_items endmodule
                      {
                        const yy::location location{ @1.begin, @3.end };
@@ -216,16 +228,17 @@ module_declaration : module_ansi_header timeunits_declaration_opt non_port_modul
                      }
                    ;
 
-module_ansi_header : attribute_instances module_keyword lifetime_opt module_identifier list_of_port_declarations_opt semicolon
-                     {
-                       const yy::location location{ @1.begin, @6.end };
-                       $$ = std::make_unique<ast::ModuleAnsiHeader>(location, std::move($1), $3, std::move($4), std::move($5));
-                     }
-                   ;
+module_keyword : module | macromodule ;
 
 timeunits_declaration : timeunit_declaration      { $$ = std::move($1); }
                       | timeprecision_declaration { $$ = std::move($1); }
                       ;
+
+timeunits_declaration_opt : /* empty */
+                            { $$ = nullptr; }
+                          | timeunits_declaration
+                            { $$ = std::move($1); }
+                          ;
 
 timeunit_declaration : timeunit time_literal semicolon
                        {
@@ -256,10 +269,10 @@ timeprecision_declaration : timeprecision time_literal semicolon
                             }
                           ;
 
-timeunits_declaration_opt : /* empty */
-                            { $$ = nullptr; }
-                          | timeunits_declaration
-                            { $$ = std::move($1); }
+/* A.1.3 Module parameters and ports */
+
+list_of_port_declarations : left_parenthesis ansi_port_declaration_cs_opt right_parenthesis
+                            { $$ = std::move($2); }
                           ;
 
 list_of_port_declarations_opt : /* empty */
@@ -268,23 +281,29 @@ list_of_port_declarations_opt : /* empty */
                                 { $$ = std::move($1); }
                               ;
 
-list_of_port_declarations : left_parenthesis ansi_port_declaration_cs_opt right_parenthesis
-                            { $$ = std::move($2); }
-                          ;
+port_direction : input  { $$ = ast::PortDirection::kInput; }
+               | output { $$ = ast::PortDirection::kOutput; }
+               | inout  { $$ = ast::PortDirection::kInout; }
+               | ref    { $$ = ast::PortDirection::kRef; }
+               ;
 
-ansi_port_declaration_cs_opt : /* empty */
-                               { $$ = std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>(); }
-                             | ansi_port_declaration_cs
-                               { $$ = std::move($1); }
-                             ;
+port_direction_opt : /* empty */    { $$ = std::nullopt; }
+                   | port_direction { $$ = $1; }
+                   ;
 
-lifetime : static_   { $$ = ast::Lifetime::kStatic; }
-         | automatic { $$ = ast::Lifetime::kAutomatic; }
-         ;
+variable_port_header : port_direction_opt variable_port_type
+                       {
+                         const yy::location location{ @1.begin, @2.end };
+                         $$ = std::make_unique<ast::VariablePortHeader>(location, std::move($1), std::move($2));
+                       }
+                     ;
 
-lifetime_opt : /* empty */ { $$ = std::nullopt; }
-             | lifetime    { $$ = $1; }
-             ;
+ansi_port_declaration : variable_port_header port_identifier
+                        {
+                          const yy::location location{ @1.begin, @2.end };
+                          $$ = std::make_unique<ast::AnsiPortDeclaration>(location, std::move($1), std::move($2));
+                        }
+                      ;
 
 ansi_port_declaration_cs : ansi_port_declaration
                            {
@@ -298,46 +317,11 @@ ansi_port_declaration_cs : ansi_port_declaration
                            }
                          ;
 
-ansi_port_declaration : variable_port_header port_identifier
-                        {
-                          const yy::location location{ @1.begin, @2.end };
-                          $$ = std::make_unique<ast::AnsiPortDeclaration>(location, std::move($1), std::move($2));
-                        }
-                      ;
-
-variable_port_header : port_direction_opt variable_port_type
-                       {
-                         const yy::location location{ @1.begin, @2.end };
-                         $$ = std::make_unique<ast::VariablePortHeader>(location, std::move($1), std::move($2));
-                       }
-                     ;
-
-variable_port_type : var_data_type { $$ = std::move($1); }
-                   ;
-
-var_data_type : data_type { $$ = std::move($1); }
-              ;
-
-data_type : integer_vector_type
-            { $$ = std::make_unique<ast::IntegerVectorDataType>(@1, std::move($1)); }
-          ;
-
-integer_vector_type : bit   { $$ = ast::IntegerVectorType::kBit; }
-                    | logic { $$ = ast::IntegerVectorType::kLogic; }
-                    | reg   { $$ = ast::IntegerVectorType::kReg; }
-                    ;
-
-port_direction_opt : /* empty */    { $$ = std::nullopt; }
-                   | port_direction { $$ = $1; }
-                   ;
-
-port_direction : input  { $$ = ast::PortDirection::kInput; }
-               | output { $$ = ast::PortDirection::kOutput; }
-               | inout  { $$ = ast::PortDirection::kInout; }
-               | ref    { $$ = ast::PortDirection::kRef; }
-               ;
-
-module_keyword : module | macromodule ;
+ansi_port_declaration_cs_opt : /* empty */
+                               { $$ = std::vector<std::unique_ptr<ast::AnsiPortDeclaration>>(); }
+                             | ansi_port_declaration_cs
+                               { $$ = std::move($1); }
+                             ;
 
 /* A.1.4 Module items */
 
@@ -358,6 +342,39 @@ non_port_module_items : /* empty */
                           $$ = std::move($1);
                         }
                       ;
+
+/* A.2 Declarations */
+
+/* A.2.1.3 Type declarations */
+
+lifetime : static_   { $$ = ast::Lifetime::kStatic; }
+         | automatic { $$ = ast::Lifetime::kAutomatic; }
+         ;
+
+lifetime_opt : /* empty */ { $$ = std::nullopt; }
+             | lifetime    { $$ = $1; }
+             ;
+
+/* A.2.2 Declaration data types */
+
+/* A.2.2.1 Net and variable types */
+
+data_type : integer_vector_type
+            { $$ = std::make_unique<ast::IntegerVectorDataType>(@1, std::move($1)); }
+          ;
+
+integer_vector_type : bit   { $$ = ast::IntegerVectorType::kBit; }
+                    | logic { $$ = ast::IntegerVectorType::kLogic; }
+                    | reg   { $$ = ast::IntegerVectorType::kReg; }
+                    ;
+
+variable_port_type : var_data_type { $$ = std::move($1); }
+                   ;
+
+var_data_type : data_type { $$ = std::move($1); }
+              ;
+
+/* A.6 Behavioral statements */
 
 /* A.6.1 Continuous assignment and net alias statements */
 
