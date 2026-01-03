@@ -6,6 +6,7 @@
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
 #include "compiler/sv2017/ast/attribute.h"
 #include "compiler/sv2017/ast/continuous_assign.h"
+#include "compiler/sv2017/ast/decimal_number.h"
 #include "compiler/sv2017/ast/hex_number.h"
 #include "compiler/sv2017/ast/integer_vector_data_type.h"
 #include "compiler/sv2017/ast/module_ansi_header.h"
@@ -24,6 +25,7 @@ class Visitor {
   virtual void Visit(AnsiPortDeclaration& ansi_port_declaration) = 0;
   virtual void Visit(Attribute& attribute) = 0;
   virtual void Visit(ContinuousAssign& continuous_assign) = 0;
+  virtual void Visit(DecimalNumber& decimal_number) = 0;
   virtual void Visit(HexNumber& hex_number) = 0;
   virtual void Visit(IntegerVectorDataType& integer_vector_data_type) = 0;
   virtual void Visit(ModuleAnsiHeader& module_ansi_header) = 0;

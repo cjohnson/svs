@@ -23,6 +23,7 @@
 #include "ast/attribute.h"
 #include "ast/continuous_assign.h"
 #include "ast/data_type.h"
+#include "ast/decimal_number.h"
 #include "ast/description.h"
 #include "ast/hex_number.h"
 #include "ast/integer_vector_data_type.h"
@@ -132,6 +133,7 @@ namespace ast = svs::sv2017::ast;
 
 %nterm <std::unique_ptr<ast::Expression>>     number
 %nterm <std::unique_ptr<ast::IntegralNumber>> integral_number
+%nterm <std::unique_ptr<ast::DecimalNumber>>  decimal_number
 %nterm <std::unique_ptr<ast::HexNumber>>      hex_number
 %token <std::string>                          unsigned_number
 %token <std::string>                          hex_value
@@ -414,8 +416,16 @@ net_lvalue : ps_or_hierarchical_net_identifier { $$ = std::move($1); }
 number : integral_number { $$ = std::move($1); }
        ;
 
-integral_number : hex_number { $$ = std::move($1); }
+integral_number : hex_number     { $$ = std::move($1); }
+                | decimal_number { $$ = std::move($1); }
                 ;
+
+decimal_number : unsigned_number
+                 {
+                   $$ = std::make_unique<ast::DecimalNumber>(
+                     @1, std::nullopt, ast::Signedness::kSigned, std::move($1));
+                 }
+               ;
 
 hex_number : hex_base hex_value
              {

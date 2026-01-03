@@ -8,6 +8,7 @@
 
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
 #include "compiler/sv2017/ast/continuous_assign.h"
+#include "compiler/sv2017/ast/decimal_number.h"
 #include "compiler/sv2017/ast/integer_vector_type.h"
 #include "compiler/sv2017/ast/lifetime.h"
 #include "compiler/sv2017/ast/net_assignment.h"
@@ -22,6 +23,18 @@ nlohmann::json Visitor::Serialize(ast::Node& node) {
   node.Accept(*this);
 
   return result_;
+}
+
+nlohmann::json Visitor::Serialize(const ast::Signedness& signedness) {
+  switch (signedness) {
+    case ast::Signedness::kSigned:
+      return "signed";
+    case ast::Signedness::kUnsigned:
+      return "unsigned";
+  }
+
+  assert(false && "Provided with an invalid signedness.");
+  return {};
 }
 
 void Visitor::Visit(ast::AnsiPortDeclaration& ansi_port_declaration) {
@@ -60,19 +73,26 @@ void Visitor::Visit(ast::ContinuousAssign& continuous_assign) {
   result_ = json;
 }
 
+void Visitor::Visit(ast::DecimalNumber& decimal_number) {
+  nlohmann::json json;
+  AssignMetaTags(json, "decimal_number", decimal_number.location());
+
+  if (decimal_number.size().has_value())
+    json["size"] = decimal_number.size().value();
+
+  json["signedness"] = Serialize(decimal_number.signedness());
+  json["value"] = decimal_number.value();
+
+  result_ = json;
+}
+
 void Visitor::Visit(ast::HexNumber& hex_number) {
   nlohmann::json json;
   AssignMetaTags(json, "hex_number", hex_number.location());
 
   if (hex_number.size().has_value()) json["size"] = hex_number.size().value();
 
-  switch (hex_number.signedness()) {
-    case ast::Signedness::kSigned:
-      json["signedness"] = "signed";
-    case ast::Signedness::kUnsigned:
-      json["signedness"] = "unsigned";
-  }
-
+  json["signedness"] = Serialize(hex_number.signedness());
   json["value"] = hex_number.value();
 
   result_ = json;

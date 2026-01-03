@@ -8,8 +8,10 @@
 #include <nlohmann/json.hpp>
 
 #include "compiler/sv2017/ast/continuous_assign.h"
+#include "compiler/sv2017/ast/decimal_number.h"
 #include "compiler/sv2017/ast/hex_number.h"
 #include "compiler/sv2017/ast/net_assignment.h"
+#include "compiler/sv2017/ast/signedness.h"
 #include "compiler/sv2017/ast/visitor.h"
 #include "compiler/sv2017/location.hh"
 
@@ -20,9 +22,13 @@ class Visitor : public ast::Visitor {
   // Serializes the provided node into json.
   nlohmann::json Serialize(ast::Node& node);
 
+  // Serializes the provided signedness into json.
+  nlohmann::json Serialize(const ast::Signedness& signedness);
+
   void Visit(ast::AnsiPortDeclaration& ansi_port_declaration) override;
   void Visit(ast::Attribute& attribute) override;
   void Visit(ast::ContinuousAssign& continuous_assign) override;
+  void Visit(ast::DecimalNumber& decimal_number) override;
   void Visit(ast::HexNumber& hex_number) override;
   void Visit(ast::IntegerVectorDataType& integer_vector_data_type) override;
   void Visit(ast::ModuleAnsiHeader& module_ansi_header) override;

@@ -1,3 +1,6 @@
-module m(input logic x);
-  assign x = 'h2;
+module m(output logic x);
+  assign x = 2;
+endmodule
+
+module tb;
 endmodule
