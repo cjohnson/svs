@@ -6,9 +6,9 @@
 #include <memory>
 #include <vector>
 
-#include "compiler/sv2017/ast/continuous_assign.h"
 #include "compiler/sv2017/ast/description.h"
 #include "compiler/sv2017/ast/module_header.h"
+#include "compiler/sv2017/ast/module_item.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
 #include "compiler/sv2017/location.hh"
 
@@ -22,7 +22,7 @@ class ModuleDeclaration : public Description {
   ModuleDeclaration(const yy::location& location,
                     std::unique_ptr<ModuleHeader> header,
                     std::unique_ptr<TimeunitsDeclaration> timeunits_declaration,
-                    std::vector<std::unique_ptr<ContinuousAssign>> items);
+                    std::vector<std::unique_ptr<ModuleItem>> items);
 
   // Accept the provided visitor.
   void Accept(Visitor& visitor) override;
@@ -34,14 +34,14 @@ class ModuleDeclaration : public Description {
   const std::unique_ptr<TimeunitsDeclaration>& timeunits_declaration();
 
   // The items
-  inline const std::vector<std::unique_ptr<ContinuousAssign>>& items() {
+  inline const std::vector<std::unique_ptr<ModuleItem>>& items() {
     return items_;
   }
 
  private:
   std::unique_ptr<ModuleHeader> header_;
   std::unique_ptr<TimeunitsDeclaration> timeunits_declaration_;
-  std::vector<std::unique_ptr<ContinuousAssign>> items_;
+  std::vector<std::unique_ptr<ModuleItem>> items_;
 };
 
 }  // namespace svs::sv2017::ast

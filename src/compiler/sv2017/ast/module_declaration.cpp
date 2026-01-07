@@ -6,9 +6,9 @@
 #include <utility>
 #include <vector>
 
-#include "compiler/sv2017/ast/continuous_assign.h"
 #include "compiler/sv2017/ast/description.h"
 #include "compiler/sv2017/ast/module_header.h"
+#include "compiler/sv2017/ast/module_item.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
 #include "compiler/sv2017/ast/visitor.h"
 #include "compiler/sv2017/location.hh"
@@ -21,7 +21,7 @@ using ContinuousAssign = svs::sv2017::ast::ContinuousAssign;
 ModuleDeclaration::ModuleDeclaration(
     const yy::location& location, std::unique_ptr<ModuleHeader> header,
     std::unique_ptr<TimeunitsDeclaration> timeunits_declaration,
-    std::vector<std::unique_ptr<ContinuousAssign>> items)
+    std::vector<std::unique_ptr<ModuleItem>> items)
     : Description(location),
       header_(std::move(header)),
       timeunits_declaration_(std::move(timeunits_declaration)),

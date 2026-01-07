@@ -52,6 +52,7 @@ loc.step();
 "automatic"     return yy::parser::make_automatic(loc);
 "bit"           return yy::parser::make_bit(loc);
 "endmodule"     return yy::parser::make_endmodule(loc);
+"initial"       return yy::parser::make_initial(loc);
 "inout"         return yy::parser::make_inout(loc);
 "input"         return yy::parser::make_input(loc);
 "logic"         return yy::parser::make_logic(loc);

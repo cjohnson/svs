@@ -9,6 +9,7 @@
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
 #include "compiler/sv2017/ast/continuous_assign.h"
 #include "compiler/sv2017/ast/decimal_number.h"
+#include "compiler/sv2017/ast/initial_construct.h"
 #include "compiler/sv2017/ast/integer_vector_type.h"
 #include "compiler/sv2017/ast/lifetime.h"
 #include "compiler/sv2017/ast/net_assignment.h"
@@ -98,6 +99,13 @@ void Visitor::Visit(ast::HexNumber& hex_number) {
   result_ = json;
 }
 
+void Visitor::Visit(ast::InitialConstruct& initial_construct) {
+  nlohmann::json json;
+  AssignMetaTags(json, "initial_construct", initial_construct.location());
+
+  result_ = json;
+}
+
 void Visitor::Visit(ast::IntegerVectorDataType& integer_vector_data_type) {
   nlohmann::json json;
   AssignMetaTags(json, "integer_vector_data_type",
@@ -151,9 +159,9 @@ void Visitor::Visit(ast::ModuleDeclaration& module_declaration) {
 
   std::vector<nlohmann::json> items_json;
   items_json.reserve(module_declaration.items().size());
-  for (const std::unique_ptr<ast::ContinuousAssign>& continuous_assign :
+  for (const std::unique_ptr<ast::ModuleItem>& module_item :
        module_declaration.items())
-    items_json.push_back(Serialize(*continuous_assign));
+    items_json.push_back(Serialize(*module_item));
   json["items"] = items_json;
 
   result_ = json;

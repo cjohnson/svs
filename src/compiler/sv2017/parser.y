@@ -26,6 +26,7 @@
 #include "ast/decimal_number.h"
 #include "ast/description.h"
 #include "ast/hex_number.h"
+#include "ast/initial_construct.h"
 #include "ast/integer_vector_data_type.h"
 #include "ast/integer_vector_type.h"
 #include "ast/lifetime.h"
@@ -84,10 +85,10 @@ namespace ast = svs::sv2017::ast;
 
 /* A.1.4 Module items */
 
-%nterm <std::unique_ptr<ast::ContinuousAssign>>              module_common_item
-%nterm <std::unique_ptr<ast::ContinuousAssign>>              module_or_generate_item
-%nterm <std::unique_ptr<ast::ContinuousAssign>>              non_port_module_item
-%nterm <std::vector<std::unique_ptr<ast::ContinuousAssign>>> non_port_module_items
+%nterm <std::unique_ptr<ast::ModuleItem>>              module_common_item
+%nterm <std::unique_ptr<ast::ModuleItem>>              module_or_generate_item
+%nterm <std::unique_ptr<ast::ModuleItem>>              non_port_module_item
+%nterm <std::vector<std::unique_ptr<ast::ModuleItem>>> non_port_module_items
 
 /* A.2 Declarations */
 
@@ -112,6 +113,10 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::unique_ptr<ast::ContinuousAssign>>           continuous_assign
 %nterm <std::vector<std::unique_ptr<ast::NetAssignment>>> list_of_net_assignments
 %nterm <std::unique_ptr<ast::NetAssignment>>              net_assignment
+
+/* A.6.2 Procedural blocks and assignments */
+
+%nterm <std::unique_ptr<ast::InitialConstruct>> initial_construct
 
 /* A.8.3 Expressions */
 
@@ -161,6 +166,7 @@ namespace ast = svs::sv2017::ast;
 %token automatic
 %token bit
 %token endmodule
+%token initial
 %token inout
 %token input
 %token logic
@@ -326,6 +332,7 @@ ansi_port_declaration_cs_opt : /* empty */
 /* A.1.4 Module items */
 
 module_common_item : continuous_assign { $$ = std::move($1); }
+                   | initial_construct { $$ = std::move($1); }
                    ;
 
 module_or_generate_item : attribute_instances module_common_item { $$ = std::move($2); }
@@ -335,7 +342,7 @@ non_port_module_item : module_or_generate_item { $$ = std::move($1); }
                      ;
 
 non_port_module_items : /* empty */
-                        { $$ = std::vector<std::unique_ptr<ast::ContinuousAssign>>(); }
+                        { $$ = std::vector<std::unique_ptr<ast::ModuleItem>>(); }
                       | non_port_module_items non_port_module_item
                         {
                           $1.push_back(std::move($2));
@@ -403,6 +410,11 @@ net_assignment : net_lvalue equals expression
                    $$ = std::make_unique<ast::NetAssignment>(location, std::move($1), std::move($3));
                  }
                ;
+
+/* A.6.2 Procedural blocks and assignments */
+
+initial_construct : initial { $$ = std::make_unique<ast::InitialConstruct>(@1); }
+                  ;
 
 /* A.8.3 Expressions */
 

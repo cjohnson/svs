@@ -5,14 +5,14 @@
 
 #include <vector>
 
+#include "compiler/sv2017/ast/module_item.h"
 #include "compiler/sv2017/ast/net_assignment.h"
-#include "compiler/sv2017/ast/node.h"
 #include "compiler/sv2017/location.hh"
 
 namespace svs::sv2017::ast {
 
 // A list of continuous assignments.
-class ContinuousAssign : public Node {
+class ContinuousAssign : public ModuleItem {
  public:
   // Constructs a continuous assignment with the provided location and net
   // assignments.

@@ -8,6 +8,7 @@
 #include "compiler/sv2017/ast/continuous_assign.h"
 #include "compiler/sv2017/ast/decimal_number.h"
 #include "compiler/sv2017/ast/hex_number.h"
+#include "compiler/sv2017/ast/initial_construct.h"
 #include "compiler/sv2017/ast/integer_vector_data_type.h"
 #include "compiler/sv2017/ast/module_ansi_header.h"
 #include "compiler/sv2017/ast/module_declaration.h"
@@ -27,6 +28,7 @@ class Visitor {
   virtual void Visit(ContinuousAssign& continuous_assign) = 0;
   virtual void Visit(DecimalNumber& decimal_number) = 0;
   virtual void Visit(HexNumber& hex_number) = 0;
+  virtual void Visit(InitialConstruct& initial_construct) = 0;
   virtual void Visit(IntegerVectorDataType& integer_vector_data_type) = 0;
   virtual void Visit(ModuleAnsiHeader& module_ansi_header) = 0;
   virtual void Visit(ModuleDeclaration& module_declaration) = 0;
