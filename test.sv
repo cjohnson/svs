@@ -3,4 +3,9 @@ module m(output logic x);
 endmodule
 
 module tb;
+  initial begin
+    begin
+    end
+    begin end
+  end
 endmodule

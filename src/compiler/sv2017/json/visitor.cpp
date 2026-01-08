@@ -103,6 +103,9 @@ void Visitor::Visit(ast::InitialConstruct& initial_construct) {
   nlohmann::json json;
   AssignMetaTags(json, "initial_construct", initial_construct.location());
 
+  if (initial_construct.statement())
+    json["statement"] = Serialize(*initial_construct.statement());
+
   result_ = json;
 }
 
@@ -173,6 +176,21 @@ void Visitor::Visit(ast::NetAssignment& net_assignment) {
 
   json["net_lvalue"] = net_assignment.net_lvalue();
   json["expression"] = Serialize(*net_assignment.expression());
+
+  result_ = json;
+}
+
+void Visitor::Visit(ast::SeqBlock& seq_block) {
+  nlohmann::json json;
+  AssignMetaTags(json, "seq_block", seq_block.location());
+
+  std::vector<nlohmann::json> statements_json;
+  statements_json.reserve(seq_block.statements().size());
+  for (const std::unique_ptr<ast::Statement>& statement :
+       seq_block.statements())
+    statements_json.push_back(Serialize(*statement));
+
+  json["statements"] = statements_json;
 
   result_ = json;
 }

@@ -47,7 +47,9 @@ target_sources(sv2017_ast
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/net_assignment.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/node.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/port_direction.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/seq_block.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/source_text.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/statement.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/time_literal.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/time_unit.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/timeunits_declaration.cpp

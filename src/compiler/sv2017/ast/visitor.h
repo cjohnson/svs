@@ -13,6 +13,7 @@
 #include "compiler/sv2017/ast/module_ansi_header.h"
 #include "compiler/sv2017/ast/module_declaration.h"
 #include "compiler/sv2017/ast/net_assignment.h"
+#include "compiler/sv2017/ast/seq_block.h"
 #include "compiler/sv2017/ast/source_text.h"
 #include "compiler/sv2017/ast/time_literal.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
@@ -33,6 +34,7 @@ class Visitor {
   virtual void Visit(ModuleAnsiHeader& module_ansi_header) = 0;
   virtual void Visit(ModuleDeclaration& module_declaration) = 0;
   virtual void Visit(NetAssignment& net_assignment) = 0;
+  virtual void Visit(SeqBlock& seq_block) = 0;
   virtual void Visit(SourceText& source_text) = 0;
   virtual void Visit(TimeLiteral& time_literal) = 0;
   virtual void Visit(TimeunitsDeclaration& timeunits_declaration) = 0;

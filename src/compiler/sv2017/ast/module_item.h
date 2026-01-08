@@ -12,7 +12,7 @@ namespace svs::sv2017::ast {
 class ModuleItem : public Node {
  public:
   // Constructs a module item with the provided location.
-  ModuleItem(const yy::location& location);
+  explicit ModuleItem(const yy::location& location);
 };
 
 }  // namespace svs::sv2017::ast

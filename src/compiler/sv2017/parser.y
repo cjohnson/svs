@@ -34,7 +34,9 @@
 #include "ast/module_declaration.h"
 #include "ast/net_assignment.h"
 #include "ast/port_direction.h"
+#include "ast/seq_block.h"
 #include "ast/source_text.h"
+#include "ast/statement.h"
 #include "ast/time_literal.h"
 #include "ast/timeunits_declaration.h"
 #include "ast/variable_port_header.h"
@@ -118,6 +120,17 @@ namespace ast = svs::sv2017::ast;
 
 %nterm <std::unique_ptr<ast::InitialConstruct>> initial_construct
 
+/* A.6.3 Parallel and sequential blocks */
+
+%nterm <std::unique_ptr<ast::SeqBlock>> seq_block
+
+/* A.6.4 Statements */
+
+%nterm <std::unique_ptr<ast::Statement>>              statement_or_null
+%nterm <std::vector<std::unique_ptr<ast::Statement>>> statement_or_nulls
+%nterm <std::unique_ptr<ast::Statement>>              statement
+%nterm <std::unique_ptr<ast::Statement>>              statement_item
+
 /* A.8.3 Expressions */
 
 %nterm <std::unique_ptr<ast::Expression>> constant_expression
@@ -164,7 +177,9 @@ namespace ast = svs::sv2017::ast;
 
 %token assign
 %token automatic
+%token begin
 %token bit
+%token end
 %token endmodule
 %token initial
 %token inout
@@ -413,8 +428,41 @@ net_assignment : net_lvalue equals expression
 
 /* A.6.2 Procedural blocks and assignments */
 
-initial_construct : initial { $$ = std::make_unique<ast::InitialConstruct>(@1); }
+initial_construct : initial statement_or_null
+                    {
+                      const yy::location location{ @1.begin, @2.end };
+                      $$ = std::make_unique<ast::InitialConstruct>(location, std::move($2));
+                    }
                   ;
+
+/* A.6.3 Parallel and sequential blocks */
+
+seq_block : begin statement_or_nulls end
+            {
+              const yy::location location{ @1.begin, @3.end };
+              $$ = std::make_unique<ast::SeqBlock>(location, std::move($2));
+            }
+          ;
+
+/* A.6.4 Statements */
+
+statement_or_null : statement { $$ = std::move($1); }
+                  ;
+
+statement_or_nulls : /* empty */
+                     { $$ = std::vector<std::unique_ptr<ast::Statement>>(); }
+                   | statement_or_nulls statement_or_null
+                     {
+                       $1.push_back(std::move($2));
+                       $$ = std::move($1);
+                     }
+                   ;
+
+statement : statement_item { $$ = std::move($1); }
+          ;
+
+statement_item : seq_block { $$ = std::move($1); }
+               ;
 
 /* A.8.3 Expressions */
 
