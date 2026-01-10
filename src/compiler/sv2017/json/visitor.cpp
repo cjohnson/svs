@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
+#include "compiler/sv2017/ast/blocking_assignment.h"
 #include "compiler/sv2017/ast/continuous_assign.h"
 #include "compiler/sv2017/ast/decimal_number.h"
 #include "compiler/sv2017/ast/initial_construct.h"
@@ -55,6 +56,16 @@ void Visitor::Visit(ast::Attribute& attribute) {
 
   json["name"] = attribute.name();
   if (attribute.value()) json["value"] = Serialize(*attribute.value());
+
+  result_ = json;
+}
+
+void Visitor::Visit(ast::BlockingAssignment& blocking_assignment) {
+  nlohmann::json json;
+  AssignMetaTags(json, "blocking_assignment", blocking_assignment.location());
+
+  json["variable_lvalue"] = blocking_assignment.variable_lvalue();
+  json["expression"] = Serialize(*blocking_assignment.expression());
 
   result_ = json;
 }

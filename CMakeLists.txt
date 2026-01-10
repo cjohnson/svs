@@ -29,6 +29,7 @@ target_sources(sv2017_ast
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/ansi_port_declaration.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/attribute.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/blocking_assignment.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/continuous_assign.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/data_type.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/decimal_number.cpp

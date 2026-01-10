@@ -21,6 +21,7 @@
 
 #include "ast/ansi_port_declaration.h"
 #include "ast/attribute.h"
+#include "ast/blocking_assignment.h"
 #include "ast/continuous_assign.h"
 #include "ast/data_type.h"
 #include "ast/decimal_number.h"
@@ -118,7 +119,8 @@ namespace ast = svs::sv2017::ast;
 
 /* A.6.2 Procedural blocks and assignments */
 
-%nterm <std::unique_ptr<ast::InitialConstruct>> initial_construct
+%nterm <std::unique_ptr<ast::InitialConstruct>>   initial_construct
+%nterm <std::unique_ptr<ast::BlockingAssignment>> blocking_assignment
 
 /* A.6.3 Parallel and sequential blocks */
 
@@ -146,6 +148,7 @@ namespace ast = svs::sv2017::ast;
 /* A.8.5 Expression left-side values */
 
 %nterm <std::string> net_lvalue
+%nterm <std::string> variable_lvalue
 
 /* A.8.7 Numbers */
 
@@ -167,6 +170,8 @@ namespace ast = svs::sv2017::ast;
 
 /* A.9.3 Identifiers */
 
+%nterm <std::string> hierarchical_identifier
+%nterm <std::string> hierarchical_variable_identifier
 %token <std::string> identifier
 %nterm <std::string> module_identifier
 %nterm <std::string> net_identifier
@@ -435,6 +440,13 @@ initial_construct : initial statement_or_null
                     }
                   ;
 
+blocking_assignment : variable_lvalue equals expression
+                      {
+                        const yy::location location{ @1.begin, @3.end };
+                        $$ = std::make_unique<ast::BlockingAssignment>(location, std::move($1), std::move($3));
+                      }
+                    ;
+
 /* A.6.3 Parallel and sequential blocks */
 
 seq_block : begin statement_or_nulls end
@@ -461,7 +473,8 @@ statement_or_nulls : /* empty */
 statement : statement_item { $$ = std::move($1); }
           ;
 
-statement_item : seq_block { $$ = std::move($1); }
+statement_item : blocking_assignment semicolon { $$ = std::move($1); }
+               | seq_block                     { $$ = std::move($1); }
                ;
 
 /* A.8.3 Expressions */
@@ -487,6 +500,9 @@ primary_literal : number { $$ = std::move($1); }
 
 net_lvalue : ps_or_hierarchical_net_identifier { $$ = std::move($1); }
            ;
+
+variable_lvalue : hierarchical_variable_identifier { $$ = std::move($1); }
+                ;
 
 /* A.8.7 Numbers */
 
@@ -575,6 +591,10 @@ attr_spec_cs : attr_spec
 attr_name : identifier ;
 
 /* A.9.3 Identifiers */
+
+hierarchical_identifier : identifier ;
+
+hierarchical_variable_identifier : hierarchical_identifier;
 
 module_identifier : identifier ;
 

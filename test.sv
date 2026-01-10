@@ -4,8 +4,6 @@ endmodule
 
 module tb;
   initial begin
-    begin
-    end
-    begin end
+    a = 2;
   end
 endmodule

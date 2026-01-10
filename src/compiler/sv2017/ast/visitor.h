@@ -5,6 +5,7 @@
 
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
 #include "compiler/sv2017/ast/attribute.h"
+#include "compiler/sv2017/ast/blocking_assignment.h"
 #include "compiler/sv2017/ast/continuous_assign.h"
 #include "compiler/sv2017/ast/decimal_number.h"
 #include "compiler/sv2017/ast/hex_number.h"
@@ -26,6 +27,7 @@ class Visitor {
  public:
   virtual void Visit(AnsiPortDeclaration& ansi_port_declaration) = 0;
   virtual void Visit(Attribute& attribute) = 0;
+  virtual void Visit(BlockingAssignment& blocking_assignment) = 0;
   virtual void Visit(ContinuousAssign& continuous_assign) = 0;
   virtual void Visit(DecimalNumber& decimal_number) = 0;
   virtual void Visit(HexNumber& hex_number) = 0;
