@@ -41,6 +41,8 @@
 #include "ast/seq_block.h"
 #include "ast/source_text.h"
 #include "ast/statement.h"
+#include "ast/subroutine_call_statement.h"
+#include "ast/system_tf_call.h"
 #include "ast/time_literal.h"
 #include "ast/timeunits_declaration.h"
 #include "ast/variable_decl_assignment.h"
@@ -148,6 +150,17 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::unique_ptr<ast::Statement>>              statement
 %nterm <std::unique_ptr<ast::Statement>>              statement_item
 
+/* A.6.9 Subroutine call statements */
+
+%nterm <std::unique_ptr<ast::SubroutineCallStatement>> subroutine_call_statement
+
+/* A.8 Expressions */
+
+/* A.8.2 Subroutine calls */
+
+%nterm <std::unique_ptr<ast::SystemTfCall>>   system_tf_call
+%nterm <std::unique_ptr<ast::SubroutineCall>> subroutine_call
+
 /* A.8.3 Expressions */
 
 %nterm <std::unique_ptr<ast::Expression>> constant_expression
@@ -192,6 +205,7 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::string> net_identifier
 %nterm <std::string> port_identifier
 %nterm <std::string> ps_or_hierarchical_net_identifier
+%token <std::string> system_tf_identifier
 %nterm <std::string> variable_identifier
 
 /* Annex B: Keywords */
@@ -531,7 +545,27 @@ statement : statement_item { $$ = std::move($1); }
 
 statement_item : blocking_assignment semicolon { $$ = std::move($1); }
                | seq_block                     { $$ = std::move($1); }
+               | subroutine_call_statement     { $$ = std::move($1); }
                ;
+
+/* A.6.9 Subroutine call statements */
+
+subroutine_call_statement : subroutine_call semicolon
+                            {
+                              const yy::location location{ @1.begin, @2.end };
+                              $$ = std::make_unique<ast::SubroutineCallStatement>(location, std::move($1));
+                            }
+                          ;
+
+/* A.8 Expressions */
+
+/* A.8.2 Subroutine calls */
+
+system_tf_call : system_tf_identifier { $$ = std::make_unique<ast::SystemTfCall>(@1, std::move($1)); }
+               ;
+
+subroutine_call : system_tf_call { $$ = std::move($1); }
+                ;
 
 /* A.8.3 Expressions */
 

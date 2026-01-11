@@ -17,6 +17,7 @@
 #include "compiler/sv2017/ast/net_assignment.h"
 #include "compiler/sv2017/ast/port_direction.h"
 #include "compiler/sv2017/ast/signedness.h"
+#include "compiler/sv2017/ast/system_tf_call.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
 #include "compiler/sv2017/ast/variable_decl_assignment.h"
 
@@ -245,6 +246,26 @@ void Visitor::Visit(ast::SourceText& source_text) {
       source_text.timeunits_declaration();
   if (timeunits_declaration)
     json["timeunits_declaration"] = Serialize(*timeunits_declaration);
+
+  result_ = json;
+}
+
+void Visitor::Visit(ast::SubroutineCallStatement& subroutine_call_statement) {
+  nlohmann::json json;
+  AssignMetaTags(json, "subroutine_call_statement",
+                 subroutine_call_statement.location());
+
+  json["subroutine_call"] =
+      Serialize(*subroutine_call_statement.subroutine_call());
+
+  result_ = json;
+}
+
+void Visitor::Visit(ast::SystemTfCall& system_tf_call) {
+  nlohmann::json json;
+  AssignMetaTags(json, "system_tf_call", system_tf_call.location());
+
+  json["system_tf_identifier"] = system_tf_call.system_tf_identifier();
 
   result_ = json;
 }

@@ -117,6 +117,8 @@ loc.step();
 
 [a-zA-Z_][a-zA-Z0-9_$]* return yy::parser::make_identifier(yytext, loc);
 
+$[a-zA-Z0-9_$]+ return yy::parser::make_system_tf_identifier(yytext, loc);
+
     /* Additional operator tokens */
 
 "(*" return yy::parser::make_attribute_instance_begin(loc);
