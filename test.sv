@@ -1,9 +1,6 @@
-module m(output logic x);
-  assign x = 2;
-endmodule
-
 module tb;
+  logic a;
   initial begin
-    a = 2;
+    a = 1;
   end
 endmodule

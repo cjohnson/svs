@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Collin Johnson
+
 %{
 #include <string>
 %}
@@ -23,6 +25,7 @@
 #include "ast/attribute.h"
 #include "ast/blocking_assignment.h"
 #include "ast/continuous_assign.h"
+#include "ast/data_declaration.h"
 #include "ast/data_type.h"
 #include "ast/decimal_number.h"
 #include "ast/description.h"
@@ -40,6 +43,7 @@
 #include "ast/statement.h"
 #include "ast/time_literal.h"
 #include "ast/timeunits_declaration.h"
+#include "ast/variable_decl_assignment.h"
 #include "ast/variable_port_header.h"
 
 namespace svs::sv2017 { class Parser; }
@@ -90,6 +94,7 @@ namespace ast = svs::sv2017::ast;
 
 %nterm <std::unique_ptr<ast::ModuleItem>>              module_common_item
 %nterm <std::unique_ptr<ast::ModuleItem>>              module_or_generate_item
+%nterm <std::unique_ptr<ast::ModuleItem>>              module_or_generate_item_declaration
 %nterm <std::unique_ptr<ast::ModuleItem>>              non_port_module_item
 %nterm <std::vector<std::unique_ptr<ast::ModuleItem>>> non_port_module_items
 
@@ -97,17 +102,27 @@ namespace ast = svs::sv2017::ast;
 
 /* A.2.1.3 Type declarations */
 
-%nterm <ast::Lifetime>                lifetime
-%nterm <std::optional<ast::Lifetime>> lifetime_opt
+%nterm <std::unique_ptr<ast::DataDeclaration>> data_declaration
+%nterm <ast::Lifetime>                         lifetime
+%nterm <std::optional<ast::Lifetime>>          lifetime_opt
 
 /* A.2.2 Declaration data types */
 
 /* A.2.2.1 Net and variable types */
 
 %nterm <std::unique_ptr<ast::DataType>> data_type
+%nterm <std::unique_ptr<ast::DataType>> data_type_or_implicit
 %nterm <ast::IntegerVectorType>         integer_vector_type
 %nterm <std::unique_ptr<ast::DataType>> variable_port_type
 %nterm <std::unique_ptr<ast::DataType>> var_data_type
+
+/* A.2.3 Declaration lists */
+
+%nterm <std::vector<std::unique_ptr<ast::VariableDeclAssignment>>> list_of_variable_decl_assignments
+
+/* A.2.4 Declaration assignments */
+
+%nterm <std::unique_ptr<ast::VariableDeclAssignment>> variable_decl_assignment
 
 /* A.6 Behavioral statements */
 
@@ -177,6 +192,7 @@ namespace ast = svs::sv2017::ast;
 %nterm <std::string> net_identifier
 %nterm <std::string> port_identifier
 %nterm <std::string> ps_or_hierarchical_net_identifier
+%nterm <std::string> variable_identifier
 
 /* Annex B: Keywords */
 
@@ -351,12 +367,16 @@ ansi_port_declaration_cs_opt : /* empty */
 
 /* A.1.4 Module items */
 
-module_common_item : continuous_assign { $$ = std::move($1); }
-                   | initial_construct { $$ = std::move($1); }
+module_common_item : module_or_generate_item_declaration { $$ = std::move($1); }
+                   | continuous_assign                   { $$ = std::move($1); }
+                   | initial_construct                   { $$ = std::move($1); }
                    ;
 
 module_or_generate_item : attribute_instances module_common_item { $$ = std::move($2); }
                         ;
+
+module_or_generate_item_declaration : data_declaration { $$ = std::move($1); }
+                                    ;
 
 non_port_module_item : module_or_generate_item { $$ = std::move($1); }
                      ;
@@ -374,6 +394,13 @@ non_port_module_items : /* empty */
 
 /* A.2.1.3 Type declarations */
 
+data_declaration : data_type_or_implicit list_of_variable_decl_assignments semicolon
+                   {
+                     const yy::location location{ @1.begin, @3.end };
+                     $$ = std::make_unique<ast::DataDeclaration>(location, std::move($1), std::move($2));
+                   }
+                 ;
+
 lifetime : static_   { $$ = ast::Lifetime::kStatic; }
          | automatic { $$ = ast::Lifetime::kAutomatic; }
          ;
@@ -390,6 +417,9 @@ data_type : integer_vector_type
             { $$ = std::make_unique<ast::IntegerVectorDataType>(@1, std::move($1)); }
           ;
 
+data_type_or_implicit : data_type { $$ = std::move($1); }
+                      ;
+
 integer_vector_type : bit   { $$ = ast::IntegerVectorType::kBit; }
                     | logic { $$ = ast::IntegerVectorType::kLogic; }
                     | reg   { $$ = ast::IntegerVectorType::kReg; }
@@ -400,6 +430,32 @@ variable_port_type : var_data_type { $$ = std::move($1); }
 
 var_data_type : data_type { $$ = std::move($1); }
               ;
+
+/* A.2.3 Declaration lists */
+
+list_of_variable_decl_assignments : variable_decl_assignment
+                                    {
+                                      $$ = std::vector<std::unique_ptr<ast::VariableDeclAssignment>>();
+                                      $$.push_back(std::move($1));
+                                    }
+                                  | list_of_variable_decl_assignments comma variable_decl_assignment
+                                    {
+                                      $1.push_back(std::move($3));
+                                      $$ = std::move($1);
+                                    }
+                                  ;
+
+/* A.2.4 Declaration assignments */
+
+variable_decl_assignment : variable_identifier
+                           { $$ = std::make_unique<ast::VariableDeclAssignment>(@1, std::move($1), nullptr); }
+                         | variable_identifier equals expression
+                           {
+                             const yy::location location{ @1.begin, @3.end };
+                             $$ = std::make_unique<ast::VariableDeclAssignment>(
+                               location, std::move($1), std::move($3));
+                           }
+                         ;
 
 /* A.6 Behavioral statements */
 
@@ -603,6 +659,8 @@ net_identifier : identifier ;
 port_identifier : identifier ;
 
 ps_or_hierarchical_net_identifier : net_identifier ;
+
+variable_identifier : identifier ;
 
 %%
 

@@ -9,6 +9,7 @@
 #include "compiler/sv2017/ast/ansi_port_declaration.h"
 #include "compiler/sv2017/ast/blocking_assignment.h"
 #include "compiler/sv2017/ast/continuous_assign.h"
+#include "compiler/sv2017/ast/data_declaration.h"
 #include "compiler/sv2017/ast/decimal_number.h"
 #include "compiler/sv2017/ast/initial_construct.h"
 #include "compiler/sv2017/ast/integer_vector_type.h"
@@ -17,6 +18,7 @@
 #include "compiler/sv2017/ast/port_direction.h"
 #include "compiler/sv2017/ast/signedness.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
+#include "compiler/sv2017/ast/variable_decl_assignment.h"
 
 using Visitor = svs::sv2017::json::Visitor;
 
@@ -81,6 +83,25 @@ void Visitor::Visit(ast::ContinuousAssign& continuous_assign) {
     net_assignments_json.push_back(Serialize(*net_assignment));
 
   json["net_assignments"] = net_assignments_json;
+
+  result_ = json;
+}
+
+void Visitor::Visit(ast::DataDeclaration& data_declaration) {
+  nlohmann::json json;
+  AssignMetaTags(json, "data_declaration", data_declaration.location());
+
+  json["data_type"] = Serialize(*data_declaration.data_type());
+
+  std::vector<nlohmann::json> variable_decl_assignments_json;
+  variable_decl_assignments_json.reserve(
+      data_declaration.variable_decl_assignments().size());
+  for (const std::unique_ptr<ast::VariableDeclAssignment>&
+           variable_decl_assignment :
+       data_declaration.variable_decl_assignments())
+    variable_decl_assignments_json.push_back(
+        Serialize(*variable_decl_assignment));
+  json["variable_decl_assignments"] = variable_decl_assignments_json;
 
   result_ = json;
 }
@@ -250,6 +271,18 @@ void Visitor::Visit(ast::TimeunitsDeclaration& timeunits_declaration) {
   const std::unique_ptr<ast::TimeLiteral>& time_unit =
       timeunits_declaration.time_unit();
   if (time_unit) json["time_unit"] = Serialize(*time_unit);
+
+  result_ = json;
+}
+
+void Visitor::Visit(ast::VariableDeclAssignment& variable_decl_assignment) {
+  nlohmann::json json;
+  AssignMetaTags(json, "variable_decl_assignment",
+                 variable_decl_assignment.location());
+
+  json["variable_identifier"] = variable_decl_assignment.variable_identifier();
+  if (variable_decl_assignment.expression())
+    json["expression"] = Serialize(*variable_decl_assignment.expression());
 
   result_ = json;
 }

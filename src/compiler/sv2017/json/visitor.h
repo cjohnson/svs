@@ -7,12 +7,14 @@
 
 #include "compiler/sv2017/ast/blocking_assignment.h"
 #include "compiler/sv2017/ast/continuous_assign.h"
+#include "compiler/sv2017/ast/data_declaration.h"
 #include "compiler/sv2017/ast/decimal_number.h"
 #include "compiler/sv2017/ast/hex_number.h"
 #include "compiler/sv2017/ast/initial_construct.h"
 #include "compiler/sv2017/ast/net_assignment.h"
 #include "compiler/sv2017/ast/seq_block.h"
 #include "compiler/sv2017/ast/signedness.h"
+#include "compiler/sv2017/ast/variable_decl_assignment.h"
 #include "compiler/sv2017/ast/visitor.h"
 #include "compiler/sv2017/location.hh"
 
@@ -32,6 +34,7 @@ class Visitor : public ast::Visitor {
   void Visit(ast::Attribute& attribute) override;
   void Visit(ast::BlockingAssignment& blocking_assignment) override;
   void Visit(ast::ContinuousAssign& continuous_assign) override;
+  void Visit(ast::DataDeclaration& data_declaration) override;
   void Visit(ast::DecimalNumber& decimal_number) override;
   void Visit(ast::HexNumber& hex_number) override;
   void Visit(ast::InitialConstruct& initial_construct) override;
@@ -43,6 +46,7 @@ class Visitor : public ast::Visitor {
   void Visit(ast::SourceText& source_text) override;
   void Visit(ast::TimeLiteral& time_literal) override;
   void Visit(ast::TimeunitsDeclaration& timeunits_declaration) override;
+  void Visit(ast::VariableDeclAssignment& variable_decl_assignment) override;
   void Visit(ast::VariablePortHeader& variable_port_header) override;
 
  private:
