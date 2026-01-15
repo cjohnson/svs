@@ -4,6 +4,7 @@
 #define SRC_COMPILER_SV2017_AST_SYSTEM_TF_CALL_H_
 
 #include <string>
+#include <vector>
 
 #include "compiler/sv2017/ast/subroutine_call.h"
 #include "compiler/sv2017/location.hh"
@@ -14,7 +15,8 @@ namespace svs::sv2017::ast {
 class SystemTfCall : public SubroutineCall {
  public:
   // Constructs a system task or function call
-  SystemTfCall(const yy::location& location, std::string system_tf_identifier);
+  SystemTfCall(const yy::location& location, std::string system_tf_identifier,
+               std::vector<std::unique_ptr<Expression>> arguments);
 
   // Accept the provided visitor.
   void Accept(Visitor& visitor) override;

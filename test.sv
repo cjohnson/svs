@@ -1,7 +1,5 @@
 module tb;
-  logic a;
   initial begin
-    a = 1;
-    $finish;
+    $display(0);
   end
 endmodule

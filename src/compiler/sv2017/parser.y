@@ -158,13 +158,16 @@ namespace ast = svs::sv2017::ast;
 
 /* A.8.2 Subroutine calls */
 
-%nterm <std::unique_ptr<ast::SystemTfCall>>   system_tf_call
-%nterm <std::unique_ptr<ast::SubroutineCall>> subroutine_call
+%nterm <std::unique_ptr<ast::SystemTfCall>>            system_tf_call
+%nterm <std::unique_ptr<ast::SubroutineCall>>          subroutine_call
+%nterm <std::vector<std::unique_ptr<ast::Expression>>> list_of_arguments
 
 /* A.8.3 Expressions */
 
-%nterm <std::unique_ptr<ast::Expression>> constant_expression
-%nterm <std::unique_ptr<ast::Expression>> expression
+%nterm <std::unique_ptr<ast::Expression>>              constant_expression
+%nterm <std::unique_ptr<ast::Expression>>              expression
+%nterm <std::unique_ptr<ast::Expression>>              expression_opt
+%nterm <std::vector<std::unique_ptr<ast::Expression>>> expression_opt_cs
 
 /* A.8.4 Primaries */
 
@@ -561,11 +564,18 @@ subroutine_call_statement : subroutine_call semicolon
 
 /* A.8.2 Subroutine calls */
 
-system_tf_call : system_tf_identifier { $$ = std::make_unique<ast::SystemTfCall>(@1, std::move($1)); }
+system_tf_call : system_tf_identifier
+                 { $$ = std::make_unique<ast::SystemTfCall>(
+                     @1, std::move($1), std::vector<std::unique_ptr<ast::Expression>>()); }
+               | system_tf_identifier left_parenthesis list_of_arguments right_parenthesis
+                 { $$ = std::make_unique<ast::SystemTfCall>(@1, std::move($1), std::move($3)); }
                ;
 
 subroutine_call : system_tf_call { $$ = std::move($1); }
                 ;
+
+list_of_arguments : expression_opt_cs { $$ = std::move($1); }
+                  ;
 
 /* A.8.3 Expressions */
 
@@ -574,6 +584,22 @@ constant_expression : constant_primary { $$ = std::move($1); }
 
 expression : primary { $$ = std::move($1); }
            ;
+
+expression_opt : /* empty */ { $$ = nullptr; }
+               | expression  { $$ = std::move($1); }
+               ;
+
+expression_opt_cs : expression_opt
+                    {
+                      $$ = std::vector<std::unique_ptr<ast::Expression>>();
+                      $$.push_back(std::move($1));
+                    }
+                  | expression_opt_cs comma expression_opt
+                    {
+                      $1.push_back(std::move($3));
+                      $$ = std::move($1);
+                    }
+                  ;
 
 /* A.8.4 Primaries */
 

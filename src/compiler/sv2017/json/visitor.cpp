@@ -267,6 +267,13 @@ void Visitor::Visit(ast::SystemTfCall& system_tf_call) {
 
   json["system_tf_identifier"] = system_tf_call.system_tf_identifier();
 
+  std::vector<nlohmann::json> arguments_json;
+  arguments_json.reserve(system_tf_call.arguments().size());
+  for (const std::unique_ptr<ast::Expression>& argument :
+       system_tf_call.arguments())
+    arguments_json.push_back(Serialize(*argument));
+  json["arguments"] = arguments_json;
+
   result_ = json;
 }
 
