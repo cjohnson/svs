@@ -57,6 +57,7 @@ target_sources(sv2017_ast
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/module_item.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/net_assignment.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/node.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/partial_visitor.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/port_direction.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/seq_block.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/source_text.cpp
