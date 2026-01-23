@@ -17,6 +17,7 @@
 #include "compiler/sv2017/ast/net_assignment.h"
 #include "compiler/sv2017/ast/seq_block.h"
 #include "compiler/sv2017/ast/source_text.h"
+#include "compiler/sv2017/ast/string_literal.h"
 #include "compiler/sv2017/ast/subroutine_call_statement.h"
 #include "compiler/sv2017/ast/system_tf_call.h"
 #include "compiler/sv2017/ast/time_literal.h"
@@ -43,6 +44,7 @@ class Visitor {
   virtual void Visit(NetAssignment& net_assignment) = 0;
   virtual void Visit(SeqBlock& seq_block) = 0;
   virtual void Visit(SourceText& source_text) = 0;
+  virtual void Visit(StringLiteral& string_literal) = 0;
   virtual void Visit(SubroutineCallStatement& subroutine_call_statement) = 0;
   virtual void Visit(SystemTfCall& system_tf_call) = 0;
   virtual void Visit(TimeLiteral& time_literal) = 0;

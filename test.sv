@@ -1,5 +1,5 @@
 module tb;
   initial begin
-    $display(0);
+    $display("");
   end
 endmodule

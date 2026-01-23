@@ -17,6 +17,7 @@
 #include "compiler/sv2017/ast/net_assignment.h"
 #include "compiler/sv2017/ast/port_direction.h"
 #include "compiler/sv2017/ast/signedness.h"
+#include "compiler/sv2017/ast/string_literal.h"
 #include "compiler/sv2017/ast/system_tf_call.h"
 #include "compiler/sv2017/ast/timeunits_declaration.h"
 #include "compiler/sv2017/ast/variable_decl_assignment.h"
@@ -246,6 +247,15 @@ void Visitor::Visit(ast::SourceText& source_text) {
       source_text.timeunits_declaration();
   if (timeunits_declaration)
     json["timeunits_declaration"] = Serialize(*timeunits_declaration);
+
+  result_ = json;
+}
+
+void Visitor::Visit(ast::StringLiteral& string_literal) {
+  nlohmann::json json;
+  AssignMetaTags(json, "string_literal", string_literal.location());
+
+  json["value"] = string_literal.value();
 
   result_ = json;
 }

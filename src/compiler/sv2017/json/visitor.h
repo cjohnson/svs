@@ -3,6 +3,7 @@
 #ifndef SRC_COMPILER_SV2017_JSON_VISITOR_H_
 #define SRC_COMPILER_SV2017_JSON_VISITOR_H_
 
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "compiler/sv2017/ast/blocking_assignment.h"
@@ -14,13 +15,12 @@
 #include "compiler/sv2017/ast/net_assignment.h"
 #include "compiler/sv2017/ast/seq_block.h"
 #include "compiler/sv2017/ast/signedness.h"
+#include "compiler/sv2017/ast/string_literal.h"
 #include "compiler/sv2017/ast/subroutine_call_statement.h"
 #include "compiler/sv2017/ast/system_tf_call.h"
 #include "compiler/sv2017/ast/variable_decl_assignment.h"
 #include "compiler/sv2017/ast/visitor.h"
 #include "compiler/sv2017/location.hh"
-
-#include <nlohmann/json.hpp>
 
 namespace svs::sv2017::json {
 
@@ -46,6 +46,7 @@ class Visitor : public ast::Visitor {
   void Visit(ast::NetAssignment& net_assignment) override;
   void Visit(ast::SeqBlock& seq_block) override;
   void Visit(ast::SourceText& source_text) override;
+  void Visit(ast::StringLiteral& string_literal) override;
   void Visit(ast::SubroutineCallStatement& subroutine_call_statement) override;
   void Visit(ast::SystemTfCall& system_tf_call) override;
   void Visit(ast::TimeLiteral& time_literal) override;

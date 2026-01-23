@@ -40,6 +40,7 @@
 #include "ast/port_direction.h"
 #include "ast/seq_block.h"
 #include "ast/source_text.h"
+#include "ast/string_literal.h"
 #include "ast/statement.h"
 #include "ast/subroutine_call_statement.h"
 #include "ast/system_tf_call.h"
@@ -190,6 +191,10 @@ namespace ast = svs::sv2017::ast;
 %token <std::string>                          unsigned_number
 %token <std::string>                          hex_value
 %token <ast::Signedness>                      hex_base
+
+/* A.8.8 Strings */
+
+%token <std::string> string_literal
 
 /* A.9.1 Attributes */
 
@@ -609,7 +614,8 @@ constant_primary : primary_literal { $$ = std::move($1); }
 primary : primary_literal { $$ = std::move($1); }
         ;
 
-primary_literal : number { $$ = std::move($1); }
+primary_literal : number         { $$ = std::move($1); }
+                | string_literal { $$ = std::make_unique<ast::StringLiteral>(@1, std::move($1)); }
                 ;
 
 /* A.8.5 Expression left-side values */

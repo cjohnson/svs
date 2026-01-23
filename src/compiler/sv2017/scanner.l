@@ -107,6 +107,10 @@ loc.step();
 \'[hH]            return yy::parser::make_hex_base(ast::Signedness::kUnsigned, loc);
 \'[sS][hH]        return yy::parser::make_hex_base(ast::Signedness::kSigned, loc);
 
+    /* String literals */
+
+\"\" return yy::parser::make_string_literal(text().substr(1, text().length() - 2), loc);
+
     /* Identifiers */
 
 [\\].+{white_space} {
