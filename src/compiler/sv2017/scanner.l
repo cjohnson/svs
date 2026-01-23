@@ -109,7 +109,7 @@ loc.step();
 
     /* String literals */
 
-\"\" return yy::parser::make_string_literal(text().substr(1, text().length() - 2), loc);
+\".*\" return yy::parser::make_string_literal(text().substr(1, text().length() - 2), loc);
 
     /* Identifiers */
 

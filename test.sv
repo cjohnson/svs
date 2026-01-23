@@ -1,5 +1,5 @@
 module tb;
   initial begin
-    $display("");
+    $display("Hello world!");
   end
 endmodule
