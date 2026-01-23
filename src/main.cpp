@@ -5,6 +5,7 @@
 
 #include "compiler/sv2017/json/serializer.h"
 #include "compiler/sv2017/parser.h"
+#include "simulator/simulator.h"
 
 int main(int argc, char **argv) {
   if (argc < 2) {
@@ -18,6 +19,9 @@ int main(int argc, char **argv) {
 
   svs::sv2017::json::Serializer json_serializer;
   std::cout << json_serializer.Serialize(*ast) << '\n';
+
+  svs::sim::Simulator sim;
+  sim.Run();
 
   return 0;
 }

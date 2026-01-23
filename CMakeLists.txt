@@ -16,6 +16,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json)
 
+add_library(simulator STATIC)
+target_sources(simulator
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/simulator/display_statement.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/simulator/sequential_block.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/simulator/simulator.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/simulator/statement.cpp)
+target_include_directories(simulator PRIVATE src)
+
 add_library(sv2017_json STATIC)
 target_sources(sv2017_json
     PRIVATE
@@ -75,17 +84,17 @@ flex_target(sv2017_flex
     DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/scanner.generated.h)
 add_flex_bison_dependency(sv2017_flex sv2017_bison)
 
-add_library(svsc2017 STATIC)
-target_sources(svsc2017
+add_library(sv2017 STATIC)
+target_sources(sv2017
     PRIVATE
         ${BISON_sv2017_bison_OUTPUTS}
         ${FLEX_sv2017_flex_OUTPUTS}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/parser.cpp)
-target_link_libraries(svsc2017 PRIVATE sv2017_ast)
-target_include_directories(svsc2017 PRIVATE src)
+target_link_libraries(sv2017 PRIVATE sv2017_ast)
+target_include_directories(sv2017 PRIVATE src)
 
 add_executable(svs ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-target_link_libraries(svs PRIVATE svsc2017 sv2017_json)
+target_link_libraries(svs PRIVATE simulator sv2017 sv2017_json)
 target_include_directories(svs PRIVATE src)
 
 option(ENABLE_UNIT_TESTS "Enable Unit Tests" ON)
