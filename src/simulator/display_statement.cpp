@@ -9,9 +9,10 @@ using DisplayStatement = svs::sim::DisplayStatement;
 
 std::mutex display_mutex;
 
-DisplayStatement::DisplayStatement() : Statement() {}
+DisplayStatement::DisplayStatement(std::string format)
+    : Statement(), format_(format) {}
 
 void DisplayStatement::Execute() {
   std::lock_guard<std::mutex> guard{display_mutex};
-  std::cout << "Executing a display statement\n";
+  std::cout << format_;
 }

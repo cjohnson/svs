@@ -7,7 +7,7 @@
 #include "compiler/sv2017/parser.h"
 #include "simulator/simulator.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   if (argc < 2) {
     std::cerr << "need a file\n";
     return 1;
@@ -20,8 +20,8 @@ int main(int argc, char **argv) {
   svs::sv2017::json::Serializer json_serializer;
   std::cout << json_serializer.Serialize(*ast) << '\n';
 
-  svs::sim::Simulator sim;
-  sim.Run();
+  svs::sim::Simulator simulator{std::move(ast), "tb"};
+  simulator.Run();
 
   return 0;
 }
