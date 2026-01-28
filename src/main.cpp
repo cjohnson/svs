@@ -17,8 +17,8 @@ int main(int argc, char** argv) {
   std::unique_ptr<ast::SourceText> ast = parser.Parse(argv[1]);
   assert(ast);
 
-  svs::sv2017::json::Serializer json_serializer;
-  std::cout << json_serializer.Serialize(*ast) << '\n';
+  // svs::sv2017::json::Serializer json_serializer;
+  // std::cout << json_serializer.Serialize(*ast) << '\n';
 
   svs::sim::Simulator simulator{std::move(ast), "tb"};
   simulator.Run();
