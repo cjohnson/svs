@@ -43,16 +43,13 @@ class Simulator {
 
   // Constructs a simulator with the provided sv2017 ast and top-level module
   // identifier.
-  Simulator(std::unique_ptr<svs::sv2017::ast::SourceText> source_text,
-            std::string top_level_module_identifier);
+  Simulator();
 
   // Run the simulation.
-  void Run();
+  void Run(std::unique_ptr<svs::sv2017::ast::SourceText>& source_text);
 
  private:
-  std::unique_ptr<svs::sv2017::ast::SourceText> source_text_;
   std::queue<std::unique_ptr<Statement>> schedule_;
-  std::string top_level_module_identifier_;
 };
 
 };  // namespace svs::sim

@@ -43,8 +43,8 @@ int main(int argc, char** argv) {
   }
 
   if (command == "--simulate") {
-    svs::sim::Simulator simulator{std::move(ast), "tb"};
-    simulator.Run();
+    svs::sim::Simulator simulator;
+    simulator.Run(ast);
 
     return EXIT_SUCCESS;
   }

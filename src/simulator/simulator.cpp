@@ -85,24 +85,13 @@ void Simulator::SimulatorContextFactory::Visit(
   string_buffer_ = string_literal.value();
 }
 
-Simulator::Simulator(std::unique_ptr<svs::sv2017::ast::SourceText> source_text,
-                     std::string top_level_module_identifier)
-    : source_text_(std::move(source_text)),
-      top_level_module_identifier_(top_level_module_identifier) {
-  std::vector<std::unique_ptr<Statement>> sequential_block_schedule;
-  sequential_block_schedule.reserve(1);
-  sequential_block_schedule.push_back(
-      std::make_unique<DisplayStatement>("test"));
+Simulator::Simulator() {}
 
-  auto sequential_block =
-      std::make_unique<SequentialBlock>(std::move(sequential_block_schedule));
-  schedule_.push(std::move(sequential_block));
-}
-
-void Simulator::Run() {
+void Simulator::Run(
+    std::unique_ptr<svs::sv2017::ast::SourceText>& source_text) {
   // Build the simulator context
   SimulatorContextFactory simulator_context_factory;
-  schedule_ = simulator_context_factory.Schedule(source_text_);
+  schedule_ = simulator_context_factory.Schedule(source_text);
 
   while (!schedule_.empty()) {
     std::unique_ptr<Statement> statement = std::move(schedule_.front());
