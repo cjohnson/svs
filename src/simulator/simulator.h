@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <queue>
+#include <unordered_map>
 
 #include "compiler/sv2017/ast/initial_construct.h"
 #include "compiler/sv2017/ast/module_declaration.h"
@@ -16,8 +17,21 @@
 
 namespace svs::sim {
 
+class Module {};
+
+class ModuleElaborator : public sv2017::ast::PartialVisitor {
+ public:
+  std::unique_ptr<Module> Elaborate(
+      sv2017::ast::ModuleDeclaration& module_declaration);
+
+ private:
+  void Visit(sv2017::ast::ModuleDeclaration& module_declaration) override;
+
+  std::unique_ptr<Module> module_;
+};
+
 // A simulator
-class Simulator {
+class Simulator : public sv2017::ast::PartialVisitor {
  public:
   // Visitor class that constructs the simulator context.
   class SimulatorContextFactory : public sv2017::ast::PartialVisitor {
@@ -49,7 +63,11 @@ class Simulator {
   void Run(std::unique_ptr<svs::sv2017::ast::SourceText>& source_text);
 
  private:
-  std::queue<std::unique_ptr<Statement>> schedule_;
+  void Visit(sv2017::ast::SourceText& source_text) override;
+  void Visit(sv2017::ast::ModuleDeclaration& module_declaration) override;
+
+ private:
+  std::unordered_map<std::string, std::unique_ptr<Module>> modules_;
 };
 
 };  // namespace svs::sim

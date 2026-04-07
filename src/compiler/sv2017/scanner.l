@@ -14,6 +14,8 @@ namespace ast = svs::sv2017::ast;
 // Returns yytext as a string
 std::string text() { return yytext; }
 
+std::string apply_escape_sequences(std::string string_literal);
+
 #define YY_USER_ACTION loc.columns(yyleng);
 
 %}
@@ -109,7 +111,11 @@ loc.step();
 
     /* String literals */
 
-\".*\" return yy::parser::make_string_literal(text().substr(1, text().length() - 2), loc);
+\".*\" {
+  std::string content = text().substr(1, text().length() - 2);
+  content = apply_escape_sequences(content);
+  return yy::parser::make_string_literal(content, loc);
+}
 
     /* Identifiers */
 
@@ -137,6 +143,27 @@ $[a-zA-Z0-9_$]+ return yy::parser::make_system_tf_identifier(yytext, loc);
 <<EOF>> return yy::parser::make_YYEOF(loc);
 
 %%
+
+std::string apply_escape_sequences(std::string string_literal) {
+  std::stringstream escaped_string_literal;
+  for (size_t i = 0; i < string_literal.length(); ++i) {
+    if (string_literal[i] != '\\') {
+      escaped_string_literal << string_literal[i];
+      continue;
+    }
+
+    ++i;
+    if (string_literal[i] == 'n') {
+      escaped_string_literal << '\n';
+      continue;
+    }
+
+    escaped_string_literal << '\\';
+    escaped_string_literal << string_literal[i];
+  }
+
+  return escaped_string_literal.str();
+}
 
 void svs::sv2017::Parser::BeginScan(const std::string& file_name) {
   yy_flex_debug = scanning_debug_traces_enabled_;

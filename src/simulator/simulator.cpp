@@ -7,6 +7,7 @@
 
 #include "compiler/sv2017/ast/description.h"
 #include "compiler/sv2017/ast/initial_construct.h"
+#include "compiler/sv2017/ast/module_declaration.h"
 #include "compiler/sv2017/ast/seq_block.h"
 #include "compiler/sv2017/ast/source_text.h"
 #include "compiler/sv2017/ast/subroutine_call_statement.h"
@@ -15,6 +16,8 @@
 #include "simulator/sequential_block.h"
 #include "simulator/statement.h"
 
+using Module = svs::sim::Module;
+using ModuleElaborator = svs::sim::ModuleElaborator;
 using Simulator = svs::sim::Simulator;
 using Statement = svs::sim::Statement;
 
@@ -85,18 +88,35 @@ void Simulator::SimulatorContextFactory::Visit(
   string_buffer_ = string_literal.value();
 }
 
+std::unique_ptr<Module> ModuleElaborator::Elaborate(
+    sv2017::ast::ModuleDeclaration& module_declaration) {
+  module_declaration.Accept(*this);
+  return std::move(module_);
+}
+
+void ModuleElaborator::Visit(
+    sv2017::ast::ModuleDeclaration& module_declaration) {
+  module_ = std::make_unique<Module>();
+}
+
 Simulator::Simulator() {}
 
 void Simulator::Run(
     std::unique_ptr<svs::sv2017::ast::SourceText>& source_text) {
-  // Build the simulator context
-  SimulatorContextFactory simulator_context_factory;
-  schedule_ = simulator_context_factory.Schedule(source_text);
-
-  while (!schedule_.empty()) {
-    std::unique_ptr<Statement> statement = std::move(schedule_.front());
-    schedule_.pop();
-
-    statement->Execute();
+  Visit(*source_text);
+  for (auto& [name, module] : modules_) {
+    std::cout << "Found module: " << name << "\n";
   }
+}
+
+void Simulator::Visit(sv2017::ast::SourceText& source_text) {
+  for (const std::unique_ptr<sv2017::ast::Description>& description :
+       source_text.descriptions())
+    description->Accept(*this);
+}
+
+void Simulator::Visit(sv2017::ast::ModuleDeclaration& module_declaration) {
+  ModuleElaborator module_elaborator;
+  modules_[module_declaration.header()->identifier()] =
+      std::move(module_elaborator.Elaborate(module_declaration));
 }
