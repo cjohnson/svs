@@ -70,7 +70,9 @@ target_sources(sv2017_ast
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/time_unit.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/timeunits_declaration.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/variable_decl_assignment.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/variable_port_header.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/ast/variable_port_header.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/vhwd/module_generator.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/sv2017/vhwd/source_generator.cpp)
 target_include_directories(sv2017_ast PRIVATE src)
 
 find_package(BISON REQUIRED)

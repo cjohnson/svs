@@ -1,5 +1,5 @@
 module tb;
-  logic a;
+  bit a;
 
   initial begin
     a = 1'h0;

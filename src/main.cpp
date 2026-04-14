@@ -6,6 +6,7 @@
 
 #include "compiler/sv2017/json/serializer.h"
 #include "compiler/sv2017/parser.h"
+#include "compiler/sv2017/vhwd/source_generator.h"
 #include "simulator/simulator.h"
 
 void print_usage(std::ostream& os) {
@@ -43,6 +44,18 @@ int main(int argc, char** argv) {
   }
 
   if (command == "--simulate") {
+    svs::sv2017::vhwd::SourceGenerator vhwd_generator;
+    std::unique_ptr<svs::vhwd::Source> source = vhwd_generator.Generate(ast);
+
+    std::cout << "VHWD\n";
+
+    for (auto& [id, module] : source->modules) {
+      std::cout << "\tMODULE " << id << ";\n";
+      std::cout << "\tENDMODULE\n";
+    }
+
+    std::cout << "ENDVHWD\n";
+
     svs::sim::Simulator simulator;
     simulator.Run(ast);
 
