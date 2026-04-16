@@ -47,17 +47,29 @@ int main(int argc, char** argv) {
     svs::sv2017::vhwd::SourceGenerator vhwd_generator;
     std::unique_ptr<svs::vhwd::Source> source = vhwd_generator.Generate(ast);
 
-    std::cout << "VHWD\n";
-
-    for (auto& [id, module] : source->modules) {
-      std::cout << "\tMODULE " << id << ";\n";
-      std::cout << "\tENDMODULE\n";
-    }
-
-    std::cout << "ENDVHWD\n";
-
     svs::sim::Simulator simulator;
-    simulator.Run(ast);
+
+    auto top_level_module = std::make_shared<svs::sim::Module>();
+    top_level_module->variables["a"] = svs::sim::TwoValuedValue::_0;
+
+    auto initial = std::make_shared<svs::sim::Process>();
+    initial->module = top_level_module;
+
+    auto assign = std::make_shared<svs::sim::AssignmentInstruction>();
+    assign->identifier = "a";
+    assign->value = svs::sim::TwoValuedValue::_1;
+
+    initial->instructions.push_back(assign);
+
+    auto display = std::make_shared<svs::sim::DisplayInstruction>();
+    display->format = "a is %d.";
+    display->params.push_back("a");
+
+    initial->instructions.push_back(display);
+
+    top_level_module->initials.insert(initial);
+
+    simulator.Run(top_level_module);
 
     return EXIT_SUCCESS;
   }

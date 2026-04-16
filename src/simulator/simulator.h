@@ -3,68 +3,108 @@
 #ifndef SRC_SIMULATOR_SIMULATOR_H_
 #define SRC_SIMULATOR_SIMULATOR_H_
 
+#include <iostream>
 #include <memory>
-#include <queue>
+#include <sstream>
+#include <stdexcept>
 #include <unordered_map>
-
-#include "compiler/sv2017/ast/initial_construct.h"
-#include "compiler/sv2017/ast/module_declaration.h"
-#include "compiler/sv2017/ast/partial_visitor.h"
-#include "compiler/sv2017/ast/source_text.h"
-#include "compiler/sv2017/ast/subroutine_call_statement.h"
-#include "compiler/sv2017/ast/system_tf_call.h"
-#include "simulator/statement.h"
+#include <unordered_set>
+#include <vector>
 
 namespace svs::sim {
 
-class Module {};
+enum class TwoValuedValue { _1, _0 };
 
-class ModuleElaborator : public sv2017::ast::PartialVisitor {
- public:
-  std::unique_ptr<Module> Elaborate(
-      sv2017::ast::ModuleDeclaration& module_declaration);
+struct Process;
 
- private:
-  void Visit(sv2017::ast::ModuleDeclaration& module_declaration) override;
+struct Module {
+  std::unordered_map<std::string, TwoValuedValue> variables;
+  std::unordered_set<std::shared_ptr<Process>> initials;
+};
 
-  std::unique_ptr<Module> module_;
+struct Instruction {
+  virtual void Execute(std::shared_ptr<Module> module) = 0;
+};
+
+struct AssignmentInstruction : Instruction {
+  std::string identifier;
+  TwoValuedValue value;
+
+  virtual void Execute(std::shared_ptr<Module> module) override {
+    auto it = module->variables.find(identifier);
+    if (it == module->variables.end())
+      throw std::runtime_error{"Variable or net not found!"};
+
+    it->second = value;
+  }
+};
+
+struct DisplayInstruction : Instruction {
+  std::string format;
+  std::vector<std::string> params;
+
+  virtual void Execute(std::shared_ptr<Module> module) override {
+    std::stringstream ss;
+
+    auto it = format.begin();
+    auto id_it = params.begin();
+    while (it != format.end()) {
+      if (*it == '%') {
+        ++it;
+        if (it == format.end()) {
+          ss << '%';
+        } else {
+          if (*it == 'd') {
+            ++it;
+
+            if (id_it == params.end())
+              throw std::runtime_error{"Incorrect number of params"};
+
+            auto var_it = module->variables.find(*id_it);
+            ++id_it;
+
+            if (var_it == module->variables.end())
+              throw std::runtime_error{"Variable or net not found!"};
+
+            TwoValuedValue value = var_it->second;
+            switch (value) {
+              case TwoValuedValue::_0:
+                ss << 0;
+              case TwoValuedValue::_1:
+                ss << 1;
+            }
+          }
+        }
+      }
+
+      ss << *it;
+      ++it;
+    }
+
+    std::cout << ss.str() << '\n';
+  }
+};
+
+struct Process {
+  std::vector<std::shared_ptr<Instruction>> instructions;
+  std::weak_ptr<Module> module;
+
+  void Execute() {
+    for (std::shared_ptr<Instruction> instruction : instructions) {
+      instruction->Execute(module.lock());
+    }
+  }
 };
 
 // A simulator
-class Simulator : public sv2017::ast::PartialVisitor {
+class Simulator {
  public:
-  // Visitor class that constructs the simulator context.
-  class SimulatorContextFactory : public sv2017::ast::PartialVisitor {
-   public:
-    std::queue<std::unique_ptr<Statement>> Schedule(
-        std::unique_ptr<svs::sv2017::ast::SourceText>& source_text);
-
-   private:
-    void Visit(sv2017::ast::SourceText& source_text) override;
-    void Visit(sv2017::ast::ModuleDeclaration& module_declaration) override;
-    void Visit(sv2017::ast::InitialConstruct& initial_construct) override;
-    void Visit(sv2017::ast::SeqBlock& seq_block) override;
-    void Visit(sv2017::ast::SubroutineCallStatement& subroutine_call_statement)
-        override;
-    void Visit(sv2017::ast::SystemTfCall& system_tf_call) override;
-    void Visit(sv2017::ast::StringLiteral& string_literal) override;
-
-    std::queue<std::unique_ptr<Statement>> schedule_;
-
-    std::unique_ptr<Statement> statement_buffer_;
-    std::string string_buffer_;
-  };
-
   // Constructs a simulator with the provided sv2017 ast and top-level module
   // identifier.
   Simulator();
 
   // Run the simulation.
-  void Run(std::unique_ptr<svs::sv2017::ast::SourceText>& source_text);
-
- private:
-  void Visit(sv2017::ast::SourceText& source_text) override;
-  void Visit(sv2017::ast::ModuleDeclaration& module_declaration) override;
+  void Run(std::shared_ptr<Module> top_level_module);
 
  private:
   std::unordered_map<std::string, std::unique_ptr<Module>> modules_;
