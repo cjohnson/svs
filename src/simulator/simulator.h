@@ -15,27 +15,52 @@ namespace svs::sim {
 
 enum class TwoValuedValue { _1, _0 };
 
+struct SimulationContext {
+  virtual TwoValuedValue GetVariable(std::string identifier) = 0;
+  virtual void SetVariable(std::string identifier, TwoValuedValue value) = 0;
+
+  virtual void Finish() = 0;
+};
+
 struct Process;
 
-struct Module {
+struct Module : public SimulationContext {
+  std::weak_ptr<SimulationContext> parent;
+
   std::unordered_map<std::string, TwoValuedValue> variables;
   std::unordered_set<std::shared_ptr<Process>> initials;
+
+  virtual TwoValuedValue GetVariable(std::string identifier) override {
+    if (variables.contains(identifier)) {
+      return variables[identifier];
+    }
+
+    return parent.lock()->GetVariable(identifier);
+  }
+
+  virtual void SetVariable(std::string identifier,
+                           TwoValuedValue value) override {
+    if (variables.contains(identifier)) {
+      variables[identifier] = value;
+      return;
+    }
+
+    parent.lock()->SetVariable(identifier, value);
+  }
+
+  virtual void Finish() override { parent.lock()->Finish(); }
 };
 
 struct Instruction {
-  virtual void Execute(std::shared_ptr<Module> module) = 0;
+  virtual void Execute(std::weak_ptr<SimulationContext> context) = 0;
 };
 
 struct AssignmentInstruction : Instruction {
   std::string identifier;
   TwoValuedValue value;
 
-  virtual void Execute(std::shared_ptr<Module> module) override {
-    auto it = module->variables.find(identifier);
-    if (it == module->variables.end())
-      throw std::runtime_error{"Variable or net not found!"};
-
-    it->second = value;
+  virtual void Execute(std::weak_ptr<SimulationContext> context) override {
+    context.lock()->SetVariable(identifier, value);
   }
 };
 
@@ -43,7 +68,7 @@ struct DisplayInstruction : Instruction {
   std::string format;
   std::vector<std::string> params;
 
-  virtual void Execute(std::shared_ptr<Module> module) override {
+  virtual void Execute(std::weak_ptr<SimulationContext> context) override {
     std::stringstream ss;
 
     auto it = format.begin();
@@ -60,13 +85,9 @@ struct DisplayInstruction : Instruction {
             if (id_it == params.end())
               throw std::runtime_error{"Incorrect number of params"};
 
-            auto var_it = module->variables.find(*id_it);
+            TwoValuedValue value = context.lock()->GetVariable(*id_it);
             ++id_it;
 
-            if (var_it == module->variables.end())
-              throw std::runtime_error{"Variable or net not found!"};
-
-            TwoValuedValue value = var_it->second;
             switch (value) {
               case TwoValuedValue::_0:
                 ss << 0;
@@ -97,7 +118,7 @@ struct Process {
 };
 
 // A simulator
-class Simulator {
+class Simulator : public SimulationContext {
  public:
   // Constructs a simulator with the provided sv2017 ast and top-level module
   // identifier.
@@ -106,8 +127,14 @@ class Simulator {
   // Run the simulation.
   void Run(std::shared_ptr<Module> top_level_module);
 
+  virtual TwoValuedValue GetVariable(std::string identifier) override;
+  virtual void SetVariable(std::string identifier,
+                           TwoValuedValue value) override;
+
+  virtual void Finish() override;
+
  private:
-  std::unordered_map<std::string, std::unique_ptr<Module>> modules_;
+  bool finished_;
 };
 
 };  // namespace svs::sim

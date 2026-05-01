@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
     svs::sv2017::vhwd::SourceGenerator vhwd_generator;
     std::unique_ptr<svs::vhwd::Source> source = vhwd_generator.Generate(ast);
 
-    svs::sim::Simulator simulator;
+    auto simulator = std::make_shared<svs::sim::Simulator>();
 
     auto top_level_module = std::make_shared<svs::sim::Module>();
     top_level_module->variables["a"] = svs::sim::TwoValuedValue::_0;
@@ -69,7 +69,8 @@ int main(int argc, char** argv) {
 
     top_level_module->initials.insert(initial);
 
-    simulator.Run(top_level_module);
+    top_level_module->parent = simulator;
+    simulator->Run(top_level_module);
 
     return EXIT_SUCCESS;
   }
