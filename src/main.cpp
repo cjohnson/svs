@@ -50,14 +50,15 @@ int main(int argc, char** argv) {
     auto simulator = std::make_shared<svs::sim::Simulator>();
 
     auto top_level_module = std::make_shared<svs::sim::Module>();
-    top_level_module->variables["a"] = svs::sim::TwoValuedValue::_0;
+    top_level_module->variables["a"] = std::make_shared<svs::sim::BitValue>();
 
     auto initial = std::make_shared<svs::sim::Process>();
     initial->module = top_level_module;
 
     auto assign = std::make_shared<svs::sim::AssignmentInstruction>();
     assign->identifier = "a";
-    assign->value = svs::sim::TwoValuedValue::_1;
+    assign->value =
+        std::make_shared<svs::sim::BitValue>(svs::sim::TwoValuedLogicState::_1);
 
     initial->instructions.push_back(assign);
 

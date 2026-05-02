@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <stdexcept>
 #include <unordered_map>
@@ -13,54 +14,83 @@
 
 namespace svs::sim {
 
-enum class TwoValuedValue { _1, _0 };
+enum class TwoValuedLogicState { _0, _1 };
 
-struct SimulationContext {
-  virtual TwoValuedValue GetVariable(std::string identifier) = 0;
-  virtual void SetVariable(std::string identifier, TwoValuedValue value) = 0;
+class Value {
+ public:
+  enum class ValueKind { kBit };
+
+  Value(const ValueKind& value_kind) : value_kind_(value_kind) {}
+
+  virtual void Display(std::ostream& os) const = 0;
+
+ private:
+  ValueKind value_kind_;
+};
+
+class BitValue : public Value {
+ public:
+  BitValue(const TwoValuedLogicState& state = TwoValuedLogicState::_0)
+      : state_(state), Value(Value::ValueKind::kBit) {}
+
+  virtual void Display(std::ostream& os) const override {
+    switch (state_) {
+      case TwoValuedLogicState::_0:
+        os << 0;
+      case TwoValuedLogicState::_1:
+        os << 1;
+    }
+  }
+
+ private:
+  TwoValuedLogicState state_;
+};
+
+class Context {
+ public:
+  virtual std::shared_ptr<Value> Get(std::string identifier) = 0;
+  virtual void Set(std::string identifier, std::shared_ptr<Value> value) = 0;
 
   virtual void Finish() = 0;
 };
 
 struct Process;
 
-struct Module : public SimulationContext {
-  std::weak_ptr<SimulationContext> parent;
+struct Module : public Context {
+  std::weak_ptr<Context> parent;
 
-  std::unordered_map<std::string, TwoValuedValue> variables;
+  std::unordered_map<std::string, std::shared_ptr<Value>> variables;
   std::unordered_set<std::shared_ptr<Process>> initials;
 
-  virtual TwoValuedValue GetVariable(std::string identifier) override {
+  virtual std::shared_ptr<Value> Get(std::string identifier) override {
     if (variables.contains(identifier)) {
       return variables[identifier];
     }
-
-    return parent.lock()->GetVariable(identifier);
+    return parent.lock()->Get(identifier);
   }
 
-  virtual void SetVariable(std::string identifier,
-                           TwoValuedValue value) override {
+  virtual void Set(std::string identifier,
+                   std::shared_ptr<Value> value) override {
     if (variables.contains(identifier)) {
       variables[identifier] = value;
-      return;
+    } else {
+      parent.lock()->Set(identifier, value);
     }
-
-    parent.lock()->SetVariable(identifier, value);
   }
 
   virtual void Finish() override { parent.lock()->Finish(); }
 };
 
 struct Instruction {
-  virtual void Execute(std::weak_ptr<SimulationContext> context) = 0;
+  virtual void Execute(std::weak_ptr<Context> context) = 0;
 };
 
 struct AssignmentInstruction : Instruction {
   std::string identifier;
-  TwoValuedValue value;
+  std::shared_ptr<Value> value;
 
-  virtual void Execute(std::weak_ptr<SimulationContext> context) override {
-    context.lock()->SetVariable(identifier, value);
+  virtual void Execute(std::weak_ptr<Context> context) override {
+    context.lock()->Set(identifier, value);
   }
 };
 
@@ -68,7 +98,7 @@ struct DisplayInstruction : Instruction {
   std::string format;
   std::vector<std::string> params;
 
-  virtual void Execute(std::weak_ptr<SimulationContext> context) override {
+  virtual void Execute(std::weak_ptr<Context> context) override {
     std::stringstream ss;
 
     auto it = format.begin();
@@ -85,15 +115,8 @@ struct DisplayInstruction : Instruction {
             if (id_it == params.end())
               throw std::runtime_error{"Incorrect number of params"};
 
-            TwoValuedValue value = context.lock()->GetVariable(*id_it);
-            ++id_it;
-
-            switch (value) {
-              case TwoValuedValue::_0:
-                ss << 0;
-              case TwoValuedValue::_1:
-                ss << 1;
-            }
+            std::shared_ptr<Value> value = context.lock()->Get(*id_it++);
+            value->Display(ss);
           }
         }
       }
@@ -118,7 +141,7 @@ struct Process {
 };
 
 // A simulator
-class Simulator : public SimulationContext {
+class Simulator : public Context {
  public:
   // Constructs a simulator with the provided sv2017 ast and top-level module
   // identifier.
@@ -127,9 +150,9 @@ class Simulator : public SimulationContext {
   // Run the simulation.
   void Run(std::shared_ptr<Module> top_level_module);
 
-  virtual TwoValuedValue GetVariable(std::string identifier) override;
-  virtual void SetVariable(std::string identifier,
-                           TwoValuedValue value) override;
+  virtual std::shared_ptr<Value> Get(std::string identifier) override;
+  virtual void Set(std::string identifier,
+                   std::shared_ptr<Value> value) override;
 
   virtual void Finish() override;
 

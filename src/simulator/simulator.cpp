@@ -32,11 +32,11 @@ void Simulator::Run(std::shared_ptr<Module> top_level_module) {
   std::cout << "...\n\n";
 }
 
-svs::sim::TwoValuedValue Simulator::GetVariable(std::string identifier) {
+std::shared_ptr<svs::sim::Value> Simulator::Get(std::string identifier) {
   throw std::runtime_error{"Failed to find variable"};
 }
 
-void Simulator::SetVariable(std::string identifier, TwoValuedValue value) {
+void Simulator::Set(std::string identifier, std::shared_ptr<Value> value) {
   throw std::runtime_error{"Failed to find variable"};
 }
 
